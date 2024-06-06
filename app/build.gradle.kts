@@ -8,7 +8,8 @@ android {
 
     defaultConfig {
         applicationId = "io.github.com.cactric.swalsh"
-        minSdk = 28
+        // Increased to 29 for WifiNetworkSpecifier
+        minSdk = 29
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"

@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- TODO: can enter manually, the SSID/pass is provided when pressing + ("Trouble connecting?") -->
     <uses-feature
         android:name="android.hardware.camera"
         android:required="true" />

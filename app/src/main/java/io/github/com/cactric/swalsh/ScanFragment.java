@@ -37,13 +37,14 @@ public class ScanFragment extends Fragment {
         mScanner = new CodeScanner(activity, scannerView);
         mScanner.setDecodeCallback(result -> {
             activity.runOnUiThread(() -> {
-                Log.d("SwAlSh", "Code result: " + result.getText());
-
                 // Change fragment
                 NavHostFragment navHostFragment = (NavHostFragment)
                         activity.getSupportFragmentManager().findFragmentById(R.id.mainFragmentContainer);
                 NavController navController = navHostFragment.getNavController();
-                navController.navigate(R.id.action_destination_scan_to_connectFragment);
+
+                Bundle bundle = new Bundle();
+                bundle.putString("scanned_data", result.getText());
+                navController.navigate(R.id.action_destination_scan_to_connectFragment, bundle);
             });
         });
         scannerView.setOnClickListener(v -> {

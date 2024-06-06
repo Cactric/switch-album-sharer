@@ -1,42 +1,35 @@
 package io.github.com.cactric.swalsh;
 
+import static android.net.NetworkCapabilities.TRANSPORT_WIFI;
+import static io.github.com.cactric.swalsh.WifiUtils.parseNetwork;
+
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
+import android.net.wifi.WifiNetworkSpecifier;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
+
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link ConnectFragment#newInstance} factory method to
- * create an instance of this fragment.
- *
- */
 public class ConnectFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private static final String ARG_SCANNED_DATA = "scanned_data";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ConnectFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ConnectFragment newInstance(String param1, String param2) {
+    public static ConnectFragment newInstance(String scannedData) {
         ConnectFragment fragment = new ConnectFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putString(ARG_SCANNED_DATA, scannedData);
         fragment.setArguments(args);
         return fragment;
     }
@@ -48,16 +41,58 @@ public class ConnectFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_connect, container, false);
+        View root = inflater.inflate(R.layout.fragment_connect, container, false);
+
+        if (getArguments() != null) {
+            String scannedData = getArguments().getString(ARG_SCANNED_DATA);
+            WifiNetworkSpecifier netSpec = null;
+            boolean success = false;
+            if (scannedData != null)
+                try {
+                    netSpec = parseNetwork(scannedData);
+                    success = true;
+                } catch (IllegalArgumentException e) {
+                    // Not a Wifi code?
+                }
+            if (!success) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+                // TODO: string resource
+                builder.setMessage("The scanned code does not seem to be for a Wifi network");
+                builder.setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss());
+                builder.setOnDismissListener(dialog -> {
+                    // Go back to code scanner
+                    NavHostFragment navHostFragment = (NavHostFragment)
+                            requireActivity().getSupportFragmentManager().findFragmentById(R.id.mainFragmentContainer);
+                    NavController navController = navHostFragment.getNavController();
+                    navController.popBackStack();
+                });
+                builder.create().show();
+            }
+
+            // Try to connect to the network
+            // TODO: needs to not be on UI thread (probably), needs permissions asking for,
+            // needs to actually get data too.
+            // Ooh, exciting
+            NetworkRequest request = new NetworkRequest.Builder()
+                    .addTransportType(TRANSPORT_WIFI)
+                    .removeCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                    .setNetworkSpecifier(netSpec)
+                    .build();
+            ConnectivityManager connectivityManager = (ConnectivityManager) requireContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+            connectivityManager.requestNetwork(request, new ConnectivityManager.NetworkCallback() {
+                @Override
+                public void onAvailable(@NonNull Network network) {
+                    super.onAvailable(network);
+                }
+            });
+        }
+
+        return root;
     }
 }

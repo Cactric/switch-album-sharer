@@ -28,6 +28,11 @@
         android:id="@+id/connectFragment"
         android:name="io.github.com.cactric.swalsh.ConnectFragment"
         android:label="fragment_connect"
-        tools:layout="@layout/fragment_connect" />
+        tools:layout="@layout/fragment_connect" >
+        <argument
+            android:name="scanned_data"
+            app:argType="string"
+            android:defaultValue="@null" />
+    </fragment>
 
 </navigation>
