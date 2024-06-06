@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph.xml"
     app:startDestination="@id/destination_intro">
 
@@ -11,7 +12,7 @@
 
         <action
             android:id="@+id/action_scan_code"
-            app:destination="@id/destination_scan"/>
+            app:destination="@id/destination_scan" />
     </fragment>
 
     <fragment
@@ -19,6 +20,14 @@
         android:name="io.github.com.cactric.swalsh.ScanFragment"
         android:label="Scan code">
 
+        <action
+            android:id="@+id/action_destination_scan_to_connectFragment"
+            app:destination="@id/connectFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/connectFragment"
+        android:name="io.github.com.cactric.swalsh.ConnectFragment"
+        android:label="fragment_connect"
+        tools:layout="@layout/fragment_connect" />
 
 </navigation>
