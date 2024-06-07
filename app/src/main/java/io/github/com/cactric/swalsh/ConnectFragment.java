@@ -4,6 +4,7 @@ import static android.net.NetworkCapabilities.TRANSPORT_WIFI;
 import static io.github.com.cactric.swalsh.WifiUtils.parseNetwork;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -75,22 +76,11 @@ public class ConnectFragment extends Fragment {
                 builder.create().show();
             }
 
-            // Try to connect to the network
-            // TODO: needs to not be on UI thread (probably), needs permissions asking for,
-            // needs to actually get data too.
-            // Ooh, exciting
-            NetworkRequest request = new NetworkRequest.Builder()
-                    .addTransportType(TRANSPORT_WIFI)
-                    .removeCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-                    .setNetworkSpecifier(netSpec)
-                    .build();
-            ConnectivityManager connectivityManager = (ConnectivityManager) requireContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-            connectivityManager.requestNetwork(request, new ConnectivityManager.NetworkCallback() {
-                @Override
-                public void onAvailable(@NonNull Network network) {
-                    super.onAvailable(network);
-                }
-            });
+            // Start the download service
+            Intent intent = new Intent(getContext(), DownloadService.class);
+            intent.putExtra("EXTRA_NETWORK_SPECIFIER", netSpec);
+            requireContext().startService(intent);
+            //bindService?
         }
 
         return root;
