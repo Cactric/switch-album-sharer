@@ -17,9 +17,7 @@ import androidx.annotation.NonNull;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.Buffer;
 
 public class DownloadService extends Service {
     private boolean started = false;
@@ -59,13 +57,17 @@ public class DownloadService extends Service {
                     @Override
                     public void onAvailable(@NonNull Network network) {
                         Log.d("SwAlSh", "Connected!");
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ignored) {}
 
                         // Download the data.json file I guess
+                        // TODO: rewrite since it fails
                         try {
                             URL url = new URL("http://192.168.0.1/data.json");
                             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                             try {
-                                InputStream in = urlConnection.getInputStream();
+                                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
                                 StringBuilder sb = new StringBuilder();
 
                                 int read;
@@ -73,6 +75,7 @@ public class DownloadService extends Service {
                                     read = in.read();
                                     sb.append(read);
                                 } while (read != -1);
+                                in.close();
 
                                 Log.d("SwAlSh", "data.json is" + sb);
                             } finally {
