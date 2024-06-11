@@ -1,16 +1,24 @@
 package io.github.com.cactric.swalsh;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
+import android.net.NetworkSpecifier;
+import android.net.Uri;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
+import android.os.ParcelFileDescriptor;
+import android.provider.MediaStore;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -57,7 +65,11 @@ public class DownloadService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        netSpec = intent.getParcelableExtra("EXTRA_NETWORK_SPECIFIER");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            netSpec = intent.getParcelableExtra("EXTRA_NETWORK_SPECIFIER", WifiNetworkSpecifier.class);
+        } else {
+            netSpec = intent.getParcelableExtra("EXTRA_NETWORK_SPECIFIER");
+        }
         started = true;
 
         workerThread = new WorkerThread();
@@ -128,27 +140,56 @@ public class DownloadService extends Service {
                                     InputStream in = new BufferedInputStream(fileConnection.getInputStream());
 
                                     // Try to save the picture
-                                    File dir = getAppSpecificAlbumStorageDir(getApplicationContext(), "Switch Screenshots");
-                                    File file = new File(dir, fileNames.getString(i));
+                                    //File dir = getAppSpecificAlbumStorageDir(getApplicationContext(), "Switch Screenshots");
+                                    //File file = new File(dir, fileNames.getString(i));
+
+                                    ContentResolver resolver = getApplicationContext().getContentResolver();
+                                    // TODO: save videos elsewhere
+                                    Uri pictureCollection;
+                                    pictureCollection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+
+                                    ContentValues pictureDetails = new ContentValues();
+                                    pictureDetails.put(MediaStore.Images.Media.DISPLAY_NAME, fileNames.getString(i));
+                                    pictureDetails.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Switch Screenshots");
+                                    // Mark it as pending until I write the file out
+                                    pictureDetails.put(MediaStore.Images.Media.IS_PENDING, 1);
+
+                                    Uri pictureContentUri = resolver.insert(pictureCollection, pictureDetails);
+                                    if (pictureContentUri == null) {
+                                        Log.e("SwAlSh", "Failed to save picture - pictureContentUri is null");
+                                        continue;
+                                    }
+                                    Log.d("SwAlSh", "Saving to " + pictureContentUri);
+
                                     try {
-                                        FileOutputStream fos = new FileOutputStream(file);
+                                        OutputStream os = resolver.openOutputStream(pictureContentUri);
+                                        if (os == null) {
+                                            Log.e("SwAlSh", "Failed to save picture - output stream is null");
+                                            continue;
+                                        }
                                         boolean done = false;
+                                        long bytesWritten = 0;
                                         while (!done) {
-                                            byte[] data = new byte[512];
+                                            byte[] data = new byte[512 * 1024];
                                             int bytesRead = in.read(data);
-                                            if (bytesRead == 0)
+                                            if (bytesRead == -1)
                                                 done = true;
                                             else
-                                                fos.write(bytesRead);
+                                                os.write(data, 0, bytesRead);
+                                            bytesWritten += bytesRead;
+                                            Log.d("SwAlSh", "Written " + bytesWritten + " so far");
                                         }
                                         in.close();
-                                        fos.close();
-                                        Log.d("SwAlSh", "Saved " + fileNames.getString(i) + " to " + file.getAbsolutePath() + "!");
+                                        Log.d("SwAlSh", "Saved " + fileNames.getString(i) + "!");
                                     } catch (FileNotFoundException e) {
                                         Log.e("SwAlSh", "Failed to open output file", e);
                                     } catch (SecurityException e) {
                                         Log.e("SwAlSh", "Possibly missing permissions or something", e);
                                     }
+
+                                    pictureDetails.clear();
+                                    pictureDetails.put(MediaStore.Images.Media.IS_PENDING, 0);
+                                    resolver.update(pictureContentUri, pictureDetails, null, null);
 
                                 } catch (MalformedURLException e) {
                                     Log.e("SwAlSh", "Malformed URL, possibly unexpected data and/or an application bug", e);
