@@ -57,27 +57,26 @@ public class DownloadService extends Service {
                     @Override
                     public void onAvailable(@NonNull Network network) {
                         Log.d("SwAlSh", "Connected!");
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException ignored) {}
 
                         // Download the data.json file I guess
                         // TODO: rewrite since it fails
                         try {
                             URL url = new URL("http://192.168.0.1/data.json");
-                            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                            HttpURLConnection urlConnection = (HttpURLConnection) network.openConnection(url);
                             try {
                                 InputStream in = new BufferedInputStream(urlConnection.getInputStream());
                                 StringBuilder sb = new StringBuilder();
 
                                 int read;
-                                do {
+                                while (true) {
                                     read = in.read();
-                                    sb.append(read);
-                                } while (read != -1);
+                                    if (read == -1)
+                                        break;
+                                    sb.appendCodePoint(read);
+                                }
                                 in.close();
 
-                                Log.d("SwAlSh", "data.json is" + sb);
+                                Log.d("SwAlSh", "data.json is " + sb);
                             } finally {
                                 urlConnection.disconnect();
                             }
