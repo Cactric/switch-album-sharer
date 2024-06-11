@@ -9,14 +9,26 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.os.Binder;
+import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 public class DownloadService extends Service {
@@ -29,6 +41,19 @@ public class DownloadService extends Service {
 
     public DownloadService() {
     }
+
+    @Nullable
+    File getAppSpecificAlbumStorageDir(Context context, String albumName) {
+        // Get the pictures directory that's inside the app-specific directory on
+        // external storage.
+        File file = new File(context.getExternalFilesDir(
+                Environment.DIRECTORY_PICTURES), albumName);
+        if (!file.exists() && !file.mkdirs()) {
+            Log.e("SwAlSh", "Directory not created");
+        }
+        return file;
+    }
+
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -58,8 +83,9 @@ public class DownloadService extends Service {
                     public void onAvailable(@NonNull Network network) {
                         Log.d("SwAlSh", "Connected!");
 
-                        // Download the data.json file I guess
-                        // TODO: rewrite since it fails
+                        String dataJson;
+
+                        // Download the data.json file
                         try {
                             URL url = new URL("http://192.168.0.1/data.json");
                             HttpURLConnection urlConnection = (HttpURLConnection) network.openConnection(url);
@@ -77,12 +103,66 @@ public class DownloadService extends Service {
                                 in.close();
 
                                 Log.d("SwAlSh", "data.json is " + sb);
+                                dataJson = sb.toString();
                             } finally {
                                 urlConnection.disconnect();
                             }
                         } catch (Exception e) {
                             Log.e("SwAlSh", "Download error", e);
+                            return;
                         }
+
+                        // Try to parse the JSON
+                        try {
+                            JSONObject rootObj = new JSONObject(dataJson);
+
+                            // I'm interested mainly in the `FileNames` array
+                            // Maybe the `FileType` or `ConsoleName`...
+                            JSONArray fileNames = rootObj.getJSONArray("FileNames");
+
+                            for (int i = 0; i < fileNames.length(); i++) {
+                                Log.d("SwAlSh", "File name " + i + " = " + fileNames.getString(i));
+                                try {
+                                    URL fileURL = new URL("http://192.168.0.1/img/" + fileNames.getString(i));
+                                    HttpURLConnection fileConnection = (HttpURLConnection) network.openConnection(fileURL);
+                                    InputStream in = new BufferedInputStream(fileConnection.getInputStream());
+
+                                    // Try to save the picture
+                                    File dir = getAppSpecificAlbumStorageDir(getApplicationContext(), "Switch Screenshots");
+                                    File file = new File(dir, fileNames.getString(i));
+                                    try {
+                                        FileOutputStream fos = new FileOutputStream(file);
+                                        boolean done = false;
+                                        while (!done) {
+                                            byte[] data = new byte[512];
+                                            int bytesRead = in.read(data);
+                                            if (bytesRead == 0)
+                                                done = true;
+                                            else
+                                                fos.write(bytesRead);
+                                        }
+                                        in.close();
+                                        fos.close();
+                                        Log.d("SwAlSh", "Saved " + fileNames.getString(i) + " to " + file.getAbsolutePath() + "!");
+                                    } catch (FileNotFoundException e) {
+                                        Log.e("SwAlSh", "Failed to open output file", e);
+                                    } catch (SecurityException e) {
+                                        Log.e("SwAlSh", "Possibly missing permissions or something", e);
+                                    }
+
+                                } catch (MalformedURLException e) {
+                                    Log.e("SwAlSh", "Malformed URL, possibly unexpected data and/or an application bug", e);
+                                    continue;
+                                } catch (IOException e) {
+                                    Log.e("SwAlSh", "Download error, file " + i + " failed to download", e);
+                                    continue;
+                                }
+                            }
+                        } catch (JSONException e) {
+                            Log.e("SwAlSh", "Failed to parse JSON data", e);
+                            return;
+                        }
+
                     }
                 });
             } catch (SecurityException e) {
