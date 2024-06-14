@@ -23,6 +23,8 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -40,11 +42,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public class DownloadService extends Service {
-    private boolean started = false;
-    private boolean connected = false;
-    private boolean error = false;
-    private int numDownloaded = 0;
-    private WorkerThread workerThread;
+    private final MutableLiveData<State> state = new MutableLiveData<>(State.NOT_STARTED);
+    private final MutableLiveData<Integer> numDownloaded = new MutableLiveData<>(0);
     private WifiNetworkSpecifier netSpec;
 
     public DownloadService() {
@@ -70,9 +69,9 @@ public class DownloadService extends Service {
         } else {
             netSpec = intent.getParcelableExtra("EXTRA_NETWORK_SPECIFIER");
         }
-        started = true;
+        state.setValue(State.CONNECTING);
 
-        workerThread = new WorkerThread();
+        WorkerThread workerThread = new WorkerThread();
         workerThread.start();
 
         return START_NOT_STICKY;
@@ -94,10 +93,10 @@ public class DownloadService extends Service {
                     @Override
                     public void onAvailable(@NonNull Network network) {
                         Log.d("SwAlSh", "Connected!");
-
-                        String dataJson;
+                        state.postValue(DownloadService.State.CONNECTED);
 
                         // Download the data.json file
+                        String dataJson;
                         try {
                             URL url = new URL("http://192.168.0.1/data.json");
                             HttpURLConnection urlConnection = (HttpURLConnection) network.openConnection(url);
@@ -121,6 +120,7 @@ public class DownloadService extends Service {
                             }
                         } catch (Exception e) {
                             Log.e("SwAlSh", "Download error", e);
+                            state.postValue(DownloadService.State.ERROR);
                             return;
                         }
 
@@ -177,7 +177,6 @@ public class DownloadService extends Service {
                                             else
                                                 os.write(data, 0, bytesRead);
                                             bytesWritten += bytesRead;
-                                            Log.d("SwAlSh", "Written " + bytesWritten + " so far");
                                         }
                                         in.close();
                                         Log.d("SwAlSh", "Saved " + fileNames.getString(i) + "!");
@@ -190,7 +189,9 @@ public class DownloadService extends Service {
                                     pictureDetails.clear();
                                     pictureDetails.put(MediaStore.Images.Media.IS_PENDING, 0);
                                     resolver.update(pictureContentUri, pictureDetails, null, null);
-
+                                    if (numDownloaded.getValue() != null) {
+                                        numDownloaded.postValue(numDownloaded.getValue() + 1);
+                                    }
                                 } catch (MalformedURLException e) {
                                     Log.e("SwAlSh", "Malformed URL, possibly unexpected data and/or an application bug", e);
                                     continue;
@@ -199,18 +200,21 @@ public class DownloadService extends Service {
                                     continue;
                                 }
                             }
+
+                            state.postValue(DownloadService.State.DONE);
                         } catch (JSONException e) {
                             Log.e("SwAlSh", "Failed to parse JSON data", e);
+                            state.postValue(DownloadService.State.ERROR);
                             return;
                         }
 
                     }
                 });
             } catch (SecurityException e) {
-                error = true;
+                state.postValue(DownloadService.State.ERROR);
                 Log.e("SwAlSh", "Missing permissions", e);
             } catch (Exception e) {
-                error = true;
+                state.postValue(DownloadService.State.ERROR);
                 Log.e("SwAlSh", "Other error", e);
             }
         }
@@ -225,17 +229,19 @@ public class DownloadService extends Service {
         public DownloadService getService() {
             return DownloadService.this;
         }
-        public boolean hasStarted() {
-            return started;
+        public LiveData<State> getState() {
+            return state;
         }
-        public boolean isConnected() {
-            return connected;
-        }
-        public boolean hasErrorOccurred() {
-            return error;
-        }
-        public int getNumDownloaded() {
+        public LiveData<Integer> getNumDownloaded() {
             return numDownloaded;
         }
+    }
+
+    public enum State {
+        NOT_STARTED,
+        CONNECTING,
+        CONNECTED,
+        DONE,
+        ERROR
     }
 }
