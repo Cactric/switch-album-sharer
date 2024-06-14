@@ -2,3 +2,11 @@
 plugins {
     alias(libs.plugins.android.application) apply false
 }
+allprojects {
+    gradle.projectsEvaluated {
+
+        tasks.withType<JavaCompile> {
+            options.compilerArgs.addAll(arrayOf("-parameters", "-Xlint:deprecation"))
+        }
+    }
+}
