@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="connection_states">
+        <item>Waiting</item>
+        <item>Connecting</item>
+        <item>Connected</item>
+        <item>Downloading</item>
+        <item>Done</item>
+        <item>Error</item>
+    </string-array>
+</resources>

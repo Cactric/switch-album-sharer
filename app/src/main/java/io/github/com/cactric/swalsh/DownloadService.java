@@ -44,6 +44,7 @@ import java.net.URL;
 public class DownloadService extends Service {
     private final MutableLiveData<State> state = new MutableLiveData<>(State.NOT_STARTED);
     private final MutableLiveData<Integer> numDownloaded = new MutableLiveData<>(0);
+    private int numToDownload = 0;
     private WifiNetworkSpecifier netSpec;
 
     public DownloadService() {
@@ -124,6 +125,10 @@ public class DownloadService extends Service {
                             return;
                         }
 
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ignored) {}
+
                         // Try to parse the JSON
                         try {
                             JSONObject rootObj = new JSONObject(dataJson);
@@ -131,6 +136,8 @@ public class DownloadService extends Service {
                             // I'm interested mainly in the `FileNames` array
                             // Maybe the `FileType` or `ConsoleName`...
                             JSONArray fileNames = rootObj.getJSONArray("FileNames");
+                            numToDownload = fileNames.length();
+                            state.postValue(DownloadService.State.DOWNLOADING);
 
                             for (int i = 0; i < fileNames.length(); i++) {
                                 Log.d("SwAlSh", "File name " + i + " = " + fileNames.getString(i));
@@ -235,12 +242,16 @@ public class DownloadService extends Service {
         public LiveData<Integer> getNumDownloaded() {
             return numDownloaded;
         }
+        public int getNumToDownload() {
+            return numToDownload;
+        };
     }
 
     public enum State {
         NOT_STARTED,
         CONNECTING,
         CONNECTED,
+        DOWNLOADING,
         DONE,
         ERROR
     }

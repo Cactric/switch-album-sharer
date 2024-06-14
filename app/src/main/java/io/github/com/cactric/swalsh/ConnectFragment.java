@@ -1,10 +1,13 @@
 package io.github.com.cactric.swalsh;
 
+import static android.content.Context.BIND_AUTO_CREATE;
 import static android.net.NetworkCapabilities.TRANSPORT_WIFI;
 import static io.github.com.cactric.swalsh.WifiUtils.parseNetwork;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -15,17 +18,25 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
+import android.os.IBinder;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 public class ConnectFragment extends Fragment {
 
     private static final String ARG_SCANNED_DATA = "scanned_data";
+    private DownloadService.DownloadServiceBinder binder;
+    private LiveData<DownloadService.State> state;
+    private LiveData<Integer> numDownloaded;
 
     public static ConnectFragment newInstance(String scannedData) {
         ConnectFragment fragment = new ConnectFragment();
@@ -80,7 +91,71 @@ public class ConnectFragment extends Fragment {
             Intent intent = new Intent(getContext(), DownloadService.class);
             intent.putExtra("EXTRA_NETWORK_SPECIFIER", netSpec);
             requireContext().startService(intent);
-            //bindService?
+
+            TextView stateText = root.findViewById(R.id.state_text);
+            ProgressBar progressBar = root.findViewById(R.id.progressBar);
+
+            Button sacButton = root.findViewById(R.id.another_code);
+            Button albumButton = root.findViewById(R.id.open_album);
+
+            sacButton.setOnClickListener(v -> {
+                // Go back to code scanner
+                NavHostFragment navHostFragment = (NavHostFragment)
+                        requireActivity().getSupportFragmentManager().findFragmentById(R.id.mainFragmentContainer);
+                NavController navController = navHostFragment.getNavController();
+                navController.popBackStack();
+            });
+
+            albumButton.setOnClickListener(v -> {
+                Intent albumIntent = new Intent();
+                startActivity(albumIntent);
+            });
+
+            ServiceConnection connection = new ServiceConnection() {
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    binder = (DownloadService.DownloadServiceBinder) service;
+                    if (binder != null) {
+                        state = binder.getState();
+                        numDownloaded = binder.getNumDownloaded();
+                        Log.d("SwAlSh", "Got binder");
+
+                        state.observe(getViewLifecycleOwner(), newState -> {
+                            // Update the UI
+                            if (state.getValue() != null) {
+                                String formattedStr = getString(R.string.connection_state,
+                                        getResources().getStringArray(R.array.connection_states)[state.getValue().ordinal()],
+                                        numDownloaded.getValue(), binder.getNumToDownload());
+                                stateText.setText(formattedStr);
+                            } else
+                                stateText.setText(R.string.error);
+
+                            if (state.getValue() == DownloadService.State.DOWNLOADING) {
+                                // Display total number of items and use it for the progress bar
+                                progressBar.setMax(binder.getNumToDownload());
+                            }
+                        });
+
+                        numDownloaded.observe(getViewLifecycleOwner(), num -> {
+                            progressBar.setIndeterminate(num <= 0);
+                            progressBar.setProgress(num, true);
+                            if (state.getValue() != null) {
+                                String formattedStr = getString(R.string.connection_state,
+                                        getResources().getStringArray(R.array.connection_states)[state.getValue().ordinal()],
+                                        numDownloaded.getValue(), binder.getNumToDownload());
+                                stateText.setText(formattedStr);
+                            }
+                        });
+                    }
+                }
+
+                @Override
+                public void onServiceDisconnected(ComponentName name) {
+
+                }
+            };
+
+            requireContext().bindService(intent, connection, BIND_AUTO_CREATE);
         }
 
         return root;

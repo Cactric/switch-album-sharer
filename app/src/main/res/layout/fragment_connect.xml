@@ -8,16 +8,37 @@
     android:orientation="vertical">
 
     <TextView
+        android:id="@+id/state_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:text="Connecting..." />
+        android:gravity="center_horizontal" />
 
     <ProgressBar
         android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyle"
+        style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:indeterminate="true"
-        android:layout_height="wrap_content" />
+        android:maxWidth="192dip" />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/another_code"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:text="@string/scan_another_code" />
+
+        <Button
+            android:id="@+id/open_album"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:text="@string/open_album" />
+    </LinearLayout>
 </LinearLayout>
