@@ -2,6 +2,7 @@ package io.github.com.cactric.swalsh;
 
 import static android.provider.MediaStore.VOLUME_EXTERNAL;
 
+import android.content.ContentUris;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -55,9 +56,8 @@ public class AlbumActivity extends AppCompatActivity {
             // Loop through results
             while (cursor.moveToNext()) {
                 long id = cursor.getLong(idColumn);
-                String path = cursor.getString(dataColumn);
-                Uri pathUri = Uri.parse("file:/" + path);
-                uris.add(pathUri);
+                Uri contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+                uris.add(contentUri);
             }
         }
 
