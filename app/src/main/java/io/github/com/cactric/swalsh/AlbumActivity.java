@@ -4,9 +4,9 @@ import static android.provider.MediaStore.VOLUME_EXTERNAL;
 
 import android.content.ContentUris;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,9 +16,13 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.tabs.TabLayout;
+
 import java.util.ArrayList;
 
 public class AlbumActivity extends AppCompatActivity {
+    private ArrayList<PictureItem> pictureItems = new ArrayList<>();
+    private ArrayList<VideoItem> videoItems = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,42 +35,113 @@ public class AlbumActivity extends AppCompatActivity {
             return insets;
         });
 
-        ArrayList<Uri> uris = new ArrayList<>();
-
-        // Do it twice, once for pictures, once for videos
-        // TODO: Videos
+        // TODO: do this on a separate thread
+        // Pictures:
         // Which columns from the query?
-        String[] projection = new String[] {
+        String[] pics_projection = new String[] {
                 MediaStore.Images.Media._ID,
-                MediaStore.Images.Media.DATA
+                MediaStore.Images.Media.DISPLAY_NAME,
         };
 
         try (Cursor cursor = getContentResolver().query(
                 MediaStore.Images.Media.getContentUri(VOLUME_EXTERNAL),
-                projection,
+                pics_projection,
                 null,
                 null,
-                MediaStore.Images.Media.DATE_ADDED + " ASC"
+                MediaStore.Images.Media.DATE_ADDED + " DESC"
         )) {
             if (cursor == null)
                 throw new NullPointerException();
             int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
-            int dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            int displayNameColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME);
 
             // Loop through results
             while (cursor.moveToNext()) {
                 long id = cursor.getLong(idColumn);
-                Uri contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-                uris.add(contentUri);
+                PictureItem item = new PictureItem();
+                item.id = id;
+                item.uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+                item.display_name = cursor.getString(displayNameColumn);
+                pictureItems.add(item);
             }
         }
 
+        // Videos
+        String[] vid_projection = new String[] {
+                MediaStore.Video.Media._ID,
+                MediaStore.Video.Media.DISPLAY_NAME,
+                MediaStore.Video.Media.DURATION
+        };
 
+        try (Cursor cursor = getContentResolver().query(
+                MediaStore.Video.Media.getContentUri(VOLUME_EXTERNAL),
+                vid_projection,
+                null,
+                null,
+                MediaStore.Video.Media.DATE_ADDED + " DESC"
+        )) {
+            if (cursor == null)
+                throw new NullPointerException();
+            int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID);
+            int displayNameColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DISPLAY_NAME);
+            int durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION);
+
+            // Loop through results
+            while (cursor.moveToNext()) {
+                long id = cursor.getLong(idColumn);
+                VideoItem item = new VideoItem();
+                item.id = id;
+                item.uri = ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id);
+                item.display_name = cursor.getString(displayNameColumn);
+                item.duration_in_milliseconds = cursor.getInt(durationColumn);
+                videoItems.add(item);
+            }
+        }
+
+        // Set up tabs
+        TabLayout tabLayout = findViewById(R.id.album_tabs);
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                if (tab.getPosition() == 0) {
+                    setupRecyclerForPictures();
+                } else if (tab.getPosition() == 1) {
+                    setupRecycleForVideos();
+                } else {
+                    Log.e("SwAlSh", "Unknown tab position " + tab.getPosition());
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
+
+        // On Pictures initially
+        setupRecyclerForPictures();
+    }
+
+    private void setupRecyclerForPictures() {
         // Make the adapter, etc.
         RecyclerView recyclerView = findViewById(R.id.album_recycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        AlbumAdapter adapter = new AlbumAdapter(uris.toArray(new Uri[]{}));
+        PictureAlbumAdapter adapter = new PictureAlbumAdapter(pictureItems.toArray(new PictureItem[0]));
+        recyclerView.setAdapter(adapter);
+    }
+
+    private void setupRecycleForVideos() {
+        // Make the adapter, etc.
+        RecyclerView recyclerView = findViewById(R.id.album_recycler);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        VideoAlbumAdapter adapter = new VideoAlbumAdapter(videoItems.toArray(new VideoItem[0]));
         recyclerView.setAdapter(adapter);
     }
 }
