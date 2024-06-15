@@ -2,6 +2,7 @@ package io.github.com.cactric.swalsh;
 
 import static android.content.Context.BIND_AUTO_CREATE;
 import static android.net.NetworkCapabilities.TRANSPORT_WIFI;
+import static android.view.View.VISIBLE;
 import static io.github.com.cactric.swalsh.WifiUtils.parseNetwork;
 
 import android.content.ComponentName;
@@ -107,7 +108,7 @@ public class ConnectFragment extends Fragment {
             });
 
             albumButton.setOnClickListener(v -> {
-                Intent albumIntent = new Intent();
+                Intent albumIntent = new Intent(getActivity(), AlbumActivity.class);
                 startActivity(albumIntent);
             });
 
@@ -133,6 +134,11 @@ public class ConnectFragment extends Fragment {
                             if (state.getValue() == DownloadService.State.DOWNLOADING) {
                                 // Display total number of items and use it for the progress bar
                                 progressBar.setMax(binder.getNumToDownload());
+                            }
+
+                            if (state.getValue() == DownloadService.State.DONE) {
+                                sacButton.setVisibility(VISIBLE);
+                                albumButton.setVisibility(VISIBLE);
                             }
                         });
 
