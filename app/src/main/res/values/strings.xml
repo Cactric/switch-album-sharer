@@ -51,4 +51,7 @@
     <string name="screenshot_from_a_switch">Screenshot from a Switch</string>
     <string name="delete">Delete</string>
     <string name="video_clip_from_a_switch">Video clip from a Switch</string>
+    <string name="scan_code">Scan code</string>
+    <string name="intro_text">Tool that should hopefully, eventually make it slightly easier to share Switch screenshots/clips by automating the send to phone process or something like that</string>
+    <string name="manual_entry">Manual entry</string>
 </resources>

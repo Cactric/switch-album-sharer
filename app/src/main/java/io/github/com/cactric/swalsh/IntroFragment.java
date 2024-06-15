@@ -1,6 +1,7 @@
 package io.github.com.cactric.swalsh;
 
 import android.Manifest;
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -33,6 +34,11 @@ public class IntroFragment extends Fragment {
         root.findViewById(R.id.intro_scan_button).setOnClickListener(v -> {
             storedNavController = Navigation.findNavController(v);
             requestPermLauncher.launch(Manifest.permission.CAMERA);
+        });
+
+        root.findViewById(R.id.intro_album_button).setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), AlbumActivity.class);
+            startActivity(intent);
         });
         return root;
     }

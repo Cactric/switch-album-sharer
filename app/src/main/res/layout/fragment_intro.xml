@@ -11,12 +11,27 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:text="Tool that should hopefully, eventually make it slightly easier to share Switch screenshots/clips by automating the send to phone process or something like that" />
+        android:text="@string/intro_text" />
 
     <Button
         android:id="@+id/intro_scan_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Scan code" />
+        android:layout_margin="8dp"
+        android:text="@string/scan_code" />
+
+    <Button
+        android:id="@+id/intro_manual_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:text="@string/manual_entry" />
+
+    <Button
+        android:id="@+id/intro_album_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:text="@string/open_album" />
 
 </LinearLayout>
