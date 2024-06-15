@@ -1,5 +1,6 @@
 package io.github.com.cactric.swalsh;
 
+import android.graphics.Bitmap;
 import android.net.Uri;
 
 public class VideoItem {
@@ -7,4 +8,5 @@ public class VideoItem {
     public Uri uri;
     public String display_name;
     public long duration_in_milliseconds;
+    public Bitmap thumbnail;
 }

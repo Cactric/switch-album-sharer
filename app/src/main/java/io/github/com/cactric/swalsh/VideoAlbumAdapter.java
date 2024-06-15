@@ -17,20 +17,20 @@ import kotlin.NotImplementedError;
 public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.ViewHolder> {
     private VideoItem[] media;
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        private final VideoView videoView;
+        private final ImageView videoThumbnail;
         private final TextView lengthText;
         private final ImageButton shareButton;
         private final ImageButton deleteButton;
         public ViewHolder(View view) {
             super(view);
-            videoView = view.findViewById(R.id.album_video);
+            videoThumbnail = view.findViewById(R.id.album_video);
             lengthText = view.findViewById(R.id.album_length_text);
             shareButton = view.findViewById(R.id.album_share_button);
             deleteButton = view.findViewById(R.id.album_delete_button);
         }
 
-        public VideoView getVideoView() {
-            return videoView;
+        public ImageView getVideoThumbnail() {
+            return videoThumbnail;
         }
 
         public TextView getLengthText() {
@@ -64,7 +64,7 @@ public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.Vi
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         // Update views
         // Then set the image URI
-        holder.getVideoView().setVideoURI(media[position].uri);
+        holder.getVideoThumbnail().setImageBitmap(media[position].thumbnail);
         // Try to parse the display name and use that as a date
         Resources res = holder.getLengthText().getResources();
         holder.getLengthText().setText(res.getString(R.string.video_text_format,

@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.util.Size;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.tabs.TabLayout;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class AlbumActivity extends AppCompatActivity {
@@ -94,6 +96,12 @@ public class AlbumActivity extends AppCompatActivity {
                 item.uri = ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id);
                 item.display_name = cursor.getString(displayNameColumn);
                 item.duration_in_milliseconds = cursor.getInt(durationColumn);
+                try {
+                    item.thumbnail = getContentResolver().loadThumbnail(item.uri, Size.parseSize("1280x720"), null);
+                } catch (IOException e) {
+                    Log.e("SwAlSh", "Error while loading thumbnail for " + item.display_name, e);
+                    item.thumbnail = null;
+                }
                 videoItems.add(item);
             }
         }
