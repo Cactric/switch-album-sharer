@@ -19,6 +19,17 @@
         android:gravity="start|center_vertical"
         android:orientation="horizontal">
 
+        <ImageButton
+            android:id="@+id/album_delete_button"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:backgroundTint="?attr/colorSurface"
+            android:foregroundTint="?attr/colorOnSurface"
+            android:adjustViewBounds="false"
+            android:contentDescription="@string/delete"
+            android:cropToPadding="false"
+            android:src="@drawable/delete_icon" />
+
         <TextView
             android:id="@+id/album_length_text"
             android:layout_width="0dp"
