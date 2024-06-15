@@ -1,12 +1,21 @@
 package io.github.com.cactric.swalsh;
 
+import static android.provider.MediaStore.VOLUME_EXTERNAL;
+
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.ArrayList;
 
 public class AlbumActivity extends AppCompatActivity {
 
@@ -20,5 +29,44 @@ public class AlbumActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        ArrayList<Uri> uris = new ArrayList<>();
+
+        // Do it twice, once for pictures, once for videos
+        // TODO: Videos
+        // Which columns from the query?
+        String[] projection = new String[] {
+                MediaStore.Images.Media._ID,
+                MediaStore.Images.Media.DATA
+        };
+
+        try (Cursor cursor = getContentResolver().query(
+                MediaStore.Images.Media.getContentUri(VOLUME_EXTERNAL),
+                projection,
+                null,
+                null,
+                MediaStore.Images.Media.DATE_ADDED + " ASC"
+        )) {
+            if (cursor == null)
+                throw new NullPointerException();
+            int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
+            int dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+
+            // Loop through results
+            while (cursor.moveToNext()) {
+                long id = cursor.getLong(idColumn);
+                String path = cursor.getString(dataColumn);
+                Uri pathUri = Uri.parse("file:/" + path);
+                uris.add(pathUri);
+            }
+        }
+
+
+        // Make the adapter, etc.
+        RecyclerView recyclerView = findViewById(R.id.album_recycler);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        AlbumAdapter adapter = new AlbumAdapter(uris.toArray(new Uri[]{}));
+        recyclerView.setAdapter(adapter);
     }
 }

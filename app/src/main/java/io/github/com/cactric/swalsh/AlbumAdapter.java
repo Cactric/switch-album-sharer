@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,12 +18,14 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> 
     private Uri[] pictures;
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private final ImageView imageView;
+        private final VideoView videoView;
         private final TextView lengthText;
         private final ImageButton shareButton;
         private final ImageButton deleteButton;
         public ViewHolder(View view) {
             super(view);
             imageView = view.findViewById(R.id.album_picture);
+            videoView = view.findViewById(R.id.album_video);
             lengthText = view.findViewById(R.id.album_length_text);
             shareButton = view.findViewById(R.id.album_share_button);
             deleteButton = view.findViewById(R.id.album_delete_button);
@@ -30,6 +33,10 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> 
 
         public ImageView getImageView() {
             return imageView;
+        }
+
+        public VideoView getVideoView() {
+            return videoView;
         }
 
         public TextView getLengthText() {
@@ -61,8 +68,22 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> 
     // Replace the contents of views
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        // TODO: Update views
-        holder.getImageView().setImageURI(pictures[position]);
+        // Update views
+        String filename = pictures[position].getLastPathSegment();
+        if (filename != null && filename.endsWith(".mp4")) {
+            // Hide the image view; show the video view
+            holder.getImageView().setVisibility(View.GONE);
+            holder.getVideoView().setVisibility(View.VISIBLE);
+            // Then set the video URI
+            holder.getVideoView().setVideoURI(pictures[position]);
+        } else {
+            // Show the image view; hide the video view
+            holder.getImageView().setVisibility(View.VISIBLE);
+            holder.getVideoView().setVisibility(View.GONE);
+            // Then set the image URI
+            holder.getImageView().setImageURI(pictures[position]);
+        }
+
         holder.getLengthText().setText("AAA");
         holder.getShareButton().setOnClickListener(v -> {
             throw new NotImplementedError("Sharing not implemented yet");

@@ -50,4 +50,5 @@
     <string name="share">Share</string>
     <string name="screenshot_from_a_switch">Screenshot from a Switch</string>
     <string name="delete">Delete</string>
+    <string name="video_clip_from_a_switch">Video clip from a Switch</string>
 </resources>
