@@ -135,6 +135,7 @@ public class DownloadService extends Service {
 
                             // I'm interested mainly in the `FileNames` array
                             // Maybe the `FileType` or `ConsoleName`...
+                            String fileType = rootObj.getString("FileType");
                             JSONArray fileNames = rootObj.getJSONArray("FileNames");
                             numToDownload = fileNames.length();
                             state.postValue(DownloadService.State.DOWNLOADING);
@@ -151,25 +152,34 @@ public class DownloadService extends Service {
                                     //File file = new File(dir, fileNames.getString(i));
 
                                     ContentResolver resolver = getApplicationContext().getContentResolver();
-                                    // TODO: save videos elsewhere
-                                    Uri pictureCollection;
-                                    pictureCollection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+                                    Uri contentCollection;
+                                    ContentValues contentDetails = new ContentValues();
+                                    if (fileType.equals("photo")) {
+                                        contentCollection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
 
-                                    ContentValues pictureDetails = new ContentValues();
-                                    pictureDetails.put(MediaStore.Images.Media.DISPLAY_NAME, fileNames.getString(i));
-                                    pictureDetails.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Switch Screenshots");
-                                    // Mark it as pending until I write the file out
-                                    pictureDetails.put(MediaStore.Images.Media.IS_PENDING, 1);
-
-                                    Uri pictureContentUri = resolver.insert(pictureCollection, pictureDetails);
-                                    if (pictureContentUri == null) {
-                                        Log.e("SwAlSh", "Failed to save picture - pictureContentUri is null");
+                                        contentDetails.put(MediaStore.Images.Media.DISPLAY_NAME, fileNames.getString(i));
+                                        contentDetails.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Switch Screenshots");
+                                        // Mark it as pending until I write the file out
+                                        contentDetails.put(MediaStore.Images.Media.IS_PENDING, 1);
+                                    } else if (fileType.equals("movie")) {
+                                        contentCollection = MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+                                        contentDetails.put(MediaStore.Video.Media.DISPLAY_NAME, fileNames.getString(i));
+                                        contentDetails.put(MediaStore.Video.Media.RELATIVE_PATH, Environment.DIRECTORY_MOVIES + "/Switch Clips");
+                                        contentDetails.put(MediaStore.Video.Media.IS_PENDING, 1);
+                                    } else {
+                                        Log.e("SwAlSh", "Unknown file type '" + fileType + "'");
                                         continue;
                                     }
-                                    Log.d("SwAlSh", "Saving to " + pictureContentUri);
+
+                                    Uri contentUri = resolver.insert(contentCollection, contentDetails);
+                                    if (contentUri == null) {
+                                        Log.e("SwAlSh", "Failed to save picture - contentUri is null");
+                                        continue;
+                                    }
+                                    Log.d("SwAlSh", "Saving to " + contentUri);
 
                                     try {
-                                        OutputStream os = resolver.openOutputStream(pictureContentUri);
+                                        OutputStream os = resolver.openOutputStream(contentUri);
                                         if (os == null) {
                                             Log.e("SwAlSh", "Failed to save picture - output stream is null");
                                             continue;
@@ -186,6 +196,7 @@ public class DownloadService extends Service {
                                             bytesWritten += bytesRead;
                                         }
                                         in.close();
+                                        os.close();
                                         Log.d("SwAlSh", "Saved " + fileNames.getString(i) + "!");
                                     } catch (FileNotFoundException e) {
                                         Log.e("SwAlSh", "Failed to open output file", e);
@@ -193,9 +204,12 @@ public class DownloadService extends Service {
                                         Log.e("SwAlSh", "Possibly missing permissions or something", e);
                                     }
 
-                                    pictureDetails.clear();
-                                    pictureDetails.put(MediaStore.Images.Media.IS_PENDING, 0);
-                                    resolver.update(pictureContentUri, pictureDetails, null, null);
+                                    contentDetails.clear();
+                                    if (fileType.equals("photo"))
+                                        contentDetails.put(MediaStore.Images.Media.IS_PENDING, 0);
+                                    else if (fileType.equals("movie"))
+                                        contentDetails.put(MediaStore.Video.Media.IS_PENDING, 0);
+                                    resolver.update(contentUri, contentDetails, null, null);
                                     if (numDownloaded.getValue() != null) {
                                         numDownloaded.postValue(numDownloaded.getValue() + 1);
                                     }
