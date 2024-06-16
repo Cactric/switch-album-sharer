@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,10 @@ import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import java.text.DateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 import kotlin.NotImplementedError;
 
@@ -70,11 +75,35 @@ public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.Vi
         // Update views
         // Then set the image URI
         holder.getVideoThumbnail().setImageBitmap(media[position].thumbnail);
+
         // Try to parse the display name and use that as a date
+        String dateStr = null;
+        // Format: year, month, day, hour, minute, second, 00 - game id(?).jpg
+        Calendar.Builder calBuilder = new Calendar.Builder();
+        try {
+            String name = media[position].display_name;
+            calBuilder.set(Calendar.YEAR, Integer.parseInt(name.substring(0, 4)));
+            calBuilder.set(Calendar.MONTH, Integer.parseInt(name.substring(4, 6)));
+            calBuilder.set(Calendar.DAY_OF_MONTH, Integer.parseInt(name.substring(6, 8)));
+            calBuilder.set(Calendar.HOUR_OF_DAY, Integer.parseInt(name.substring(8, 10)));
+            calBuilder.set(Calendar.MINUTE, Integer.parseInt(name.substring(10, 12)));
+            calBuilder.set(Calendar.SECOND, Integer.parseInt(name.substring(12, 14)));
+
+            Date d = new Date();
+            d.setTime(calBuilder.build().getTimeInMillis());
+            DateFormat df = DateFormat.getDateTimeInstance();
+            dateStr = df.format(d);
+        } catch (NumberFormatException e) {
+            Log.e("SwAlSh", "Failed to parse " + media[position].display_name, e);
+        }
+
+        if (dateStr == null)
+            dateStr = media[position].display_name;
+
         Resources res = context.getResources();
         holder.getLengthText().setText(res.getString(R.string.video_text_format,
                 media[position].duration_in_milliseconds / 1000.0,
-                media[position].display_name));
+                dateStr));
 
         holder.getVideoThumbnail().setOnClickListener(v -> {
             // When tapped, open the video in whatever app
