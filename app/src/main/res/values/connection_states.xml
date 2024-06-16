@@ -2,7 +2,7 @@
 <resources>
     <string-array name="connection_states">
         <item>Waiting</item>
-        <item>Connecting</item>
+        <item>Searching</item>
         <item>Connected</item>
         <item>Downloading</item>
         <item>Done</item>
