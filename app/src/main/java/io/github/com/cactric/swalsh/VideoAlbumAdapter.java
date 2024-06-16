@@ -1,5 +1,8 @@
 package io.github.com.cactric.swalsh;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
@@ -62,18 +66,29 @@ public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.Vi
     // Replace the contents of views
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        Context context = holder.getVideoThumbnail().getContext();
         // Update views
         // Then set the image URI
         holder.getVideoThumbnail().setImageBitmap(media[position].thumbnail);
         // Try to parse the display name and use that as a date
-        Resources res = holder.getLengthText().getResources();
+        Resources res = context.getResources();
         holder.getLengthText().setText(res.getString(R.string.video_text_format,
                 media[position].duration_in_milliseconds / 1000.0,
                 media[position].display_name));
 
+        holder.getVideoThumbnail().setOnClickListener(v -> {
+            // When tapped, open the video in whatever app
+            Intent videoIntent = new Intent(Intent.ACTION_VIEW);
+            videoIntent.setDataAndType(media[position].uri, "video/mp4");
+            context.startActivity(videoIntent);
+        });
+
 
         holder.getShareButton().setOnClickListener(v -> {
-            throw new NotImplementedError("Sharing not implemented yet");
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.putExtra(Intent.EXTRA_STREAM, media[position].uri);
+            shareIntent.setType("video/mp4");
+            context.startActivity(Intent.createChooser(shareIntent, null));
         });
         holder.getDeleteButton().setOnClickListener(v -> {
             throw new NotImplementedError("Deleting not implemented yet");

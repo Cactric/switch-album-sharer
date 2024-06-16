@@ -1,5 +1,8 @@
 package io.github.com.cactric.swalsh;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -62,17 +65,27 @@ public class PictureAlbumAdapter extends RecyclerView.Adapter<PictureAlbumAdapte
     // Replace the contents of views
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        Context context = holder.getImageView().getContext();
         // Update views
         // Then set the image URI
         holder.getImageView().setImageURI(media[position].uri);
         // Try to parse the display name and use that as a date
-        Resources res = holder.getLengthText().getResources();
+        Resources res = context.getResources();
         holder.getLengthText().setText(res.getString(R.string.picture_text_format,
                 media[position].display_name));
 
+        holder.getImageView().setOnClickListener(v -> {
+            // When tapped, open the video in whatever app
+            Intent videoIntent = new Intent(Intent.ACTION_VIEW);
+            videoIntent.setDataAndType(media[position].uri, "image/jpeg");
+            context.startActivity(videoIntent);
+        });
 
         holder.getShareButton().setOnClickListener(v -> {
-            throw new NotImplementedError("Sharing not implemented yet");
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.putExtra(Intent.EXTRA_STREAM, media[position].uri);
+            shareIntent.setType("image/jpeg");
+            context.startActivity(Intent.createChooser(shareIntent, null));
         });
         holder.getDeleteButton().setOnClickListener(v -> {
             throw new NotImplementedError("Deleting not implemented yet");
