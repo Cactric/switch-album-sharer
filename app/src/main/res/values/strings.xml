@@ -16,4 +16,8 @@
     <string name="picture_text_format">Picture, %1$s</string>
     <string name="pictures">Pictures</string>
     <string name="videos">Videos</string>
+    <string name="ssid">SSID</string>
+    <string name="password">Password</string>
+    <string name="connect">Connect</string>
+    <string name="manual_explanation">Press + (\'Trouble Connecting?\') to find the following details.\nNote that the password will change each time.</string>
 </resources>

@@ -6,7 +6,6 @@ import android.os.Bundle;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -34,6 +33,10 @@ public class IntroFragment extends Fragment {
         root.findViewById(R.id.intro_scan_button).setOnClickListener(v -> {
             storedNavController = Navigation.findNavController(v);
             requestPermLauncher.launch(Manifest.permission.CAMERA);
+        });
+
+        root.findViewById(R.id.intro_manual_button).setOnClickListener(v -> {
+            Navigation.findNavController(v).navigate(R.id.action_manual_entry);
         });
 
         root.findViewById(R.id.intro_album_button).setOnClickListener(v -> {

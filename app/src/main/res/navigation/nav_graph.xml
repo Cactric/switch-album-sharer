@@ -13,6 +13,9 @@
         <action
             android:id="@+id/action_scan_code"
             app:destination="@id/destination_scan" />
+        <action
+            android:id="@+id/action_manual_entry"
+            app:destination="@id/destination_manual" />
     </fragment>
 
     <fragment
@@ -33,6 +36,14 @@
             android:name="scanned_data"
             app:argType="string"
             android:defaultValue="@null" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/destination_manual"
+        android:label="Manually enter details">
+        <action
+            android:id="@+id/action_manual_to_connect"
+            app:destination="@id/connectFragment" />
     </fragment>
 
 </navigation>
