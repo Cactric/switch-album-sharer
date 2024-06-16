@@ -75,8 +75,7 @@ public class ConnectFragment extends Fragment {
                 }
             if (!success) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-                // TODO: string resource
-                builder.setMessage("The scanned code does not seem to be for a Wifi network");
+                builder.setMessage(requireContext().getResources().getString(R.string.bad_qr_contents));
                 builder.setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss());
                 builder.setOnDismissListener(dialog -> {
                     // Go back to code scanner
