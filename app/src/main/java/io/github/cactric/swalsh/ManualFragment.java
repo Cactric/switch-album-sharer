@@ -54,7 +54,7 @@ public class ManualFragment extends Fragment {
             // Do some validation
             if (!ssidEditText.getText().toString().startsWith("switch_")) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-                builder.setMessage(requireContext().getResources().getString(R.string.bad_prefix));
+                builder.setMessage(R.string.bad_prefix);
                 builder.setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss());
                 builder.setOnDismissListener(dialog -> {});
                 builder.create().show();
@@ -62,7 +62,7 @@ public class ManualFragment extends Fragment {
             }
             if (passEditText.getText().length() != 8) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-                builder.setMessage(requireContext().getString(R.string.bad_password));
+                builder.setMessage(R.string.bad_password);
                 builder.setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss());
                 builder.setOnDismissListener(dialog -> {});
                 builder.create().show();
