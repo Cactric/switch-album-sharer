@@ -106,6 +106,11 @@ public class ManualFragment extends Fragment {
                 return false;
             }
 
+            // Save the network name so the user won't have to type it in again
+            SharedPreferences.Editor spEditor = sp.edit();
+            spEditor.putString("last_manual_ssid", ssidEditText.getText().toString());
+            spEditor.apply();
+
             Bundle bundle = new Bundle();
             // Construct the same kind of string that would've been in the code
             String sb = "WIFI:" + "S:" +
