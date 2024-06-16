@@ -3,5 +3,14 @@
     <style name="Base.Theme.SwAlSh" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your dark theme here. -->
         <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <item name="colorPrimary">@color/dark_primary</item>
+        <item name="colorOnPrimary">@color/dark_colour_on_primary</item>
+        <item name="backgroundColor">@color/dark_bg_colour</item>
+        <item name="buttonBarButtonStyle">@color/dark_primary</item>
+    </style>
+
+    <style name="Theme.SwAlSh" parent="Base.Theme.SwAlSh" />
+    <style name="Theme.SwAlSh.TabLayout" parent="Base.Theme.SwAlSh">
+        <item name="colorPrimary">@color/dark_colour_on_primary</item>
     </style>
 </resources>
