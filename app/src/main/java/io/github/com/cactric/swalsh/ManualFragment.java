@@ -1,5 +1,6 @@
 package io.github.com.cactric.swalsh;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,9 +13,12 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.preference.PreferenceManager;
 
 import com.budiyev.android.codescanner.CodeScanner;
 import com.budiyev.android.codescanner.CodeScannerView;
+
+import java.util.Objects;
 
 public class ManualFragment extends Fragment {
     public ManualFragment() {
@@ -35,6 +39,11 @@ public class ManualFragment extends Fragment {
 
         EditText ssidEditText = root.findViewById(R.id.manual_wifi_name);
         EditText passEditText = root.findViewById(R.id.manual_wifi_password);
+
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(requireContext());
+        String last_manual_ssid = sp.getString("last_manual_ssid", null);
+        if (last_manual_ssid != null)
+            ssidEditText.setText(last_manual_ssid);
 
         root.findViewById(R.id.manual_submit).setOnClickListener(v -> {
             // Change fragment
@@ -61,6 +70,11 @@ public class ManualFragment extends Fragment {
                 builder.create().show();
                 return;
             }
+
+            // Save the network name so the user won't have to type it in again
+            SharedPreferences.Editor spEditor = sp.edit();
+            spEditor.putString("last_manual_ssid", ssidEditText.getText().toString());
+            spEditor.apply();
 
             Bundle bundle = new Bundle();
             // Construct the same kind of string that would've been in the code

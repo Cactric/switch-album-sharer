@@ -34,7 +34,9 @@
             android:layout_weight="1"
             android:ems="10"
             android:importantForAutofill="no"
-            android:inputType="text|textVisiblePassword|textNoSuggestions"
+            android:autofillHints="username"
+            android:text="@string/prefilled_ssid"
+            android:inputType="text|textNoSuggestions|textVisiblePassword"
             android:minHeight="48dp" />
     </LinearLayout>
 

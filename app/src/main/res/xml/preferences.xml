@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <Preference
+        android:key="last_manual_ssid"
+        android:title="Last network name"
+        android:summary="This is saved when you manually enter a network so it can be filled in the future" />
+</PreferenceScreen>

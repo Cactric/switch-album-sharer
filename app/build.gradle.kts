@@ -46,6 +46,7 @@ dependencies {
     implementation(libs.navigation.ui)
 
     implementation(libs.code.scanner)
+    implementation(libs.preference.ktx)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
