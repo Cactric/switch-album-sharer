@@ -1,4 +1,4 @@
-package io.github.com.cactric.swalsh;
+package io.github.cactric.swalsh;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("io.github.com.cactric.swalsh", appContext.getPackageName());
+        assertEquals("io.github.cactric.swalsh", appContext.getPackageName());
     }
 }

@@ -1,8 +1,7 @@
-package io.github.com.cactric.swalsh;
+package io.github.cactric.swalsh;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,35 +10,37 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+
 import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
 
 import kotlin.NotImplementedError;
 
-public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.ViewHolder> {
-    private VideoItem[] media;
+public class PictureAlbumAdapter extends RecyclerView.Adapter<PictureAlbumAdapter.ViewHolder> {
+    private PictureItem[] media;
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        private final ImageView videoThumbnail;
+        private final ImageView imageView;
         private final TextView lengthText;
         private final ImageButton shareButton;
         private final ImageButton deleteButton;
         public ViewHolder(View view) {
             super(view);
-            videoThumbnail = view.findViewById(R.id.album_video);
+            imageView = view.findViewById(R.id.album_picture);
             lengthText = view.findViewById(R.id.album_length_text);
             shareButton = view.findViewById(R.id.album_share_button);
             deleteButton = view.findViewById(R.id.album_delete_button);
         }
 
-        public ImageView getVideoThumbnail() {
-            return videoThumbnail;
+        public ImageView getImageView() {
+            return imageView;
         }
 
         public TextView getLengthText() {
@@ -56,7 +57,7 @@ public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.Vi
     }
 
     // Takes an array of file paths to the pictures that should be displayed
-    public VideoAlbumAdapter(VideoItem[] media) {
+    public PictureAlbumAdapter(PictureItem[] media) {
         this.media = media;
     }
 
@@ -64,17 +65,17 @@ public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.Vi
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.recycler_vids, parent, false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.recycler_pics, parent, false);
         return new ViewHolder(v);
     }
 
     // Replace the contents of views
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Context context = holder.getVideoThumbnail().getContext();
+        Context context = holder.getImageView().getContext();
         // Update views
         // Then set the image URI
-        holder.getVideoThumbnail().setImageBitmap(media[position].thumbnail);
+        holder.getImageView().setImageURI(media[position].uri);
 
         // Try to parse the display name and use that as a date
         String dateStr = null;
@@ -101,22 +102,20 @@ public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.Vi
             dateStr = media[position].display_name;
 
         Resources res = context.getResources();
-        holder.getLengthText().setText(res.getString(R.string.video_text_format,
-                media[position].duration_in_milliseconds / 1000.0,
+        holder.getLengthText().setText(res.getString(R.string.picture_text_format,
                 dateStr));
 
-        holder.getVideoThumbnail().setOnClickListener(v -> {
+        holder.getImageView().setOnClickListener(v -> {
             // When tapped, open the video in whatever app
             Intent videoIntent = new Intent(Intent.ACTION_VIEW);
-            videoIntent.setDataAndType(media[position].uri, "video/mp4");
+            videoIntent.setDataAndType(media[position].uri, "image/jpeg");
             context.startActivity(videoIntent);
         });
-
 
         holder.getShareButton().setOnClickListener(v -> {
             Intent shareIntent = new Intent(Intent.ACTION_SEND);
             shareIntent.putExtra(Intent.EXTRA_STREAM, media[position].uri);
-            shareIntent.setType("video/mp4");
+            shareIntent.setType("image/jpeg");
             context.startActivity(Intent.createChooser(shareIntent, null));
         });
         holder.getDeleteButton().setOnClickListener(v -> {

@@ -1,4 +1,4 @@
-package io.github.com.cactric.swalsh;
+package io.github.cactric.swalsh;
 
 import android.net.wifi.WifiNetworkSpecifier;
 import android.util.Log;

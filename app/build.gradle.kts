@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = "io.github.com.cactric.swalsh"
+    namespace = "io.github.cactric.swalsh"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "io.github.com.cactric.swalsh"
+        applicationId = "io.github.cactric.swalsh"
         // Increased to 29 for WifiNetworkSpecifier
         minSdk = 29
         targetSdk = 34

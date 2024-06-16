@@ -1,22 +1,15 @@
-package io.github.com.cactric.swalsh;
+package io.github.cactric.swalsh;
 
 import static android.content.Context.BIND_AUTO_CREATE;
-import static android.net.NetworkCapabilities.TRANSPORT_WIFI;
 import static android.view.View.VISIBLE;
-import static io.github.com.cactric.swalsh.WifiUtils.parseNetwork;
+import static io.github.cactric.swalsh.WifiUtils.parseNetwork;
 
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkCapabilities;
-import android.net.NetworkRequest;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;

@@ -1,4 +1,4 @@
-package io.github.com.cactric.swalsh;
+package io.github.cactric.swalsh;
 
 import static android.provider.MediaStore.VOLUME_EXTERNAL;
 

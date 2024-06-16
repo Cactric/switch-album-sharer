@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/destination_intro"
-        android:name="io.github.com.cactric.swalsh.IntroFragment"
+        android:name="io.github.cactric.swalsh.IntroFragment"
         android:label="Introduction">
 
         <action
@@ -20,7 +20,7 @@
 
     <fragment
         android:id="@+id/destination_scan"
-        android:name="io.github.com.cactric.swalsh.ScanFragment"
+        android:name="io.github.cactric.swalsh.ScanFragment"
         android:label="Scan code">
 
         <action
@@ -29,7 +29,7 @@
     </fragment>
     <fragment
         android:id="@+id/connectFragment"
-        android:name="io.github.com.cactric.swalsh.ConnectFragment"
+        android:name="io.github.cactric.swalsh.ConnectFragment"
         android:label="fragment_connect"
         tools:layout="@layout/fragment_connect" >
         <argument
@@ -40,7 +40,7 @@
 
     <fragment
         android:id="@+id/destination_manual"
-        android:name="io.github.com.cactric.swalsh.ManualFragment"
+        android:name="io.github.cactric.swalsh.ManualFragment"
         android:label="Manually enter details">
         <action
             android:id="@+id/action_manual_to_connect"
