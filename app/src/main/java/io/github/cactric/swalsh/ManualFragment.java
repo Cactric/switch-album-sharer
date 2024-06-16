@@ -54,8 +54,7 @@ public class ManualFragment extends Fragment {
             // Do some validation
             if (!ssidEditText.getText().toString().startsWith("switch_")) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-                // TODO: string resource
-                builder.setMessage("The SSID (Wifi name) should start with 'switch_'.\nLong-press the connect button to bypass this check");
+                builder.setMessage(requireContext().getResources().getString(R.string.bad_prefix));
                 builder.setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss());
                 builder.setOnDismissListener(dialog -> {});
                 builder.create().show();
@@ -63,8 +62,7 @@ public class ManualFragment extends Fragment {
             }
             if (passEditText.getText().length() != 8) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-                // TODO: string resource
-                builder.setMessage("The password should be 8 characters long.\nLong-press the connect button to bypass this check");
+                builder.setMessage(requireContext().getString(R.string.bad_password));
                 builder.setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss());
                 builder.setOnDismissListener(dialog -> {});
                 builder.create().show();
@@ -96,13 +94,11 @@ public class ManualFragment extends Fragment {
             NavController navController = navHostFragment.getNavController();
 
             if (ssidEditText.getText().length() < 1) {
-                // TODO: String resource
-                Toast.makeText(activity, "You need to put in an SSID", Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, activity.getString(R.string.ssid_required), Toast.LENGTH_SHORT).show();
                 return false;
             }
             if (passEditText.getText().length() < 1) {
-                // TODO: string resource
-                Toast.makeText(activity, "You need to put in a password", Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, activity.getString(R.string.password_required), Toast.LENGTH_SHORT).show();
                 return false;
             }
 

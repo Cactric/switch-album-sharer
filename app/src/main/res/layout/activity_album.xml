@@ -38,5 +38,15 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/album_recycler"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <TextView
+        android:id="@+id/album_nothing_found"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:visibility="gone"
+        android:text="@string/nothing_here" />
 </LinearLayout>

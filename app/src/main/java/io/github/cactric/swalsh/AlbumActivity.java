@@ -8,9 +8,12 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.util.Size;
+import android.view.View;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -36,6 +39,10 @@ public class AlbumActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        // Set up toolbar
+        Toolbar toolbar = findViewById(R.id.album_toolbar);
+        setSupportActionBar(toolbar);
 
         // TODO: do this on a separate thread
         // Pictures:
@@ -137,11 +144,20 @@ public class AlbumActivity extends AppCompatActivity {
 
     private void setupRecyclerForPictures() {
         // Make the adapter, etc.
+        TextView nothingFoundText = findViewById(R.id.album_nothing_found);
         RecyclerView recyclerView = findViewById(R.id.album_recycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         PictureAlbumAdapter adapter = new PictureAlbumAdapter(pictureItems.toArray(new PictureItem[0]));
         recyclerView.setAdapter(adapter);
+
+        if (pictureItems.isEmpty()) {
+            recyclerView.setVisibility(View.GONE);
+            nothingFoundText.setVisibility(View.VISIBLE);
+        } else {
+            recyclerView.setVisibility(View.VISIBLE);
+            nothingFoundText.setVisibility(View.GONE);
+        }
     }
 
     private void setupRecycleForVideos() {

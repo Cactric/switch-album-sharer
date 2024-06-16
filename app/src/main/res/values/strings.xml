@@ -22,4 +22,9 @@
     <string name="manual_explanation">Press + (\'Trouble Connecting?\') to find the following details.\nNote that the password will change each time.\nThe SSID will stay the same for each Switch and the app will save it.</string>
     <string name="prefilled_ssid">switch_</string>
     <string name="bad_qr_contents">The scanned code does not seem to be for a Wifi network</string>
+    <string name="bad_prefix">The SSID (Wifi name) should start with \'switch_\'.\nLong-press the connect button to bypass this check</string>
+    <string name="bad_password">The password should be 8 characters long.\nLong-press the connect button to bypass this check</string>
+    <string name="ssid_required">You need to put in a SSID</string>
+    <string name="password_required">You need to put in a password</string>
+    <string name="nothing_here">Nothing here</string>
 </resources>
