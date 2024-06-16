@@ -12,6 +12,7 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.net.NetworkSpecifier;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.os.Binder;
 import android.os.Build;
@@ -42,26 +43,21 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public class DownloadService extends Service {
-    private final MutableLiveData<State> state = new MutableLiveData<>(State.NOT_STARTED);
-    private final MutableLiveData<Integer> numDownloaded = new MutableLiveData<>(0);
+    private MutableLiveData<State> state = new MutableLiveData<>(State.NOT_STARTED);
+    private MutableLiveData<Integer> numDownloaded = new MutableLiveData<>(0);
     private int numToDownload = 0;
     private WifiNetworkSpecifier netSpec;
 
     public DownloadService() {
     }
 
-    @Nullable
-    File getAppSpecificAlbumStorageDir(Context context, String albumName) {
-        // Get the pictures directory that's inside the app-specific directory on
-        // external storage.
-        File file = new File(context.getExternalFilesDir(
-                Environment.DIRECTORY_PICTURES), albumName);
-        if (!file.exists() && !file.mkdirs()) {
-            Log.e("SwAlSh", "Directory not created");
-        }
-        return file;
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        state = new MutableLiveData<>(State.NOT_STARTED);
+        numDownloaded = new MutableLiveData<>(0);
+        numToDownload = 0;
     }
-
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -70,6 +66,8 @@ public class DownloadService extends Service {
         } else {
             netSpec = intent.getParcelableExtra("EXTRA_NETWORK_SPECIFIER");
         }
+        if (state.getValue() != State.NOT_STARTED)
+            Log.d("SwAlSh", "Restarting service");
         state.setValue(State.CONNECTING);
 
         WorkerThread workerThread = new WorkerThread();
@@ -89,6 +87,7 @@ public class DownloadService extends Service {
                         .removeCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                         .setNetworkSpecifier(netSpec)
                         .build();
+
                 ConnectivityManager connectivityManager = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
                 connectivityManager.requestNetwork(request, new ConnectivityManager.NetworkCallback() {
                     @Override
@@ -228,7 +227,17 @@ public class DownloadService extends Service {
                             state.postValue(DownloadService.State.ERROR);
                             return;
                         }
+                    }
 
+                    @Override
+                    public void onLost(@NonNull Network network) {
+                        Log.d("SwAlSh", "Lost network");
+                    }
+
+                    @Override
+                    public void onUnavailable() {
+                        Log.d("SwAlSh", "Network is unavailable");
+                        state.postValue(DownloadService.State.ERROR);
                     }
                 });
             } catch (SecurityException e) {
@@ -247,9 +256,6 @@ public class DownloadService extends Service {
     }
 
     public class DownloadServiceBinder extends Binder {
-        public DownloadService getService() {
-            return DownloadService.this;
-        }
         public LiveData<State> getState() {
             return state;
         }

@@ -5,8 +5,10 @@ import static android.view.View.VISIBLE;
 import static io.github.cactric.swalsh.WifiUtils.parseNetwork;
 
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.net.wifi.WifiManager;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.os.Bundle;
 
@@ -17,6 +19,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
 import android.os.IBinder;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,6 +27,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import java.util.Objects;
 
 public class ConnectFragment extends Fragment {
 
@@ -54,6 +59,29 @@ public class ConnectFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View root = inflater.inflate(R.layout.fragment_connect, container, false);
+
+        // Check Wifi is enabled
+        WifiManager wifiManager = (WifiManager) requireContext().getSystemService(Context.WIFI_SERVICE);
+        if (!wifiManager.isWifiEnabled()) {
+            // Complain if Wifi is disabled
+            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+            builder.setMessage(R.string.wifi_disabled_message);
+            builder.setTitle(R.string.wifi_disabled);
+            builder.setPositiveButton(R.string.wifi_settings, (dialog, which) -> {
+                Intent wifiSettingsIntent = new Intent(Settings.ACTION_WIFI_SETTINGS);
+                if (wifiSettingsIntent.resolveActivity(requireContext().getPackageManager()) != null) {
+                    startActivity(wifiSettingsIntent);
+                }
+            });
+            builder.setOnDismissListener(dialog -> {
+                // Go back to code scanner
+                NavHostFragment navHostFragment = (NavHostFragment)
+                        requireActivity().getSupportFragmentManager().findFragmentById(R.id.mainFragmentContainer);
+                NavController navController = navHostFragment.getNavController();
+                navController.popBackStack();
+            });
+            builder.create().show();
+        }
 
         if (getArguments() != null) {
             String scannedData = getArguments().getString(ARG_SCANNED_DATA);

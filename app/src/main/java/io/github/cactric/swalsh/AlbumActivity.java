@@ -162,10 +162,19 @@ public class AlbumActivity extends AppCompatActivity {
 
     private void setupRecycleForVideos() {
         // Make the adapter, etc.
+        TextView nothingFoundText = findViewById(R.id.album_nothing_found);
         RecyclerView recyclerView = findViewById(R.id.album_recycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         VideoAlbumAdapter adapter = new VideoAlbumAdapter(videoItems.toArray(new VideoItem[0]));
         recyclerView.setAdapter(adapter);
+
+        if (videoItems.isEmpty()) {
+            recyclerView.setVisibility(View.GONE);
+            nothingFoundText.setVisibility(View.VISIBLE);
+        } else {
+            recyclerView.setVisibility(View.VISIBLE);
+            nothingFoundText.setVisibility(View.GONE);
+        }
     }
 }

@@ -27,4 +27,7 @@
     <string name="ssid_required">You need to put in a SSID</string>
     <string name="password_required">You need to put in a password</string>
     <string name="nothing_here">Nothing here</string>
+    <string name="wifi_disabled">Wi-Fi is not enabled</string>
+    <string name="wifi_disabled_message">Enable it to continue.</string>
+    <string name="wifi_settings">Wi-Fi settings</string>
 </resources>
