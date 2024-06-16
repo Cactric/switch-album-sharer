@@ -66,9 +66,9 @@ public class DownloadService extends Service {
         } else {
             netSpec = intent.getParcelableExtra("EXTRA_NETWORK_SPECIFIER");
         }
-        if (state.getValue() != State.NOT_STARTED)
-            Log.d("SwAlSh", "Restarting service");
         state.setValue(State.CONNECTING);
+        numDownloaded.setValue(0);
+        numToDownload = 0;
 
         WorkerThread workerThread = new WorkerThread();
         workerThread.start();
@@ -121,12 +121,13 @@ public class DownloadService extends Service {
                         } catch (Exception e) {
                             Log.e("SwAlSh", "Download error", e);
                             state.postValue(DownloadService.State.ERROR);
+
+                            // Stop duplicate callbacks
+                            connectivityManager.unregisterNetworkCallback(this);
+
+                            stopSelf();
                             return;
                         }
-
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException ignored) {}
 
                         // Try to parse the JSON
                         try {
@@ -214,10 +215,8 @@ public class DownloadService extends Service {
                                     }
                                 } catch (MalformedURLException e) {
                                     Log.e("SwAlSh", "Malformed URL, possibly unexpected data and/or an application bug", e);
-                                    continue;
                                 } catch (IOException e) {
                                     Log.e("SwAlSh", "Download error, file " + i + " failed to download", e);
-                                    continue;
                                 }
                             }
 
@@ -225,19 +224,28 @@ public class DownloadService extends Service {
                         } catch (JSONException e) {
                             Log.e("SwAlSh", "Failed to parse JSON data", e);
                             state.postValue(DownloadService.State.ERROR);
-                            return;
                         }
+
+                        // Stop duplicate callbacks
+                        connectivityManager.unregisterNetworkCallback(this);
+
+                        stopSelf();
                     }
 
                     @Override
                     public void onLost(@NonNull Network network) {
                         Log.d("SwAlSh", "Lost network");
+                        if (state.getValue() != DownloadService.State.DONE)
+                            state.postValue(DownloadService.State.ERROR);
+                        stopSelf();
                     }
 
                     @Override
                     public void onUnavailable() {
                         Log.d("SwAlSh", "Network is unavailable");
-                        state.postValue(DownloadService.State.ERROR);
+                        if (state.getValue() != DownloadService.State.DONE)
+                            state.postValue(DownloadService.State.ERROR);
+                        stopSelf();
                     }
                 });
             } catch (SecurityException e) {
