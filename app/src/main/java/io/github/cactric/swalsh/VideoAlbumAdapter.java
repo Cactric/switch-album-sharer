@@ -1,9 +1,15 @@
 package io.github.cactric.swalsh;
 
+import static androidx.core.app.ActivityCompat.startIntentSenderForResult;
+
+import android.app.PendingIntent;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.os.Build;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,16 +21,20 @@ import android.widget.Toast;
 import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Objects;
 
 import kotlin.NotImplementedError;
 
 public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.ViewHolder> {
-    private VideoItem[] media;
+    private ArrayList<VideoItem> media;
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private final ImageView videoThumbnail;
         private final TextView lengthText;
@@ -57,7 +67,7 @@ public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.Vi
 
     // Takes an array of file paths to the pictures that should be displayed
     public VideoAlbumAdapter(VideoItem[] media) {
-        this.media = media;
+        this.media = new ArrayList<>(Arrays.asList(media));
     }
 
     // Create new views
@@ -72,16 +82,17 @@ public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.Vi
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Context context = holder.getVideoThumbnail().getContext();
+        VideoItem item = media.get(position);
         // Update views
         // Then set the image URI
-        holder.getVideoThumbnail().setImageBitmap(media[position].thumbnail);
+        holder.getVideoThumbnail().setImageBitmap(item.thumbnail);
 
         // Try to parse the display name and use that as a date
         String dateStr = null;
         // Format: year, month, day, hour, minute, second, 00 - game id(?).jpg
         Calendar.Builder calBuilder = new Calendar.Builder();
         try {
-            String name = media[position].display_name;
+            String name = item.display_name;
             calBuilder.set(Calendar.YEAR, Integer.parseInt(name.substring(0, 4)));
             calBuilder.set(Calendar.MONTH, Integer.parseInt(name.substring(4, 6)));
             calBuilder.set(Calendar.DAY_OF_MONTH, Integer.parseInt(name.substring(6, 8)));
@@ -94,38 +105,43 @@ public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.Vi
             DateFormat df = DateFormat.getDateTimeInstance();
             dateStr = df.format(d);
         } catch (NumberFormatException e) {
-            Log.e("SwAlSh", "Failed to parse " + media[position].display_name, e);
+            Log.e("SwAlSh", "Failed to parse " + item.display_name, e);
         }
 
         if (dateStr == null)
-            dateStr = media[position].display_name;
+            dateStr = item.display_name;
 
         Resources res = context.getResources();
         holder.getLengthText().setText(res.getString(R.string.video_text_format,
-                media[position].duration_in_milliseconds / 1000.0,
+                item.duration_in_milliseconds / 1000.0,
                 dateStr));
 
         holder.getVideoThumbnail().setOnClickListener(v -> {
             // When tapped, open the video in whatever app
             Intent videoIntent = new Intent(Intent.ACTION_VIEW);
-            videoIntent.setDataAndType(media[position].uri, "video/mp4");
+            videoIntent.setDataAndType(item.uri, "video/mp4");
             context.startActivity(videoIntent);
         });
 
 
         holder.getShareButton().setOnClickListener(v -> {
             Intent shareIntent = new Intent(Intent.ACTION_SEND);
-            shareIntent.putExtra(Intent.EXTRA_STREAM, media[position].uri);
+            shareIntent.putExtra(Intent.EXTRA_STREAM, item.uri);
             shareIntent.setType("video/mp4");
             context.startActivity(Intent.createChooser(shareIntent, null));
         });
         holder.getDeleteButton().setOnClickListener(v -> {
-            throw new NotImplementedError("Deleting not implemented yet");
+            // Delete item
+            ContentResolver contentResolver = context.getContentResolver();
+            int numImagesRemoved;
+            numImagesRemoved = contentResolver.delete(item.uri, null, null);
+            VideoAlbumAdapter.this.notifyItemRemoved(media.indexOf(item));
+            media.remove(item);
         });
     }
 
     @Override
     public int getItemCount() {
-        return media.length;
+        return media.size();
     }
 }
