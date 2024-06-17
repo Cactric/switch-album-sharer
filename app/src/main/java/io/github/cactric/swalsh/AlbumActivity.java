@@ -27,8 +27,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class AlbumActivity extends AppCompatActivity {
-    private ArrayList<PictureItem> pictureItems = new ArrayList<>();
-    private ArrayList<VideoItem> videoItems = new ArrayList<>();
+    private final ArrayList<PictureItem> pictureItems = new ArrayList<>();
+    private final ArrayList<VideoItem> videoItems = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,8 +45,98 @@ public class AlbumActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.album_toolbar);
         setSupportActionBar(toolbar);
 
-        // TODO: do this on a separate thread
+        // Set up tabs
+        TabLayout tabLayout = findViewById(R.id.album_tabs);
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                if (tab.getPosition() == 0) {
+                    setupRecyclerForPictures();
+                } else if (tab.getPosition() == 1) {
+                    setupRecycleForVideos();
+                } else {
+                    Log.e("SwAlSh", "Unknown tab position " + tab.getPosition());
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
+
+        // On Pictures initially
+        setupRecyclerForPictures();
+    }
+
+    private void setupRecyclerForPictures() {
+        // Make the adapter, etc.
+        TextView nothingFoundText = findViewById(R.id.album_nothing_found);
+        RecyclerView recyclerView = findViewById(R.id.album_recycler);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        getPictures();
+
+        PictureAlbumAdapter adapter = new PictureAlbumAdapter(pictureItems.toArray(new PictureItem[0]));
+        recyclerView.setAdapter(adapter);
+        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                super.onChanged();
+                if (adapter.getItemCount() == 0) {
+                    recyclerView.setVisibility(View.GONE);
+                    nothingFoundText.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
+        if (pictureItems.isEmpty()) {
+            recyclerView.setVisibility(View.GONE);
+            nothingFoundText.setVisibility(View.VISIBLE);
+        } else {
+            recyclerView.setVisibility(View.VISIBLE);
+            nothingFoundText.setVisibility(View.GONE);
+        }
+    }
+
+    private void setupRecycleForVideos() {
+        // Make the adapter, etc.
+        TextView nothingFoundText = findViewById(R.id.album_nothing_found);
+        RecyclerView recyclerView = findViewById(R.id.album_recycler);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        getVideos();
+
+        VideoAlbumAdapter adapter = new VideoAlbumAdapter(videoItems.toArray(new VideoItem[0]));
+        recyclerView.setAdapter(adapter);
+        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                super.onChanged();
+                if (adapter.getItemCount() == 0) {
+                    recyclerView.setVisibility(View.GONE);
+                    nothingFoundText.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
+        if (videoItems.isEmpty()) {
+            recyclerView.setVisibility(View.GONE);
+            nothingFoundText.setVisibility(View.VISIBLE);
+        } else {
+            recyclerView.setVisibility(View.VISIBLE);
+            nothingFoundText.setVisibility(View.GONE);
+        }
+    }
+
+    private void getPictures() {
         // Pictures:
+        pictureItems.clear();
         // Which columns from the query?
         String[] pics_projection = new String[] {
                 MediaStore.Images.Media._ID,
@@ -75,7 +165,10 @@ public class AlbumActivity extends AppCompatActivity {
                 pictureItems.add(item);
             }
         }
+    }
 
+    private void getVideos() {
+        videoItems.clear();
         // Videos
         String[] vid_projection = new String[] {
                 MediaStore.Video.Media._ID,
@@ -114,68 +207,5 @@ public class AlbumActivity extends AppCompatActivity {
             }
         }
 
-        // Set up tabs
-        TabLayout tabLayout = findViewById(R.id.album_tabs);
-        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                if (tab.getPosition() == 0) {
-                    setupRecyclerForPictures();
-                } else if (tab.getPosition() == 1) {
-                    setupRecycleForVideos();
-                } else {
-                    Log.e("SwAlSh", "Unknown tab position " + tab.getPosition());
-                }
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-            }
-        });
-
-        // On Pictures initially
-        setupRecyclerForPictures();
-    }
-
-    private void setupRecyclerForPictures() {
-        // Make the adapter, etc.
-        TextView nothingFoundText = findViewById(R.id.album_nothing_found);
-        RecyclerView recyclerView = findViewById(R.id.album_recycler);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        PictureAlbumAdapter adapter = new PictureAlbumAdapter(pictureItems.toArray(new PictureItem[0]));
-        recyclerView.setAdapter(adapter);
-
-        if (pictureItems.isEmpty()) {
-            recyclerView.setVisibility(View.GONE);
-            nothingFoundText.setVisibility(View.VISIBLE);
-        } else {
-            recyclerView.setVisibility(View.VISIBLE);
-            nothingFoundText.setVisibility(View.GONE);
-        }
-    }
-
-    private void setupRecycleForVideos() {
-        // Make the adapter, etc.
-        TextView nothingFoundText = findViewById(R.id.album_nothing_found);
-        RecyclerView recyclerView = findViewById(R.id.album_recycler);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        VideoAlbumAdapter adapter = new VideoAlbumAdapter(videoItems.toArray(new VideoItem[0]));
-        recyclerView.setAdapter(adapter);
-
-        if (videoItems.isEmpty()) {
-            recyclerView.setVisibility(View.GONE);
-            nothingFoundText.setVisibility(View.VISIBLE);
-        } else {
-            recyclerView.setVisibility(View.VISIBLE);
-            nothingFoundText.setVisibility(View.GONE);
-        }
     }
 }
