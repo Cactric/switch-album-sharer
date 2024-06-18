@@ -11,13 +11,6 @@ import android.content.ServiceConnection;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.os.Bundle;
-
-import androidx.appcompat.app.AlertDialog;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LiveData;
-import androidx.navigation.NavController;
-import androidx.navigation.fragment.NavHostFragment;
-
 import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
@@ -27,6 +20,12 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 
 public class ConnectFragment extends Fragment {
 
@@ -142,12 +141,9 @@ public class ConnectFragment extends Fragment {
 
                         state.observe(getViewLifecycleOwner(), newState -> {
                             // Update the UI
-                            if (state.getValue() != null) {
-                                String formattedStr = getString(R.string.connection_state,
-                                        getResources().getStringArray(R.array.connection_states)[state.getValue().ordinal()],
-                                        numDownloaded.getValue(), binder.getNumToDownload());
-                                stateText.setText(formattedStr);
-                            } else
+                            if (state.getValue() != null)
+                                formatStateText(state.getValue());
+                            else
                                 stateText.setText(R.string.error);
 
                             if (state.getValue() == DownloadService.State.DOWNLOADING) {
@@ -164,13 +160,35 @@ public class ConnectFragment extends Fragment {
                         numDownloaded.observe(getViewLifecycleOwner(), num -> {
                             progressBar.setIndeterminate(num <= 0);
                             progressBar.setProgress(num, true);
-                            if (state.getValue() != null) {
+                            if (state.getValue() != null)
+                                formatStateText(state.getValue());
+                        });
+                    }
+                }
+
+                private void formatStateText(DownloadService.State newState) {
+                    String[] states = getResources().getStringArray(R.array.connection_states);
+                    switch (newState) {
+                        case NOT_STARTED, CONNECTING, CONNECTED -> stateText.setText(states[newState.ordinal()]);
+                        case DOWNLOADING, DONE -> {
+                            String formattedStr = getString(R.string.connection_state,
+                                        states[newState.ordinal()],
+                                        numDownloaded.getValue(),
+                                        binder.getNumToDownload());
+                            stateText.setText(formattedStr);
+                        }
+                        case ERROR -> {
+                            // TODO: show error details somehow
+                            if (binder.getNumToDownload() == 0) {
+                                stateText.setText(states[newState.ordinal()]);
+                            } else {
                                 String formattedStr = getString(R.string.connection_state,
-                                        getResources().getStringArray(R.array.connection_states)[state.getValue().ordinal()],
-                                        numDownloaded.getValue(), binder.getNumToDownload());
+                                        states[newState.ordinal()],
+                                        numDownloaded.getValue(),
+                                        binder.getNumToDownload());
                                 stateText.setText(formattedStr);
                             }
-                        });
+                        }
                     }
                 }
 
