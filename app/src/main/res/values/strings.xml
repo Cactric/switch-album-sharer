@@ -2,8 +2,8 @@
     <string name="app_name">SwAlSh</string>
     <string name="error">Error</string>
     <string name="connection_state">%1$s, downloaded %2$d of %3$d</string>
-    <string name="scan_another_code">Scan another code</string>
-    <string name="open_album">Open album</string>
+    <string name="scan_another_code">Scan Another</string>
+    <string name="open_album">Album</string>
     <string name="title_activity_album">AlbumActivity</string>
     <string name="share">Share</string>
     <string name="screenshot_from_a_switch">Screenshot from a Switch</string>
@@ -30,4 +30,5 @@
     <string name="wifi_disabled">Wi-Fi is not enabled</string>
     <string name="wifi_disabled_message">Enable it to continue.</string>
     <string name="wifi_settings">Wi-Fi settings</string>
+    <string name="not_ready_to_share">Not ready to share yet</string>
 </resources>

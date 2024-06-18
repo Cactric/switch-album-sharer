@@ -8,6 +8,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.os.Bundle;
@@ -20,12 +21,16 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ConnectFragment extends Fragment {
 
@@ -113,6 +118,7 @@ public class ConnectFragment extends Fragment {
 
             Button sacButton = root.findViewById(R.id.another_code);
             Button albumButton = root.findViewById(R.id.open_album);
+            Button shareButton = root.findViewById(R.id.share);
 
             sacButton.setOnClickListener(v -> {
                 // Go back to code scanner
@@ -129,6 +135,9 @@ public class ConnectFragment extends Fragment {
                 Intent albumIntent = new Intent(getActivity(), AlbumActivity.class);
                 startActivity(albumIntent);
             });
+
+            shareButton.setOnClickListener(v -> Toast.makeText(requireContext(),
+                    getString(R.string.not_ready_to_share), Toast.LENGTH_SHORT).show());
 
             ServiceConnection connection = new ServiceConnection() {
                 @Override
@@ -154,6 +163,39 @@ public class ConnectFragment extends Fragment {
                             if (state.getValue() == DownloadService.State.DONE) {
                                 sacButton.setVisibility(VISIBLE);
                                 albumButton.setVisibility(VISIBLE);
+                                shareButton.setVisibility(VISIBLE);
+                                shareButton.setOnClickListener(v -> {
+                                    List<Uri> contentUris = binder.getSavedContentUriList();
+                                    if (contentUris == null || contentUris.isEmpty()) {
+                                        // Share... nothing?
+                                        Toast.makeText(requireContext(), getString(R.string.not_ready_to_share), Toast.LENGTH_SHORT).show();
+                                    } else if (contentUris.size() == 1) {
+                                        // Share one item
+                                        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                                        shareIntent.putExtra(Intent.EXTRA_STREAM, contentUris.get(0));
+                                        if (binder.getFileType().equals("photo")) {
+                                            shareIntent.setType("image/jpeg");
+                                        } else if (binder.getFileType().equals("movie")) {
+                                            shareIntent.setType("video/mp4");
+                                        } else {
+                                            Log.d("SwAlSh", "Unknown file type " + binder.getFileType());
+                                        }
+                                        startActivity(Intent.createChooser(shareIntent, null));
+                                    } else {
+                                        // Share multiple things
+                                        Intent shareIntent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+                                        shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, new ArrayList<>(contentUris));
+                                        // Can only currently share multiple pictures, not videos
+                                        if (binder.getFileType().equals("photo")) {
+                                            shareIntent.setType("image/jpeg");
+                                        } else if (binder.getFileType().equals("movie")) {
+                                            shareIntent.setType("video/mp4");
+                                        } else {
+                                            Log.d("SwAlSh", "Unknown file type " + binder.getFileType());
+                                        }
+                                        startActivity(Intent.createChooser(shareIntent, null));
+                                    }
+                                });
                             }
                         });
 

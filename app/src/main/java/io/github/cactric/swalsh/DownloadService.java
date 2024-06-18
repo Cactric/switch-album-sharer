@@ -34,8 +34,12 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DownloadService extends Service {
+    private final ArrayList<Uri> savedContentUris = new ArrayList<>();
+    private String fileType = null;
     private MutableLiveData<State> state = new MutableLiveData<>(State.NOT_STARTED);
     private MutableLiveData<Integer> numDownloaded = new MutableLiveData<>(0);
     private int numToDownload = 0;
@@ -62,6 +66,8 @@ public class DownloadService extends Service {
         state.setValue(State.CONNECTING);
         numDownloaded.setValue(0);
         numToDownload = 0;
+        savedContentUris.clear();
+        fileType = null;
 
         WorkerThread workerThread = new WorkerThread();
         workerThread.start();
@@ -128,7 +134,7 @@ public class DownloadService extends Service {
 
                             // I'm interested mainly in the `FileNames` array
                             // Maybe the `FileType` or `ConsoleName`...
-                            String fileType = rootObj.getString("FileType");
+                            fileType = rootObj.getString("FileType");
                             JSONArray fileNames = rootObj.getJSONArray("FileNames");
                             numToDownload = fileNames.length();
                             state.postValue(DownloadService.State.DOWNLOADING);
@@ -198,6 +204,7 @@ public class DownloadService extends Service {
                                     else
                                         contentDetails.put(MediaStore.Video.Media.IS_PENDING, 0);
                                     resolver.update(contentUri, contentDetails, null, null);
+                                    savedContentUris.add(contentUri);
                                     if (numDownloaded.getValue() != null) {
                                         numDownloaded.postValue(numDownloaded.getValue() + 1);
                                     }
@@ -260,6 +267,12 @@ public class DownloadService extends Service {
         }
         public int getNumToDownload() {
             return numToDownload;
+        }
+        public List<Uri> getSavedContentUriList() {
+            return savedContentUris;
+        }
+        public String getFileType() {
+            return fileType;
         }
     }
 

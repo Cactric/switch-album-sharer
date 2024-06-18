@@ -48,5 +48,15 @@
             android:text="@string/open_album"
             android:visibility="gone"
             tools:visibility="visible" />
+
+        <Button
+            android:id="@+id/share"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:text="@string/share"
+            android:visibility="gone"
+            tools:visibility="visible" />
     </LinearLayout>
 </LinearLayout>
