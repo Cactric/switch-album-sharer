@@ -1,6 +1,5 @@
 package io.github.cactric.swalsh;
 
-import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -10,20 +9,16 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
-import android.net.NetworkSpecifier;
 import android.net.Uri;
-import android.net.wifi.WifiManager;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
-import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -32,9 +27,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -148,9 +141,6 @@ public class DownloadService extends Service {
                                     InputStream in = new BufferedInputStream(fileConnection.getInputStream());
 
                                     // Try to save the picture
-                                    //File dir = getAppSpecificAlbumStorageDir(getApplicationContext(), "Switch Screenshots");
-                                    //File file = new File(dir, fileNames.getString(i));
-
                                     ContentResolver resolver = getApplicationContext().getContentResolver();
                                     Uri contentCollection;
                                     ContentValues contentDetails = new ContentValues();
@@ -185,7 +175,6 @@ public class DownloadService extends Service {
                                             continue;
                                         }
                                         boolean done = false;
-                                        long bytesWritten = 0;
                                         while (!done) {
                                             byte[] data = new byte[512 * 1024];
                                             int bytesRead = in.read(data);
@@ -193,7 +182,6 @@ public class DownloadService extends Service {
                                                 done = true;
                                             else
                                                 os.write(data, 0, bytesRead);
-                                            bytesWritten += bytesRead;
                                         }
                                         in.close();
                                         os.close();
@@ -207,7 +195,7 @@ public class DownloadService extends Service {
                                     contentDetails.clear();
                                     if (fileType.equals("photo"))
                                         contentDetails.put(MediaStore.Images.Media.IS_PENDING, 0);
-                                    else if (fileType.equals("movie"))
+                                    else
                                         contentDetails.put(MediaStore.Video.Media.IS_PENDING, 0);
                                     resolver.update(contentUri, contentDetails, null, null);
                                     if (numDownloaded.getValue() != null) {
@@ -272,7 +260,7 @@ public class DownloadService extends Service {
         }
         public int getNumToDownload() {
             return numToDownload;
-        };
+        }
     }
 
     public enum State {

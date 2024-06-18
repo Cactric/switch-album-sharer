@@ -15,11 +15,6 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.preference.PreferenceManager;
 
-import com.budiyev.android.codescanner.CodeScanner;
-import com.budiyev.android.codescanner.CodeScannerView;
-
-import java.util.Objects;
-
 public class ManualFragment extends Fragment {
     public ManualFragment() {
         // Required empty public constructor
@@ -49,7 +44,10 @@ public class ManualFragment extends Fragment {
             // Change fragment
             NavHostFragment navHostFragment = (NavHostFragment)
                     activity.getSupportFragmentManager().findFragmentById(R.id.mainFragmentContainer);
-            NavController navController = navHostFragment.getNavController();
+            NavController navController = null;
+            if (navHostFragment != null) {
+                navController = navHostFragment.getNavController();
+            }
 
             // Do some validation
             if (!ssidEditText.getText().toString().startsWith("switch_")) {
@@ -84,14 +82,19 @@ public class ManualFragment extends Fragment {
                     ";;"; // blank field would be hidden (or not)
 
             bundle.putString("scanned_data", sb);
-            navController.navigate(R.id.action_manual_to_connect, bundle);
+            if (navController != null) {
+                navController.navigate(R.id.action_manual_to_connect, bundle);
+            }
         });
         root.findViewById(R.id.manual_submit).setOnLongClickListener(v -> {
             // Long press for looser validation
             // (in case something changes)
             NavHostFragment navHostFragment = (NavHostFragment)
                     activity.getSupportFragmentManager().findFragmentById(R.id.mainFragmentContainer);
-            NavController navController = navHostFragment.getNavController();
+            NavController navController = null;
+            if (navHostFragment != null) {
+                navController = navHostFragment.getNavController();
+            }
 
             if (ssidEditText.getText().length() < 1) {
                 Toast.makeText(activity, activity.getString(R.string.ssid_required), Toast.LENGTH_SHORT).show();
@@ -117,7 +120,9 @@ public class ManualFragment extends Fragment {
                     ";;"; // blank field would be hidden (or not)
 
             bundle.putString("scanned_data", sb);
-            navController.navigate(R.id.action_manual_to_connect, bundle);
+            if (navController != null) {
+                navController.navigate(R.id.action_manual_to_connect, bundle);
+            }
             return true;
         });
         return root;

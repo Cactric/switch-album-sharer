@@ -1,15 +1,9 @@
 package io.github.cactric.swalsh;
 
-import static androidx.core.app.ActivityCompat.startIntentSenderForResult;
-
-import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.Resources;
-import android.os.Build;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,11 +11,8 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.text.DateFormat;
@@ -29,12 +20,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Objects;
-
-import kotlin.NotImplementedError;
 
 public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.ViewHolder> {
-    private ArrayList<VideoItem> media;
+    private final ArrayList<VideoItem> media;
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private final ImageView videoThumbnail;
         private final TextView lengthText;
@@ -133,8 +121,7 @@ public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.Vi
         holder.getDeleteButton().setOnClickListener(v -> {
             // Delete item
             ContentResolver contentResolver = context.getContentResolver();
-            int numImagesRemoved;
-            numImagesRemoved = contentResolver.delete(item.uri, null, null);
+            contentResolver.delete(item.uri, null, null);
             VideoAlbumAdapter.this.notifyItemRemoved(media.indexOf(item));
             media.remove(item);
         });

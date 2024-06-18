@@ -1,12 +1,9 @@
 package io.github.cactric.swalsh;
 
-import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -35,21 +32,20 @@ public class ScanFragment extends Fragment {
         View root = inflater.inflate(R.layout.fragment_scan, container, false);
         CodeScannerView scannerView = root.findViewById(R.id.scanner);
         mScanner = new CodeScanner(activity, scannerView);
-        mScanner.setDecodeCallback(result -> {
-            activity.runOnUiThread(() -> {
-                // Change fragment
-                NavHostFragment navHostFragment = (NavHostFragment)
-                        activity.getSupportFragmentManager().findFragmentById(R.id.mainFragmentContainer);
-                NavController navController = navHostFragment.getNavController();
-
+        mScanner.setDecodeCallback(result -> activity.runOnUiThread(() -> {
+            // Change fragment
+            NavHostFragment navHostFragment = (NavHostFragment)
+                    activity.getSupportFragmentManager().findFragmentById(R.id.mainFragmentContainer);
+            NavController navController;
+            if (navHostFragment != null) {
+                navController = navHostFragment.getNavController();
                 Bundle bundle = new Bundle();
                 bundle.putString("scanned_data", result.getText());
                 navController.navigate(R.id.action_destination_scan_to_connectFragment, bundle);
-            });
-        });
-        scannerView.setOnClickListener(v -> {
-            mScanner.startPreview();
-        });
+            }
+
+        }));
+        scannerView.setOnClickListener(v -> mScanner.startPreview());
         return root;
     }
 

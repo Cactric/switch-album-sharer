@@ -3,7 +3,6 @@ package io.github.cactric.swalsh;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.util.Log;
 
-import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class WifiUtils {

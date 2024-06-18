@@ -15,20 +15,14 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-
 import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
-import kotlin.NotImplementedError;
-
 public class PictureAlbumAdapter extends RecyclerView.Adapter<PictureAlbumAdapter.ViewHolder> {
-    private ArrayList<PictureItem> media;
+    private final ArrayList<PictureItem> media;
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private final ImageView imageView;
         private final TextView lengthText;
@@ -126,8 +120,7 @@ public class PictureAlbumAdapter extends RecyclerView.Adapter<PictureAlbumAdapte
         holder.getDeleteButton().setOnClickListener(v -> {
             // Delete item
             ContentResolver contentResolver = context.getContentResolver();
-            int numImagesRemoved;
-            numImagesRemoved = contentResolver.delete(item.uri, null, null);
+            contentResolver.delete(item.uri, null, null);
             PictureAlbumAdapter.this.notifyItemRemoved(media.indexOf(item));
             media.remove(item);
         });

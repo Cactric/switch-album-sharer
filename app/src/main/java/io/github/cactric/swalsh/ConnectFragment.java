@@ -28,22 +28,12 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import java.util.Objects;
-
 public class ConnectFragment extends Fragment {
 
     private static final String ARG_SCANNED_DATA = "scanned_data";
     private DownloadService.DownloadServiceBinder binder;
     private LiveData<DownloadService.State> state;
     private LiveData<Integer> numDownloaded;
-
-    public static ConnectFragment newInstance(String scannedData) {
-        ConnectFragment fragment = new ConnectFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_SCANNED_DATA, scannedData);
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     public ConnectFragment() {
         // Required empty public constructor
@@ -77,8 +67,11 @@ public class ConnectFragment extends Fragment {
                 // Go back to code scanner
                 NavHostFragment navHostFragment = (NavHostFragment)
                         requireActivity().getSupportFragmentManager().findFragmentById(R.id.mainFragmentContainer);
-                NavController navController = navHostFragment.getNavController();
-                navController.popBackStack();
+                NavController navController;
+                if (navHostFragment != null) {
+                    navController = navHostFragment.getNavController();
+                    navController.popBackStack();
+                }
             });
             builder.create().show();
         }
@@ -102,8 +95,11 @@ public class ConnectFragment extends Fragment {
                     // Go back to code scanner
                     NavHostFragment navHostFragment = (NavHostFragment)
                             requireActivity().getSupportFragmentManager().findFragmentById(R.id.mainFragmentContainer);
-                    NavController navController = navHostFragment.getNavController();
-                    navController.popBackStack();
+                    NavController navController;
+                    if (navHostFragment != null) {
+                        navController = navHostFragment.getNavController();
+                        navController.popBackStack();
+                    }
                 });
                 builder.create().show();
             }
@@ -123,8 +119,11 @@ public class ConnectFragment extends Fragment {
                 // Go back to code scanner
                 NavHostFragment navHostFragment = (NavHostFragment)
                         requireActivity().getSupportFragmentManager().findFragmentById(R.id.mainFragmentContainer);
-                NavController navController = navHostFragment.getNavController();
-                navController.popBackStack();
+                NavController navController;
+                if (navHostFragment != null) {
+                    navController = navHostFragment.getNavController();
+                    navController.popBackStack();
+                }
             });
 
             albumButton.setOnClickListener(v -> {

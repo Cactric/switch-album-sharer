@@ -35,9 +35,7 @@ public class IntroFragment extends Fragment {
             requestPermLauncher.launch(Manifest.permission.CAMERA);
         });
 
-        root.findViewById(R.id.intro_manual_button).setOnClickListener(v -> {
-            Navigation.findNavController(v).navigate(R.id.action_manual_entry);
-        });
+        root.findViewById(R.id.intro_manual_button).setOnClickListener(v -> Navigation.findNavController(v).navigate(R.id.action_manual_entry));
 
         root.findViewById(R.id.intro_album_button).setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), AlbumActivity.class);
