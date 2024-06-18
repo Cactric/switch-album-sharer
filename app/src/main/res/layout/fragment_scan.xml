@@ -6,12 +6,6 @@
     android:orientation="vertical"
     tools:context=".IntroFragment">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:text="[Scan code fragment]" />
-
     <com.budiyev.android.codescanner.CodeScannerView
         android:id="@+id/scanner"
         android:layout_width="match_parent"
