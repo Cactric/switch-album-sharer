@@ -8,4 +8,8 @@
         android:key="picture_no_delete_confirmation"
         android:title="Disable picture deletion confirmation dialogs"
         android:defaultValue="false" />
+    <SwitchPreference
+        android:key="video_no_delete_confirmation"
+        android:title="Disable video deletion confirmation dialogs"
+        android:defaultValue="false" />
 </PreferenceScreen>

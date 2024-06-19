@@ -35,4 +35,8 @@
     <string name="no_more_confirm_prompt">Don\'t show this again</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="delete_all_pictures">Delete all pictures</string>
+    <string name="delete_all_pictures_confirmation">Delete ALL pictures obtained through this app?</string>
+    <string name="delete_all_videos_confirmation">Delete ALL videos obtained through this app?</string>
+    <string name="delete_all_videos">Delete all videos</string>
 </resources>

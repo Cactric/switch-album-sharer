@@ -2,16 +2,27 @@ package io.github.cactric.swalsh;
 
 import static android.provider.MediaStore.VOLUME_EXTERNAL;
 
+import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.ContentUris;
+import android.content.Intent;
+import android.content.IntentSender;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.util.Size;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
@@ -28,6 +39,7 @@ import java.util.ArrayList;
 public class AlbumActivity extends AppCompatActivity {
     private final ArrayList<PictureItem> pictureItems = new ArrayList<>();
     private final ArrayList<VideoItem> videoItems = new ArrayList<>();
+    private static final int VIDEO_DELETION_REQUEST_CODE = 30202; // chosen by echo $RANDOM
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +83,76 @@ public class AlbumActivity extends AppCompatActivity {
 
         // On Pictures initially
         setupRecyclerForPictures();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.album_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.delete_all_pictures) {
+            // Confirmation dialog
+            AlertDialog.Builder adb = new AlertDialog.Builder(this);
+            adb.setTitle(R.string.delete_all_pictures_confirmation);
+            adb.setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
+            adb.setPositiveButton(R.string.yes, (dialog, which) -> {
+                // Delete them
+            });
+            adb.show();
+            return true;
+        } else if (item.getItemId() == R.id.delete_all_videos) {
+            getVideos();
+            if (videoItems.isEmpty()) {
+                Toast.makeText(this, "There are no videos to remove", Toast.LENGTH_SHORT).show();
+                return true;
+            }
+
+            ArrayList<Uri> uris = new ArrayList<>();
+            for (VideoItem vi: videoItems) {
+                uris.add(vi.uri);
+            }
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                // Use the native delete UI
+                PendingIntent editPendingIntent = MediaStore.createDeleteRequest(getContentResolver(), uris);
+                try {
+                    startIntentSenderForResult(editPendingIntent.getIntentSender(), VIDEO_DELETION_REQUEST_CODE, null, 0, 0, 0);
+                } catch (IntentSender.SendIntentException e) {
+                    Log.e("SwAlSh", "Couldn't ask to delete videos", e);
+                }
+            } else {
+                // Confirmation dialog
+                AlertDialog.Builder adb = new AlertDialog.Builder(this);
+                adb.setTitle(R.string.delete_all_videos_confirmation);
+                adb.setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
+                adb.setPositiveButton(R.string.yes, (dialog, which) -> {
+                    // Delete them
+                    for (Uri u: uris) {
+                        getContentResolver().delete(u, null, null);
+                    }
+                });
+                adb.show();
+            }
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == VIDEO_DELETION_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                TabLayout tb = findViewById(R.id.album_tabs);
+                if (tb.getSelectedTabPosition() == 1)
+                    // If videos is the selected tab, refresh it
+                    setupRecycleForVideos();
+            } else {
+                Toast.makeText(this, "They were not deleted", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     private void setupRecyclerForPictures() {
@@ -205,6 +287,5 @@ public class AlbumActivity extends AppCompatActivity {
                 videoItems.add(item);
             }
         }
-
     }
 }

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/delete_all_pictures"
+        android:title="@string/delete_all_pictures"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/delete_all_videos"
+        android:title="@string/delete_all_videos"
+        app:showAsAction="never" />
+</menu>
