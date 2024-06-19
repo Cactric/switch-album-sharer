@@ -38,6 +38,7 @@ public class ConnectFragment extends Fragment {
     private DownloadService.DownloadServiceBinder binder;
     private LiveData<DownloadService.State> state;
     private LiveData<Integer> numDownloaded;
+    private LiveData<Float> fileProgress;
 
     public ConnectFragment() {
         // Required empty public constructor
@@ -146,6 +147,7 @@ public class ConnectFragment extends Fragment {
                     if (binder != null) {
                         state = binder.getState();
                         numDownloaded = binder.getNumDownloaded();
+                        fileProgress = binder.getDownloadProgress();
                         Log.d("SwAlSh", "Got binder");
 
                         state.observe(getViewLifecycleOwner(), newState -> {
@@ -157,7 +159,10 @@ public class ConnectFragment extends Fragment {
 
                             if (state.getValue() == DownloadService.State.DOWNLOADING) {
                                 // Display total number of items and use it for the progress bar
-                                progressBar.setMax(binder.getNumToDownload());
+                                if (binder.getNumToDownload() > 1)
+                                    progressBar.setMax(binder.getNumToDownload());
+                                else
+                                    progressBar.setMax(progressBar.getWidth());
                             }
 
                             if (state.getValue() == DownloadService.State.DONE) {
@@ -200,11 +205,21 @@ public class ConnectFragment extends Fragment {
                         });
 
                         numDownloaded.observe(getViewLifecycleOwner(), num -> {
-                            progressBar.setIndeterminate(num <= 0);
-                            progressBar.setProgress(num, true);
+                            if (binder.getNumToDownload() > 1) {
+                                progressBar.setIndeterminate(num <= 0);
+                                progressBar.setProgress(num, true);
+                            }
                             if (state.getValue() != null)
                                 formatStateText(state.getValue());
                         });
+
+                        fileProgress.observe(getViewLifecycleOwner(), num -> {
+                            if (binder.getNumToDownload() <= 1) {
+                                progressBar.setIndeterminate(num <= 0.0f);
+                                progressBar.setProgress((int) (num * progressBar.getWidth()), true);
+                            }
+                        });
+
                     }
                 }
 

@@ -42,6 +42,7 @@ public class DownloadService extends Service {
     private String fileType = null;
     private MutableLiveData<State> state = new MutableLiveData<>(State.NOT_STARTED);
     private MutableLiveData<Integer> numDownloaded = new MutableLiveData<>(0);
+    private MutableLiveData<Float> downloadProgress = new MutableLiveData<>(0.0f);
     private int numToDownload = 0;
     private WifiNetworkSpecifier netSpec;
 
@@ -144,6 +145,7 @@ public class DownloadService extends Service {
                                 try {
                                     URL fileURL = new URL("http://192.168.0.1/img/" + fileNames.getString(i));
                                     HttpURLConnection fileConnection = (HttpURLConnection) network.openConnection(fileURL);
+                                    long contentLength = fileConnection.getContentLengthLong();
                                     InputStream in = new BufferedInputStream(fileConnection.getInputStream());
 
                                     // Try to save the picture
@@ -181,13 +183,17 @@ public class DownloadService extends Service {
                                             continue;
                                         }
                                         boolean done = false;
+                                        long bytesWritten = 0;
                                         while (!done) {
                                             byte[] data = new byte[512 * 1024];
                                             int bytesRead = in.read(data);
                                             if (bytesRead == -1)
                                                 done = true;
-                                            else
+                                            else {
                                                 os.write(data, 0, bytesRead);
+                                                bytesWritten += bytesRead;
+                                            }
+                                            downloadProgress.postValue(((float) bytesWritten) / ((float) contentLength));
                                         }
                                         in.close();
                                         os.close();
@@ -267,6 +273,9 @@ public class DownloadService extends Service {
         }
         public int getNumToDownload() {
             return numToDownload;
+        }
+        public LiveData<Float> getDownloadProgress() {
+            return downloadProgress;
         }
         public List<Uri> getSavedContentUriList() {
             return savedContentUris;
