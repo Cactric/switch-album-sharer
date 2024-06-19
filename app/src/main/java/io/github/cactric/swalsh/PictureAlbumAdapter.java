@@ -1,8 +1,10 @@
 package io.github.cactric.swalsh;
 
+import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,9 +13,14 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -118,12 +125,41 @@ public class PictureAlbumAdapter extends RecyclerView.Adapter<PictureAlbumAdapte
             context.startActivity(Intent.createChooser(shareIntent, null));
         });
         holder.getDeleteButton().setOnClickListener(v -> {
-            // Delete item
-            ContentResolver contentResolver = context.getContentResolver();
-            contentResolver.delete(item.uri, null, null);
-            PictureAlbumAdapter.this.notifyItemRemoved(media.indexOf(item));
-            media.remove(item);
+            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+            boolean skipConfirmation = sp.getBoolean("picture_no_delete_confirmation", false);
+            if (skipConfirmation) {
+                // Just delete it
+                deleteItem(context, item);
+            } else {
+                CharSequence[] selectionItems = {res.getString(R.string.no_more_confirm_prompt)};
+                boolean[] checkedItems = new boolean[selectionItems.length];
+                AlertDialog.Builder adb = new AlertDialog.Builder(context);
+                adb.setTitle(R.string.delete_confirmation);
+                adb.setMultiChoiceItems(selectionItems, checkedItems, (dialog, which, isChecked) -> {
+                    checkedItems[which] = isChecked;
+                });
+                adb.setPositiveButton(R.string.yes, (dialog, which) -> {
+                    // Check if user wants to not see this dialog again
+                    if (checkedItems[0]) {
+                        // Begone says thee!
+                        SharedPreferences.Editor e = sp.edit();
+                        e.putBoolean("picture_no_delete_confirmation", checkedItems[0]);
+                        e.apply();
+                    }
+                    // Delete!
+                    deleteItem(context, item);
+                });
+                adb.setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
+                adb.show();
+            }
         });
+    }
+
+    private void deleteItem(Context context, PictureItem item) {
+        ContentResolver contentResolver = context.getContentResolver();
+        contentResolver.delete(item.uri, null, null);
+        PictureAlbumAdapter.this.notifyItemRemoved(media.indexOf(item));
+        media.remove(item);
     }
 
     @Override

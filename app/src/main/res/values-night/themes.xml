@@ -10,7 +10,4 @@
     </style>
 
     <style name="Theme.SwAlSh" parent="Base.Theme.SwAlSh" />
-    <style name="Theme.SwAlSh.TabLayout" parent="Base.Theme.SwAlSh">
-        <item name="colorPrimary">@color/dark_colour_on_primary</item>
-    </style>
 </resources>

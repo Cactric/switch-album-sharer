@@ -31,4 +31,8 @@
     <string name="wifi_disabled_message">Enable it to continue.</string>
     <string name="wifi_settings">Wi-Fi settings</string>
     <string name="not_ready_to_share">Not ready to share yet</string>
+    <string name="delete_confirmation">Are you sure you want to delete this item?</string>
+    <string name="no_more_confirm_prompt">Don\'t show this again</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 </resources>
