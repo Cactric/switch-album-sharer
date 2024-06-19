@@ -162,7 +162,7 @@ public class ConnectFragment extends Fragment {
                                 if (binder.getNumToDownload() > 1)
                                     progressBar.setMax(binder.getNumToDownload());
                                 else
-                                    progressBar.setMax(progressBar.getWidth());
+                                    progressBar.setMax(100);
                             }
 
                             if (state.getValue() == DownloadService.State.DONE) {
@@ -216,7 +216,7 @@ public class ConnectFragment extends Fragment {
                         fileProgress.observe(getViewLifecycleOwner(), num -> {
                             if (binder.getNumToDownload() <= 1) {
                                 progressBar.setIndeterminate(num <= 0.0f);
-                                progressBar.setProgress((int) (num * progressBar.getWidth()), true);
+                                progressBar.setProgress((int) (num * 100), true);
                             }
                         });
 
