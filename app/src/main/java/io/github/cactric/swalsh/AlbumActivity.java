@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -39,6 +40,7 @@ import java.util.ArrayList;
 public class AlbumActivity extends AppCompatActivity {
     private final ArrayList<PictureItem> pictureItems = new ArrayList<>();
     private final ArrayList<VideoItem> videoItems = new ArrayList<>();
+    private static final int PICTURE_DELETION_REQUEST_CODE = 8583; // chosen by echo $RANDOM
     private static final int VIDEO_DELETION_REQUEST_CODE = 30202; // chosen by echo $RANDOM
 
     @Override
@@ -64,7 +66,7 @@ public class AlbumActivity extends AppCompatActivity {
                 if (tab.getPosition() == 0) {
                     setupRecyclerForPictures();
                 } else if (tab.getPosition() == 1) {
-                    setupRecycleForVideos();
+                    setupRecyclerForVideos();
                 } else {
                     Log.e("SwAlSh", "Unknown tab position " + tab.getPosition());
                 }
@@ -94,14 +96,40 @@ public class AlbumActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.delete_all_pictures) {
-            // Confirmation dialog
-            AlertDialog.Builder adb = new AlertDialog.Builder(this);
-            adb.setTitle(R.string.delete_all_pictures_confirmation);
-            adb.setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
-            adb.setPositiveButton(R.string.yes, (dialog, which) -> {
-                // Delete them
-            });
-            adb.show();
+            getPictures();
+            if (pictureItems.isEmpty()) {
+                Toast.makeText(this, "There are no pictures to remove", Toast.LENGTH_SHORT).show();
+                return true;
+            }
+
+            ArrayList<Uri> uris = new ArrayList<>();
+            for (PictureItem pi: pictureItems) {
+                uris.add(pi.uri);
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                // Use the native delete UI
+                PendingIntent editPendingIntent = MediaStore.createDeleteRequest(getContentResolver(), uris);
+                try {
+                    startIntentSenderForResult(editPendingIntent.getIntentSender(), PICTURE_DELETION_REQUEST_CODE, null, 0, 0, 0);
+                } catch (IntentSender.SendIntentException e) {
+                    Log.e("SwAlSh", "Couldn't ask to delete pictures", e);
+                }
+            } else {
+                AlertDialog.Builder adb = new AlertDialog.Builder(this);
+                adb.setTitle(getString(R.string.delete_all_pictures_confirmation_formatted, pictureItems.size()));
+                adb.setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
+                adb.setPositiveButton(R.string.yes, (dialog, which) -> {
+                    // Delete them
+                    for (Uri u: uris) {
+                        getContentResolver().delete(u, null, null);
+                    }
+                    TabLayout tb = findViewById(R.id.album_tabs);
+                    if (tb.getSelectedTabPosition() == 0)
+                        // If pictures is the selected tab, refresh it
+                        setupRecyclerForPictures();
+                });
+                adb.show();
+            }
             return true;
         } else if (item.getItemId() == R.id.delete_all_videos) {
             getVideos();
@@ -123,15 +151,18 @@ public class AlbumActivity extends AppCompatActivity {
                     Log.e("SwAlSh", "Couldn't ask to delete videos", e);
                 }
             } else {
-                // Confirmation dialog
                 AlertDialog.Builder adb = new AlertDialog.Builder(this);
-                adb.setTitle(R.string.delete_all_videos_confirmation);
+                adb.setTitle(getString(R.string.delete_all_videos_confirmation_formatted, videoItems.size()));
                 adb.setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
                 adb.setPositiveButton(R.string.yes, (dialog, which) -> {
                     // Delete them
                     for (Uri u: uris) {
                         getContentResolver().delete(u, null, null);
                     }
+                    TabLayout tb = findViewById(R.id.album_tabs);
+                    if (tb.getSelectedTabPosition() == 1)
+                        // If videos is the selected tab, refresh it
+                        setupRecyclerForVideos();
                 });
                 adb.show();
             }
@@ -143,15 +174,20 @@ public class AlbumActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == VIDEO_DELETION_REQUEST_CODE) {
-            if (resultCode == Activity.RESULT_OK) {
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == VIDEO_DELETION_REQUEST_CODE) {
                 TabLayout tb = findViewById(R.id.album_tabs);
                 if (tb.getSelectedTabPosition() == 1)
                     // If videos is the selected tab, refresh it
-                    setupRecycleForVideos();
-            } else {
-                Toast.makeText(this, "They were not deleted", Toast.LENGTH_SHORT).show();
+                    setupRecyclerForVideos();
+            } else if (requestCode == PICTURE_DELETION_REQUEST_CODE) {
+                TabLayout tb = findViewById(R.id.album_tabs);
+                if (tb.getSelectedTabPosition() == 0)
+                    // If pictures is the selected tab, refresh it
+                    setupRecyclerForPictures();
             }
+        } else {
+            Toast.makeText(this, "They were not deleted", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -185,7 +221,7 @@ public class AlbumActivity extends AppCompatActivity {
         }
     }
 
-    private void setupRecycleForVideos() {
+    private void setupRecyclerForVideos() {
         // Make the adapter, etc.
         TextView nothingFoundText = findViewById(R.id.album_nothing_found);
         RecyclerView recyclerView = findViewById(R.id.album_recycler);
