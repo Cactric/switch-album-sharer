@@ -23,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle(R.string.app_name_long);
         setSupportActionBar(toolbar);
     }
 }
