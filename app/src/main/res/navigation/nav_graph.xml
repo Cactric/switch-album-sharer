@@ -12,21 +12,12 @@
 
         <action
             android:id="@+id/action_scan_code"
-            app:destination="@id/destination_scan" />
+            app:destination="@id/connectFragment" />
         <action
             android:id="@+id/action_manual_entry"
             app:destination="@id/destination_manual" />
     </fragment>
 
-    <fragment
-        android:id="@+id/destination_scan"
-        android:name="io.github.cactric.swalsh.ScanFragment"
-        android:label="Scan code">
-
-        <action
-            android:id="@+id/action_destination_scan_to_connectFragment"
-            app:destination="@id/connectFragment" />
-    </fragment>
     <fragment
         android:id="@+id/connectFragment"
         android:name="io.github.cactric.swalsh.ConnectFragment"
