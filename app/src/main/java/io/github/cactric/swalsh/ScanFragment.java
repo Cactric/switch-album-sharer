@@ -13,6 +13,13 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.budiyev.android.codescanner.CodeScanner;
 import com.budiyev.android.codescanner.CodeScannerView;
+import com.budiyev.android.codescanner.ScanMode;
+import com.google.zxing.BarcodeFormat;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 public class ScanFragment extends Fragment {
     private CodeScanner mScanner;
@@ -36,6 +43,10 @@ public class ScanFragment extends Fragment {
         View root = inflater.inflate(R.layout.fragment_scan, container, false);
         CodeScannerView scannerView = root.findViewById(R.id.scanner);
         mScanner = new CodeScanner(activity, scannerView);
+        // Just scan for QR codes
+        mScanner.setFormats(List.of(BarcodeFormat.QR_CODE));
+        mScanner.setScanMode(ScanMode.SINGLE);
+        mScanner.setTouchFocusEnabled(true);
         mScanner.setDecodeCallback(result -> activity.runOnUiThread(() -> {
             // Change fragment
             NavHostFragment navHostFragment = (NavHostFragment)
