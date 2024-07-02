@@ -1,6 +1,7 @@
 package io.github.cactric.swalsh;
 
 import android.Manifest;
+import android.app.ActivityOptions;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -39,7 +40,7 @@ public class IntroFragment extends Fragment {
 
         root.findViewById(R.id.intro_album_button).setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), AlbumActivity.class);
-            startActivity(intent);
+            startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(getActivity()).toBundle());
         });
         return root;
     }
