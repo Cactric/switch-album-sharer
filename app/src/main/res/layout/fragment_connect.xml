@@ -5,6 +5,7 @@
     android:layout_height="match_parent"
     android:gravity="center"
     tools:context=".ConnectFragment"
+    android:animateLayoutChanges="true"
     android:orientation="vertical">
 
     <TextView
@@ -12,13 +13,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
+        android:textSize="18sp"
         tools:text="Downloading 1 of 4" />
 
     <ProgressBar
         android:id="@+id/progressBar"
         style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="192dip"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="36dp"
+        android:layout_marginVertical="8dp"
         android:indeterminate="true"
         android:maxWidth="192dip" />
 
