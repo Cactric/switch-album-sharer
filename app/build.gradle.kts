@@ -44,10 +44,9 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
-    implementation(libs.preference.ktx)
 
     implementation(libs.code.scanner)
-    implementation(libs.zxing.android.embedded)
+    implementation(libs.preference.ktx)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

@@ -56,7 +56,7 @@ public class ScanFragment extends Fragment {
                 navController = navHostFragment.getNavController();
                 Bundle bundle = new Bundle();
                 bundle.putString("scanned_data", result.getText());
-                //navController.navigate(R.id.action_scan_to_connect, bundle);
+                navController.navigate(R.id.action_destination_scan_to_connectFragment, bundle);
             }
 
         }));

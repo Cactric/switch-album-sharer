@@ -22,7 +22,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SwAlSh"
         android:usesCleartextTraffic="true"
-        android:hardwareAccelerated="true"
         tools:targetApi="34">
         <activity
             android:name=".AlbumActivity"
@@ -47,11 +46,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name="com.journeyapps.barcodescanner.CaptureActivity"
-            android:screenOrientation="unspecified"
-            tools:replace="screenOrientation" />
     </application>
 
     <queries>
