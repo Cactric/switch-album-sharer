@@ -47,6 +47,7 @@ dependencies {
 
     implementation(libs.code.scanner)
     implementation(libs.preference.ktx)
+    implementation(libs.viewpager2)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
