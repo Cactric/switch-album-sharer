@@ -7,6 +7,11 @@
         <item name="colorOnPrimary">@color/dark_colour_on_primary</item>
         <item name="backgroundColor">@color/dark_bg_colour</item>
         <item name="buttonBarButtonStyle">@color/dark_primary</item>
+
+        <!-- Enable Animations -->
+        <item name="android:windowActivityTransitions">true</item>
+        <item name="android:windowEnterTransition">@android:transition/slide_right</item>
+        <item name="android:windowExitTransition">@android:transition/fade</item>
     </style>
 
     <style name="Theme.SwAlSh" parent="Base.Theme.SwAlSh" />
