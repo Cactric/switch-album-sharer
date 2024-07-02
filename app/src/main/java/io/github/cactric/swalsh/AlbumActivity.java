@@ -56,6 +56,7 @@ public class AlbumActivity extends AppCompatActivity {
 
         // Set up toolbar
         Toolbar toolbar = findViewById(R.id.album_toolbar);
+        toolbar.setTitle(R.string.app_name_long);
         setSupportActionBar(toolbar);
 
         // Set up tabs
