@@ -2,6 +2,7 @@ package io.github.cactric.swalsh;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.transition.TransitionInflater;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,9 @@ public class ManualFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        TransitionInflater ti = TransitionInflater.from(requireContext());
+        setEnterTransition(ti.inflateTransition(android.R.transition.slide_right));
+        setExitTransition(ti.inflateTransition(android.R.transition.fade));
     }
 
     @Override

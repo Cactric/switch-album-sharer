@@ -14,6 +14,7 @@ import android.net.wifi.WifiNetworkSpecifier;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
+import android.transition.TransitionInflater;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,6 +48,9 @@ public class ConnectFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        TransitionInflater ti = TransitionInflater.from(requireContext());
+        setEnterTransition(ti.inflateTransition(android.R.transition.slide_right));
+        setExitTransition(ti.inflateTransition(android.R.transition.fade));
     }
 
     @Override
