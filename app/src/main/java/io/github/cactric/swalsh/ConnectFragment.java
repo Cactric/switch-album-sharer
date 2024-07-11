@@ -39,6 +39,7 @@ public class ConnectFragment extends Fragment {
     private DownloadService.DownloadServiceBinder binder;
     private LiveData<DownloadService.State> state;
     private LiveData<Integer> numDownloaded;
+    private LiveData<Integer> numFailed;
     private LiveData<Float> fileProgress;
 
     public ConnectFragment() {
@@ -151,6 +152,7 @@ public class ConnectFragment extends Fragment {
                     if (binder != null) {
                         state = binder.getState();
                         numDownloaded = binder.getNumDownloaded();
+                        numFailed = binder.getNumFailed();
                         fileProgress = binder.getDownloadProgress();
                         Log.d("SwAlSh", "Got binder");
 
@@ -170,6 +172,16 @@ public class ConnectFragment extends Fragment {
                             }
 
                             if (state.getValue() == DownloadService.State.DONE) {
+                                if (numFailed != null &&
+                                        numFailed.getValue() != null &&
+                                        numFailed.getValue() > 0) {
+                                    // Alert the user that some failed
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+                                    builder.setMessage(getString(R.string.n_failed_to_download_format, numFailed.getValue()));
+                                    builder.setIcon(R.drawable.warning);
+                                    builder.setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss());
+                                    builder.create().show();
+                                }
                                 sacButton.setVisibility(VISIBLE);
                                 albumButton.setVisibility(VISIBLE);
                                 shareButton.setVisibility(VISIBLE);

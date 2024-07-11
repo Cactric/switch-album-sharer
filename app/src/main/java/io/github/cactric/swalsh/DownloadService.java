@@ -42,6 +42,7 @@ public class DownloadService extends Service {
     private String fileType = null;
     private MutableLiveData<State> state = new MutableLiveData<>(State.NOT_STARTED);
     private MutableLiveData<Integer> numDownloaded = new MutableLiveData<>(0);
+    private MutableLiveData<Integer> numFailed = new MutableLiveData<>(0);
     private MutableLiveData<Float> downloadProgress = new MutableLiveData<>(0.0f);
     private int numToDownload = 0;
     private WifiNetworkSpecifier netSpec;
@@ -67,6 +68,8 @@ public class DownloadService extends Service {
         state.setValue(State.CONNECTING);
         numDownloaded.setValue(0);
         numToDownload = 0;
+        downloadProgress.setValue(0.0f);
+        numFailed.setValue(0);
         savedContentUris.clear();
         fileType = null;
 
@@ -142,6 +145,8 @@ public class DownloadService extends Service {
 
                             for (int i = 0; i < fileNames.length(); i++) {
                                 Log.d("SwAlSh", "File name " + i + " = " + fileNames.getString(i));
+                                ContentResolver resolver = getApplicationContext().getContentResolver();
+                                Uri contentUri = null;
                                 try {
                                     URL fileURL = new URL("http://192.168.0.1/img/" + fileNames.getString(i));
                                     HttpURLConnection fileConnection = (HttpURLConnection) network.openConnection(fileURL);
@@ -149,7 +154,6 @@ public class DownloadService extends Service {
                                     InputStream in = new BufferedInputStream(fileConnection.getInputStream());
 
                                     // Try to save the picture
-                                    ContentResolver resolver = getApplicationContext().getContentResolver();
                                     Uri contentCollection;
                                     ContentValues contentDetails = new ContentValues();
                                     if (fileType.equals("photo")) {
@@ -169,7 +173,7 @@ public class DownloadService extends Service {
                                         continue;
                                     }
 
-                                    Uri contentUri = resolver.insert(contentCollection, contentDetails);
+                                    contentUri = resolver.insert(contentCollection, contentDetails);
                                     if (contentUri == null) {
                                         Log.e("SwAlSh", "Failed to save picture - contentUri is null");
                                         continue;
@@ -216,8 +220,14 @@ public class DownloadService extends Service {
                                     }
                                 } catch (MalformedURLException e) {
                                     Log.e("SwAlSh", "Malformed URL, possibly unexpected data and/or an application bug", e);
+                                    if (numFailed.getValue() != null) {
+                                        numFailed.postValue(numFailed.getValue() + 1);
+                                    }
                                 } catch (IOException e) {
                                     Log.e("SwAlSh", "Download error, file " + i + " failed to download", e);
+                                    if (numFailed.getValue() != null) {
+                                        numFailed.postValue(numFailed.getValue() + 1);
+                                    }
                                 }
                             }
 
@@ -270,6 +280,9 @@ public class DownloadService extends Service {
         }
         public LiveData<Integer> getNumDownloaded() {
             return numDownloaded;
+        }
+        public LiveData<Integer> getNumFailed() {
+            return numFailed;
         }
         public int getNumToDownload() {
             return numToDownload;
