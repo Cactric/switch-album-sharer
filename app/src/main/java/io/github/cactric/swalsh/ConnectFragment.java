@@ -218,6 +218,11 @@ public class ConnectFragment extends Fragment {
                                     }
                                 });
                             }
+
+                            if (state.getValue() == DownloadService.State.ERROR) {
+                                // Stop the progress bar since nothing will happen now
+                                progressBar.setIndeterminate(false);
+                            }
                         });
 
                         numDownloaded.observe(getViewLifecycleOwner(), num -> {
