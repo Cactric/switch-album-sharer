@@ -178,7 +178,6 @@ public class ConnectFragment extends Fragment {
                                     // Alert the user that some failed
                                     AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
                                     builder.setMessage(getString(R.string.n_failed_to_download_format, numFailed.getValue()));
-                                    builder.setIcon(R.drawable.warning);
                                     builder.setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss());
                                     builder.create().show();
                                 }
