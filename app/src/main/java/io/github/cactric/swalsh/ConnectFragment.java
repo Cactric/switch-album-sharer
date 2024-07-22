@@ -36,6 +36,7 @@ import java.util.List;
 public class ConnectFragment extends Fragment {
 
     private static final String ARG_SCANNED_DATA = "scanned_data";
+    private static final String ARG_SCAN_TIME = "scan_time";
     private DownloadService.DownloadServiceBinder binder;
     private LiveData<DownloadService.State> state;
     private LiveData<Integer> numDownloaded;
@@ -113,10 +114,14 @@ public class ConnectFragment extends Fragment {
                 });
                 builder.create().show();
             }
+            long scanTime = getArguments().getLong(ARG_SCAN_TIME, -1);
+            if (scanTime == -1)
+                Log.w("SwAlSh", "ARG_SCAN_TIME was not set - download service may not restart on subsequent scans");
 
             // Start the download service
             Intent intent = new Intent(getContext(), DownloadService.class);
             intent.putExtra("EXTRA_NETWORK_SPECIFIER", netSpec);
+            intent.putExtra("EXTRA_SCAN_TIME", scanTime);
             requireContext().startService(intent);
 
             TextView stateText = root.findViewById(R.id.state_text);
@@ -154,6 +159,7 @@ public class ConnectFragment extends Fragment {
                         numDownloaded = binder.getNumDownloaded();
                         numFailed = binder.getNumFailed();
                         fileProgress = binder.getDownloadProgress();
+                        LiveData<Long> binderScanTime = binder.getScanTime();
                         Log.d("SwAlSh", "Got binder");
 
                         state.observe(getViewLifecycleOwner(), newState -> {
@@ -238,6 +244,10 @@ public class ConnectFragment extends Fragment {
                                 progressBar.setIndeterminate(num <= 0.0f);
                                 progressBar.setProgress((int) (num * 100), true);
                             }
+                        });
+
+                        binderScanTime.observe(getViewLifecycleOwner(), time -> {
+                            Log.d("SwAlSh", "Scan time changed to " + time);
                         });
 
                     }

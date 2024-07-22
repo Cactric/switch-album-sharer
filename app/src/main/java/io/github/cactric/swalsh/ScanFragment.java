@@ -19,6 +19,7 @@ import com.google.zxing.BarcodeFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 public class ScanFragment extends Fragment {
@@ -56,6 +57,8 @@ public class ScanFragment extends Fragment {
                 navController = navHostFragment.getNavController();
                 Bundle bundle = new Bundle();
                 bundle.putString("scanned_data", result.getText());
+                Date d = new Date();
+                bundle.putLong("scan_time", d.getTime());
                 navController.navigate(R.id.action_destination_scan_to_connectFragment, bundle);
             }
 

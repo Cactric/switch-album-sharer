@@ -36,6 +36,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class DownloadService extends Service {
     private final ArrayList<Uri> savedContentUris = new ArrayList<>();
@@ -46,20 +47,22 @@ public class DownloadService extends Service {
     private MutableLiveData<Float> downloadProgress = new MutableLiveData<>(0.0f);
     private int numToDownload = 0;
     private WifiNetworkSpecifier netSpec;
+    private MutableLiveData<Long> scanTime = new MutableLiveData<>(-1L);
 
     public DownloadService() {
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        state = new MutableLiveData<>(State.NOT_STARTED);
-        numDownloaded = new MutableLiveData<>(0);
-        numToDownload = 0;
-    }
-
-    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Long scanTimeFromIntent = intent.getLongExtra("EXTRA_SCAN_TIME", -1);
+        if (Objects.equals(scanTimeFromIntent, scanTime.getValue())) {
+            // If the scan time is the same, assume it's the same scan and the service just got restarted for some reason
+            Log.w("SwAlSh", "DownloadService: Same scan time as the last start command (" + scanTimeFromIntent + ") - ignoring");
+            return START_NOT_STICKY;
+        } else {
+            scanTime.setValue(scanTimeFromIntent);
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             netSpec = intent.getParcelableExtra("EXTRA_NETWORK_SPECIFIER", WifiNetworkSpecifier.class);
         } else {
@@ -295,6 +298,9 @@ public class DownloadService extends Service {
         }
         public String getFileType() {
             return fileType;
+        }
+        public LiveData<Long> getScanTime() {
+            return scanTime;
         }
     }
 

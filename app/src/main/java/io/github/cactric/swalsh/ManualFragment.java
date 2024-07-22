@@ -16,6 +16,8 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.preference.PreferenceManager;
 
+import java.util.Date;
+
 public class ManualFragment extends Fragment {
     public ManualFragment() {
         // Required empty public constructor
@@ -86,6 +88,8 @@ public class ManualFragment extends Fragment {
                     ";;"; // blank field would be hidden (or not)
 
             bundle.putString("scanned_data", sb);
+            Date d = new Date();
+            bundle.putLong("scan_time", d.getTime());
             if (navController != null) {
                 navController.navigate(R.id.action_manual_to_connect, bundle);
             }
