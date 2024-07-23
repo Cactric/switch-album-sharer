@@ -41,4 +41,5 @@
     <string name="delete_all_videos_confirmation_formatted">Delete all %1$d video(s) obtained through this app?</string>
     <string name="delete_all_videos">Delete all videos</string>
     <string name="n_failed_to_download_format">%1$d file(s) failed to download</string>
+    <string name="info">Info</string>
 </resources>
