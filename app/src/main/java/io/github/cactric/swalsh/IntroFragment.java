@@ -54,7 +54,8 @@ public class IntroFragment extends Fragment {
             @Override
             public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
                 if (menuItem.getItemId() == R.id.info_option) {
-                    Toast.makeText(getContext(), "Not implemented yet", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(getContext(), InfoActivity.class);
+                    startActivity(intent);
                     return true;
                 }
                 return false;
