@@ -42,4 +42,6 @@
     <string name="delete_all_videos">Delete all videos</string>
     <string name="n_failed_to_download_format">%1$d file(s) failed to download</string>
     <string name="info">Info</string>
+    <string name="app_logo">App logo</string>
+    <string name="info_author">By Cactric</string>
 </resources>
