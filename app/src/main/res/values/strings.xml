@@ -44,6 +44,6 @@
     <string name="info">Info</string>
     <string name="app_logo">App logo</string>
     <string name="info_author">By Cactric</string>
-    <string name="info_icon_credit">App logo made by Cactric, other icons are available under the Apache License version 2.0</string>
+    <string name="info_icon_credit">Icons other than the app logo are Material Icons, available under the Apache License version 2.0</string>
     <string name="view_license">Details</string>
 </resources>
