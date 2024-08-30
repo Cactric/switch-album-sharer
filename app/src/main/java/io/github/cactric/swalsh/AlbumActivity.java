@@ -88,12 +88,15 @@ public class AlbumActivity extends AppCompatActivity {
             }
         });
         numOfPictures.observe(this, num -> {
-            if (num != null)
-                tabLayout.getTabAt(0).setText(getString(R.string.pictures_format_str, num));
+            TabLayout.Tab tab = tabLayout.getTabAt(0);
+            if (num != null && tab != null) {
+                tab.setText(getString(R.string.pictures_format_str, num));
+            }
         });
         numOfVideos.observe(this, num -> {
-            if (num != null)
-                tabLayout.getTabAt(1).setText(getString(R.string.videos_format_str, num));
+            TabLayout.Tab tab = tabLayout.getTabAt(1);
+            if (num != null && tab != null)
+                tab.setText(getString(R.string.videos_format_str, num));
         });
 
         Thread retrieveThread = new Thread(() -> {
@@ -158,9 +161,9 @@ public class AlbumActivity extends AppCompatActivity {
                         if (tb.getSelectedTabPosition() == 0) {
                             // If pictures is the selected tab, refresh it
                             getPictures();
-                            runOnUiThread(() -> setupRecyclerForPictures());
+                            runOnUiThread(this::setupRecyclerForPictures);
                         }
-                    }).run();
+                    }).start();
                 });
                 adb.show();
             }
@@ -198,10 +201,10 @@ public class AlbumActivity extends AppCompatActivity {
                         if (tb.getSelectedTabPosition() == 1) {
                             // If videos is the selected tab, refresh it
                             getVideos();
-                            runOnUiThread(() -> setupRecyclerForVideos());
+                            runOnUiThread(this::setupRecyclerForVideos);
                         }
 
-                    }).run();
+                    }).start();
                 });
                 adb.show();
             }
