@@ -100,11 +100,16 @@ public class AlbumActivity extends AppCompatActivity {
             // TODO: synchronise adding to array list
             getPictures();
             getVideos();
-        });
-        retrieveThread.run();
 
-        // On Pictures initially
-        setupRecyclerForPictures();
+            // On Pictures initially, unless there aren't any pictures and there are some videos
+            if ((numOfPictures.getValue() != null && numOfPictures.getValue() == 0) &&
+                    (numOfVideos.getValue() != null && numOfVideos.getValue() > 0)) {
+                runOnUiThread(this::setupRecyclerForVideos);
+            } else {
+                runOnUiThread(this::setupRecyclerForPictures);
+            }
+        });
+        retrieveThread.start();
     }
 
     @Override
