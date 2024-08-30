@@ -37,6 +37,7 @@ import com.google.android.material.tabs.TabLayout;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class AlbumActivity extends AppCompatActivity {
     private final ArrayList<PictureItem> pictureItems = new ArrayList<>();
@@ -95,6 +96,13 @@ public class AlbumActivity extends AppCompatActivity {
                 tabLayout.getTabAt(1).setText(getString(R.string.videos_format_str, num));
         });
 
+        Thread retrieveThread = new Thread(() -> {
+            // TODO: synchronise adding to array list
+            getPictures();
+            getVideos();
+        });
+        retrieveThread.run();
+
         // On Pictures initially
         setupRecyclerForPictures();
     }
@@ -131,14 +139,18 @@ public class AlbumActivity extends AppCompatActivity {
                 adb.setTitle(getString(R.string.delete_all_pictures_confirmation_formatted, pictureItems.size()));
                 adb.setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
                 adb.setPositiveButton(R.string.yes, (dialog, which) -> {
-                    // Delete them
-                    for (Uri u: uris) {
-                        getContentResolver().delete(u, null, null);
-                    }
-                    TabLayout tb = findViewById(R.id.album_tabs);
-                    if (tb.getSelectedTabPosition() == 0)
-                        // If pictures is the selected tab, refresh it
-                        setupRecyclerForPictures();
+                    new Thread(() -> {
+                        // Delete them
+                        for (Uri u: uris) {
+                            getContentResolver().delete(u, null, null);
+                        }
+                        TabLayout tb = findViewById(R.id.album_tabs);
+                        if (tb.getSelectedTabPosition() == 0) {
+                            // If pictures is the selected tab, refresh it
+                            getPictures();
+                            runOnUiThread(() -> setupRecyclerForPictures());
+                        }
+                    }).run();
                 });
                 adb.show();
             }
@@ -167,14 +179,19 @@ public class AlbumActivity extends AppCompatActivity {
                 adb.setTitle(getString(R.string.delete_all_videos_confirmation_formatted, videoItems.size()));
                 adb.setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
                 adb.setPositiveButton(R.string.yes, (dialog, which) -> {
-                    // Delete them
-                    for (Uri u: uris) {
-                        getContentResolver().delete(u, null, null);
-                    }
-                    TabLayout tb = findViewById(R.id.album_tabs);
-                    if (tb.getSelectedTabPosition() == 1)
-                        // If videos is the selected tab, refresh it
-                        setupRecyclerForVideos();
+                    new Thread(() -> {
+                        // Delete them
+                        for (Uri u: uris) {
+                            getContentResolver().delete(u, null, null);
+                        }
+                        TabLayout tb = findViewById(R.id.album_tabs);
+                        if (tb.getSelectedTabPosition() == 1) {
+                            // If videos is the selected tab, refresh it
+                            getVideos();
+                            runOnUiThread(() -> setupRecyclerForVideos());
+                        }
+
+                    }).run();
                 });
                 adb.show();
             }
@@ -187,16 +204,20 @@ public class AlbumActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == VIDEO_DELETION_REQUEST_CODE) {
+            if (requestCode == PICTURE_DELETION_REQUEST_CODE) {
                 TabLayout tb = findViewById(R.id.album_tabs);
-                if (tb.getSelectedTabPosition() == 1)
-                    // If videos is the selected tab, refresh it
-                    setupRecyclerForVideos();
-            } else if (requestCode == PICTURE_DELETION_REQUEST_CODE) {
-                TabLayout tb = findViewById(R.id.album_tabs);
-                if (tb.getSelectedTabPosition() == 0)
+                if (tb.getSelectedTabPosition() == 0) {
                     // If pictures is the selected tab, refresh it
+                    getPictures();
                     setupRecyclerForPictures();
+                }
+            } else if (requestCode == VIDEO_DELETION_REQUEST_CODE) {
+                TabLayout tb = findViewById(R.id.album_tabs);
+                if (tb.getSelectedTabPosition() == 1) {
+                    // If videos is the selected tab, refresh it
+                    getVideos();
+                    setupRecyclerForVideos();
+                }
             }
         } else {
             Toast.makeText(this, "They were not deleted", Toast.LENGTH_SHORT).show();
@@ -208,8 +229,6 @@ public class AlbumActivity extends AppCompatActivity {
         TextView nothingFoundText = findViewById(R.id.album_nothing_found);
         RecyclerView recyclerView = findViewById(R.id.album_recycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        getPictures();
 
         PictureAlbumAdapter adapter = new PictureAlbumAdapter(pictureItems.toArray(new PictureItem[0]));
         recyclerView.setAdapter(adapter);
@@ -238,8 +257,6 @@ public class AlbumActivity extends AppCompatActivity {
         TextView nothingFoundText = findViewById(R.id.album_nothing_found);
         RecyclerView recyclerView = findViewById(R.id.album_recycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        getVideos();
 
         VideoAlbumAdapter adapter = new VideoAlbumAdapter(videoItems.toArray(new VideoItem[0]));
         recyclerView.setAdapter(adapter);
