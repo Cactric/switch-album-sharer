@@ -101,13 +101,18 @@ public class AlbumActivity extends AppCompatActivity {
             getPictures();
             getVideos();
 
-            // On Pictures initially, unless there aren't any pictures and there are some videos
-            if ((numOfPictures.getValue() != null && numOfPictures.getValue() == 0) &&
-                    (numOfVideos.getValue() != null && numOfVideos.getValue() > 0)) {
-                runOnUiThread(this::setupRecyclerForVideos);
-            } else {
-                runOnUiThread(this::setupRecyclerForPictures);
-            }
+            runOnUiThread(() -> {
+                // On Pictures initially, unless there aren't any pictures and there are some videos
+                Integer pics = numOfPictures.getValue();
+                Integer vids = numOfVideos.getValue();
+                if ((pics != null && pics == 0) &&
+                        (vids != null && vids > 0)) {
+                    tabLayout.selectTab(tabLayout.getTabAt(1));
+                    setupRecyclerForVideos();
+                } else {
+                    setupRecyclerForPictures();
+                }
+            });
         });
         retrieveThread.start();
     }
