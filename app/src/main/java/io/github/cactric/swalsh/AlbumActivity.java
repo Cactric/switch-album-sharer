@@ -29,6 +29,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -40,6 +41,8 @@ import java.util.ArrayList;
 public class AlbumActivity extends AppCompatActivity {
     private final ArrayList<PictureItem> pictureItems = new ArrayList<>();
     private final ArrayList<VideoItem> videoItems = new ArrayList<>();
+    private final MutableLiveData<Integer> numOfPictures = new MutableLiveData<Integer>();
+    private final MutableLiveData<Integer> numOfVideos = new MutableLiveData<Integer>();
     private static final int PICTURE_DELETION_REQUEST_CODE = 8583; // chosen by echo $RANDOM
     private static final int VIDEO_DELETION_REQUEST_CODE = 30202; // chosen by echo $RANDOM
 
@@ -82,6 +85,14 @@ public class AlbumActivity extends AppCompatActivity {
             public void onTabReselected(TabLayout.Tab tab) {
 
             }
+        });
+        numOfPictures.observe(this, num -> {
+            if (num != null)
+                tabLayout.getTabAt(0).setText(getString(R.string.pictures_format_str, num));
+        });
+        numOfVideos.observe(this, num -> {
+            if (num != null)
+                tabLayout.getTabAt(1).setText(getString(R.string.videos_format_str, num));
         });
 
         // On Pictures initially
@@ -273,6 +284,9 @@ public class AlbumActivity extends AppCompatActivity {
             int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
             int displayNameColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME);
 
+            // Set count
+            numOfPictures.postValue(cursor.getCount());
+
             // Loop through results
             while (cursor.moveToNext()) {
                 long id = cursor.getLong(idColumn);
@@ -306,6 +320,9 @@ public class AlbumActivity extends AppCompatActivity {
             int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID);
             int displayNameColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DISPLAY_NAME);
             int durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION);
+
+            // Set count
+            numOfVideos.postValue(cursor.getCount());
 
             // Loop through results
             while (cursor.moveToNext()) {
