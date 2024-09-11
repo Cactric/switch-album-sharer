@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -49,14 +50,16 @@ public class ScanFragment extends Fragment {
         // Inflate the layout for this fragment
         View root = inflater.inflate(R.layout.fragment_scan, container, false);
         CodeScannerView scannerView = root.findViewById(R.id.scanner);
+        TextView tempScaleFactor = root.findViewById(R.id.temp_scale_factor);
         mScaler = new ScaleGestureDetector(requireContext(), new ScaleGestureDetector.SimpleOnScaleGestureListener() {
             @Override
             public boolean onScale(@NonNull ScaleGestureDetector detector) {
                 int zoom = mScanner.getZoom();
+                tempScaleFactor.setText(String.valueOf(detector.getScaleFactor()));
 
-                if (detector.getScaleFactor() > 1.1f) {
+                if (detector.getScaleFactor() > 1.005f) {
                     zoom++;
-                } else if (detector.getScaleFactor() < 0.9f) {
+                } else if (detector.getScaleFactor() < 0.995f) {
                     zoom--;
                 }
                 if (zoom < 1)

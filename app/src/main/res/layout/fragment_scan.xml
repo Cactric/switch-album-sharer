@@ -15,4 +15,11 @@
         app:frameCornersRadius="4dp"
         app:flashButtonVisible="false" />
 
+    <TextView
+        android:id="@+id/temp_scale_factor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="32dp"
+        android:text="uninitialised temp scale factor" />
+
 </LinearLayout>
