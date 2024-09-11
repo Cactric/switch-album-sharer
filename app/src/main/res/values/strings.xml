@@ -48,4 +48,7 @@
     <string name="view_license">Details</string>
     <string name="pictures_format_str">Pictures (%1$d)</string>
     <string name="videos_format_str">Videos (%1$d)</string>
+    <string name="zoom_in">Zoom in</string>
+    <string name="zoom_out">Zoom out</string>
+    <string name="zoom_reset">Reset zoom</string>
 </resources>

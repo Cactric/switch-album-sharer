@@ -1,16 +1,18 @@
 package io.github.cactric.swalsh;
 
-import android.hardware.Camera;
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.transition.TransitionInflater;
-import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.navigation.NavController;
@@ -21,9 +23,6 @@ import com.budiyev.android.codescanner.CodeScannerView;
 import com.budiyev.android.codescanner.ScanMode;
 import com.google.zxing.BarcodeFormat;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -43,6 +42,7 @@ public class ScanFragment extends Fragment {
         setExitTransition(ti.inflateTransition(android.R.transition.fade));
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -50,6 +50,7 @@ public class ScanFragment extends Fragment {
         // Inflate the layout for this fragment
         View root = inflater.inflate(R.layout.fragment_scan, container, false);
         CodeScannerView scannerView = root.findViewById(R.id.scanner);
+        // Create a gesture detector for pinch-to-zoom
         mScaler = new ScaleGestureDetector(requireContext(), new ScaleGestureDetector.SimpleOnScaleGestureListener() {
             @Override
             public boolean onScale(@NonNull ScaleGestureDetector detector) {
@@ -57,8 +58,8 @@ public class ScanFragment extends Fragment {
                 int zoomAmount = (int) ((detector.getScaleFactor() - 1.0f) / 0.005f);
 
                 zoom += zoomAmount;
-                if (zoom < 1)
-                    zoom = 1;
+                if (zoom < 0)
+                    zoom = 0;
 
                 try {
                     mScanner.setZoom(zoom);
@@ -68,6 +69,9 @@ public class ScanFragment extends Fragment {
                 return true;
             }
         });
+        // Add the scale gesture detector to the scanner view
+        // Supposed to do performClick too for accessibility
+        // Zoom buttons will be the accessible alternative to pinch-to-zoom though
         scannerView.setOnTouchListener((v, event) -> {
             mScaler.onTouchEvent(event);
             return true;
@@ -93,6 +97,30 @@ public class ScanFragment extends Fragment {
 
         }));
         scannerView.setOnClickListener(v -> mScanner.startPreview());
+
+        // Add menu with zoom buttons (in/out/reset)
+        requireActivity().addMenuProvider(new MenuProvider() {
+            @Override
+            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+                menuInflater.inflate(R.menu.zoom_menu, menu);
+            }
+
+            @Override
+            public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+                final int ZOOM_AMOUNT = 3;
+                if (menuItem.getItemId() == R.id.menu_zoom_in) {
+                    mScanner.setZoom(mScanner.getZoom() + ZOOM_AMOUNT);
+                    return true;
+                } else if (menuItem.getItemId() == R.id.menu_zoom_out) {
+                    mScanner.setZoom(Math.max(mScanner.getZoom() - ZOOM_AMOUNT, 0));
+                    return true;
+                } else if (menuItem.getItemId() == R.id.menu_zoom_reset) {
+                    mScanner.setZoom(0);
+                    return true;
+                }
+                return false;
+            }
+        }, getViewLifecycleOwner());
         return root;
     }
 
