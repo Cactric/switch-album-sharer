@@ -55,13 +55,11 @@ public class ScanFragment extends Fragment {
             @Override
             public boolean onScale(@NonNull ScaleGestureDetector detector) {
                 int zoom = mScanner.getZoom();
-                tempScaleFactor.setText(String.valueOf(detector.getScaleFactor()));
+                int zoomAmount = (int) ((detector.getScaleFactor() - 1.0f) / 0.005f);
 
-                if (detector.getScaleFactor() > 1.005f) {
-                    zoom++;
-                } else if (detector.getScaleFactor() < 0.995f) {
-                    zoom--;
-                }
+                tempScaleFactor.setText("" + detector.getScaleFactor() + "x | " + zoomAmount);
+
+                zoom += zoomAmount;
                 if (zoom < 1)
                     zoom = 1;
 
