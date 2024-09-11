@@ -29,7 +29,6 @@ import java.util.List;
 public class ScanFragment extends Fragment {
     private CodeScanner mScanner;
     private ScaleGestureDetector mScaler;
-    private float mScaleFactor = 1.f / 50.f;
 
     public ScanFragment() {
         // Required empty public constructor
@@ -53,9 +52,18 @@ public class ScanFragment extends Fragment {
         mScaler = new ScaleGestureDetector(requireContext(), new ScaleGestureDetector.SimpleOnScaleGestureListener() {
             @Override
             public boolean onScale(@NonNull ScaleGestureDetector detector) {
-                mScaleFactor *= detector.getScaleFactor();
+                int zoom = mScanner.getZoom();
+
+                if (detector.getScaleFactor() > 1.1f) {
+                    zoom++;
+                } else if (detector.getScaleFactor() < 0.9f) {
+                    zoom--;
+                }
+                if (zoom < 1)
+                    zoom = 1;
+
                 try {
-                    mScanner.setZoom(Math.round(50.f * mScaleFactor));
+                    mScanner.setZoom(zoom);
                 } catch (Exception ignored) {
                 }
                 // TODO: add bounds on the scale factor
