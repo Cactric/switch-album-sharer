@@ -1,11 +1,15 @@
 package io.github.cactric.swalsh;
 
+import android.hardware.Camera;
 import android.os.Bundle;
 import android.transition.TransitionInflater;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.navigation.NavController;
@@ -24,6 +28,9 @@ import java.util.List;
 
 public class ScanFragment extends Fragment {
     private CodeScanner mScanner;
+    private ScaleGestureDetector mScaler;
+    private float mScaleFactor = 1.f;
+
     public ScanFragment() {
         // Required empty public constructor
     }
@@ -43,6 +50,22 @@ public class ScanFragment extends Fragment {
         // Inflate the layout for this fragment
         View root = inflater.inflate(R.layout.fragment_scan, container, false);
         CodeScannerView scannerView = root.findViewById(R.id.scanner);
+        mScaler = new ScaleGestureDetector(requireContext(), new ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            @Override
+            public boolean onScale(@NonNull ScaleGestureDetector detector) {
+                mScaleFactor *= detector.getScaleFactor();
+                try {
+                    mScanner.setZoom(Math.round(75.f * mScaleFactor));
+                } catch (Exception ignored) {
+                }
+                // TODO: add bounds on the scale factor
+                return true;
+            }
+        });
+        scannerView.setOnTouchListener((v, event) -> {
+            mScaler.onTouchEvent(event);
+            return true;
+        });
         mScanner = new CodeScanner(activity, scannerView);
         // Just scan for QR codes
         mScanner.setFormats(List.of(BarcodeFormat.QR_CODE));
