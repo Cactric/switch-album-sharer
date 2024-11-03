@@ -39,9 +39,11 @@ public class ConnectFragment extends Fragment {
     private static final String ARG_SCAN_TIME = "scan_time";
     private DownloadService.DownloadServiceBinder binder;
     private LiveData<DownloadService.State> state;
+    private LiveData<Integer> errorStringIndex;
     private LiveData<Integer> numDownloaded;
     private LiveData<Integer> numFailed;
     private LiveData<Float> fileProgress;
+    private int errno = 0;
 
     public ConnectFragment() {
         // Required empty public constructor
@@ -156,11 +158,19 @@ public class ConnectFragment extends Fragment {
                     binder = (DownloadService.DownloadServiceBinder) service;
                     if (binder != null) {
                         state = binder.getState();
+                        errorStringIndex = binder.getErrorStringIndex();
                         numDownloaded = binder.getNumDownloaded();
                         numFailed = binder.getNumFailed();
                         fileProgress = binder.getDownloadProgress();
                         LiveData<Long> binderScanTime = binder.getScanTime();
                         Log.d("SwAlSh", "Got binder");
+
+                        errorStringIndex.observe(getViewLifecycleOwner(), newError -> {
+                            if (newError != null) {
+                                errno = newError;
+                                Log.d("SwAlSh", "Set errno to " + errno);
+                            }
+                        });
 
                         state.observe(getViewLifecycleOwner(), newState -> {
                             // Update the UI
@@ -227,6 +237,24 @@ public class ConnectFragment extends Fragment {
                             if (state.getValue() == DownloadService.State.ERROR) {
                                 // Stop the progress bar since nothing will happen now
                                 progressBar.setIndeterminate(false);
+
+                                String[] errors = getResources().getStringArray(R.array.errors);
+                                AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+                                builder.setMessage(errors[errno]);
+                                builder.setTitle(R.string.comm_error);
+                                builder.setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss());
+                                builder.setOnDismissListener(dialog -> {
+                                    // Go back to code scanner
+                                    NavHostFragment navHostFragment = (NavHostFragment)
+                                            requireActivity().getSupportFragmentManager().findFragmentById(R.id.mainFragmentContainer);
+                                    NavController navController;
+                                    if (navHostFragment != null) {
+                                        navController = navHostFragment.getNavController();
+                                        navController.popBackStack();
+                                    }
+                                });
+
+                                builder.create().show();
                             }
                         });
 
@@ -265,7 +293,6 @@ public class ConnectFragment extends Fragment {
                             stateText.setText(formattedStr);
                         }
                         case ERROR -> {
-                            // TODO: show error details somehow
                             if (binder.getNumToDownload() == 0) {
                                 stateText.setText(states[newState.ordinal()]);
                             } else {

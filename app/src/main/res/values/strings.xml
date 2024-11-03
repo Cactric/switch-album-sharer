@@ -51,4 +51,5 @@
     <string name="zoom_in">Zoom in</string>
     <string name="zoom_out">Zoom out</string>
     <string name="zoom_reset">Reset zoom</string>
+    <string name="comm_error">A communication error has occurred</string>
 </resources>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="errors">
+        <item>No error yet (why are you seeing this?)</item>
+        <!-- Not sure I like how technical these two sound, but the alternative is a generic "communication error" -->
+        <item>Error getting data.json</item>
+        <item>Failed to parse data.json — possibly the format changed or an application bug?</item>
+
+        <item>Disconnected from network</item>
+        <item>Unable to find network</item>
+
+        <item>Missing permissions</item>
+        <item>Unknown error (see log for some details hopefully)</item>
+    </string-array>
+</resources>

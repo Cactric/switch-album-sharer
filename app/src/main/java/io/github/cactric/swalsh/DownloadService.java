@@ -45,6 +45,8 @@ public class DownloadService extends Service {
     private MutableLiveData<Integer> numDownloaded = new MutableLiveData<>(0);
     private MutableLiveData<Integer> numFailed = new MutableLiveData<>(0);
     private MutableLiveData<Float> downloadProgress = new MutableLiveData<>(0.0f);
+    // Index of the errors string array of the string that corresponds to the error, when state == ERROR
+    private MutableLiveData<Integer> errorStringIndex = new MutableLiveData<>(0);
     private int numToDownload = 0;
     private WifiNetworkSpecifier netSpec;
     private MutableLiveData<Long> scanTime = new MutableLiveData<>(-1L);
@@ -69,6 +71,7 @@ public class DownloadService extends Service {
             netSpec = intent.getParcelableExtra("EXTRA_NETWORK_SPECIFIER");
         }
         state.setValue(State.CONNECTING);
+        errorStringIndex.setValue(0);
         numDownloaded.setValue(0);
         numToDownload = 0;
         downloadProgress.setValue(0.0f);
@@ -126,6 +129,7 @@ public class DownloadService extends Service {
                             }
                         } catch (Exception e) {
                             Log.e("SwAlSh", "Download error", e);
+                            errorStringIndex.postValue(1);
                             state.postValue(DownloadService.State.ERROR);
 
                             // Stop duplicate callbacks
@@ -237,6 +241,7 @@ public class DownloadService extends Service {
                             state.postValue(DownloadService.State.DONE);
                         } catch (JSONException e) {
                             Log.e("SwAlSh", "Failed to parse JSON data", e);
+                            errorStringIndex.postValue(2);
                             state.postValue(DownloadService.State.ERROR);
                         }
 
@@ -249,23 +254,29 @@ public class DownloadService extends Service {
                     @Override
                     public void onLost(@NonNull Network network) {
                         Log.d("SwAlSh", "Lost network");
-                        if (state.getValue() != DownloadService.State.DONE)
+                        if (state.getValue() != DownloadService.State.DONE) {
+                            errorStringIndex.postValue(3);
                             state.postValue(DownloadService.State.ERROR);
+                        }
                         stopSelf();
                     }
 
                     @Override
                     public void onUnavailable() {
                         Log.d("SwAlSh", "Network is unavailable");
-                        if (state.getValue() != DownloadService.State.DONE)
+                        if (state.getValue() != DownloadService.State.DONE) {
+                            errorStringIndex.postValue(4);
                             state.postValue(DownloadService.State.ERROR);
+                        }
                         stopSelf();
                     }
                 });
             } catch (SecurityException e) {
+                errorStringIndex.postValue(5);
                 state.postValue(DownloadService.State.ERROR);
                 Log.e("SwAlSh", "Missing permissions", e);
             } catch (Exception e) {
+                errorStringIndex.postValue(6);
                 state.postValue(DownloadService.State.ERROR);
                 Log.e("SwAlSh", "Other error", e);
             }
@@ -280,6 +291,9 @@ public class DownloadService extends Service {
     public class DownloadServiceBinder extends Binder {
         public LiveData<State> getState() {
             return state;
+        }
+        public LiveData<Integer> getErrorStringIndex() {
+            return errorStringIndex;
         }
         public LiveData<Integer> getNumDownloaded() {
             return numDownloaded;
