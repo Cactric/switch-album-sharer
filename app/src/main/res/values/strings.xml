@@ -44,7 +44,7 @@
     <string name="info">Info</string>
     <string name="app_logo">App logo</string>
     <string name="info_author">By Cactric</string>
-    <string name="info_icon_credit">Icons other than the app logo are Material Icons, available under the Apache License version 2.0</string>
+    <string name="licenses">This app is licensed under the GPLv3.\n\nIcons other than the app logo are Material Icons, available under the Apache License version 2.0</string>
     <string name="view_license">Details</string>
     <string name="pictures_format_str">Pictures (%1$d)</string>
     <string name="videos_format_str">Videos (%1$d)</string>
@@ -52,4 +52,5 @@
     <string name="zoom_out">Zoom out</string>
     <string name="zoom_reset">Reset zoom</string>
     <string name="comm_error">A communication error has occurred</string>
+    <string name="source_code">Source code</string>
 </resources>

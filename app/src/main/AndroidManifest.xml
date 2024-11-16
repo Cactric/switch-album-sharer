@@ -29,7 +29,8 @@
         tools:targetApi="34">
         <activity
             android:name=".InfoActivity"
-            android:exported="false" />
+            android:exported="false">
+        </activity>
         <activity
             android:name=".AlbumActivity"
             android:exported="true">
