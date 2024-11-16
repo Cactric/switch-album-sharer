@@ -37,7 +37,6 @@ import com.google.android.material.tabs.TabLayout;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 
 public class AlbumActivity extends AppCompatActivity {
     private final ArrayList<PictureItem> pictureItems = new ArrayList<>();

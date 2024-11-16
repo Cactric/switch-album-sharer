@@ -3,7 +3,6 @@ package io.github.cactric.swalsh;
 import android.Manifest;
 import android.app.ActivityOptions;
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.os.Bundle;
 
 import androidx.activity.result.ActivityResultLauncher;
