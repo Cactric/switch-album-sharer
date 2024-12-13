@@ -114,121 +114,13 @@ public class AlbumActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.sort_items) {
-            View anchor = findViewById(R.id.sort_items);
-            if (anchor != null) {
-                PopupMenu pm = new PopupMenu(this, anchor);
-                pm.inflate(R.menu.sort_menu);
-                if (mediaSortDescending)
-                    pm.getMenu().findItem(R.id.sort_descending).setChecked(true);
-                else
-                    pm.getMenu().findItem(R.id.sort_ascending).setChecked(true);
-                pm.setOnMenuItemClickListener(sortItem -> {
-                    if (sortItem.getItemId() == R.id.sort_by_date_added) {
-                        mediaSortOrder = MediaStore.Images.Media.DATE_ADDED;
-                        retrieveItemsOnSeparateThread();
-                    } else if (sortItem.getItemId() == R.id.sort_by_date_taken) {
-                        mediaSortOrder = MediaStore.Images.Media.DISPLAY_NAME;
-                        retrieveItemsOnSeparateThread();
-                    } else if (sortItem.getItemId() == R.id.sort_by_game) {
-                        Toast.makeText(this, "Game sorting chosen, but isn't implemented yet", Toast.LENGTH_SHORT).show();
-                        // TODO: replace with another activity?
-                    } else if (sortItem.getItemId() == R.id.sort_ascending) {
-                        mediaSortDescending = false;
-                        sortItem.setChecked(true);
-                        retrieveItemsOnSeparateThread();
-                    } else if (sortItem.getItemId() == R.id.sort_descending) {
-                        mediaSortDescending = true;
-                        sortItem.setChecked(true);
-                        retrieveItemsOnSeparateThread();
-                    } else {
-                        return false;
-                    }
-                    return true;
-                });
-                pm.show();
-            } else {
-                Toast.makeText(this, "Anchor (item.getActionView()) is null?", Toast.LENGTH_SHORT).show();
-            }
+            showSortItemsPopup(item);
+            return true;
         } else if (item.getItemId() == R.id.delete_all_pictures) {
-            getPictures();
-            if (pictureItems.isEmpty()) {
-                Toast.makeText(this, "There are no pictures to remove", Toast.LENGTH_SHORT).show();
-                return true;
-            }
-
-            ArrayList<Uri> uris = new ArrayList<>();
-            for (PictureItem pi: pictureItems) {
-                uris.add(pi.uri);
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                // Use the native delete UI
-                PendingIntent editPendingIntent = MediaStore.createDeleteRequest(getContentResolver(), uris);
-                try {
-                    startIntentSenderForResult(editPendingIntent.getIntentSender(), PICTURE_DELETION_REQUEST_CODE, null, 0, 0, 0);
-                } catch (IntentSender.SendIntentException e) {
-                    Log.e("SwAlSh", "Couldn't ask to delete pictures", e);
-                }
-            } else {
-                AlertDialog.Builder adb = new AlertDialog.Builder(this);
-                adb.setTitle(getString(R.string.delete_all_pictures_confirmation_formatted, pictureItems.size()));
-                adb.setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
-                adb.setPositiveButton(R.string.yes, (dialog, which) -> {
-                    new Thread(() -> {
-                        // Delete them
-                        for (Uri u: uris) {
-                            getContentResolver().delete(u, null, null);
-                        }
-                        TabLayout tb = findViewById(R.id.album_tabs);
-                        if (tb.getSelectedTabPosition() == 0) {
-                            // If pictures is the selected tab, refresh it
-                            getPictures();
-                            runOnUiThread(this::setupRecyclerForPictures);
-                        }
-                    }).start();
-                });
-                adb.show();
-            }
+            showDeletePicturesPopup(item);
             return true;
         } else if (item.getItemId() == R.id.delete_all_videos) {
-            getVideos();
-            if (videoItems.isEmpty()) {
-                Toast.makeText(this, "There are no videos to remove", Toast.LENGTH_SHORT).show();
-                return true;
-            }
-
-            ArrayList<Uri> uris = new ArrayList<>();
-            for (VideoItem vi: videoItems) {
-                uris.add(vi.uri);
-            }
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                // Use the native delete UI
-                PendingIntent editPendingIntent = MediaStore.createDeleteRequest(getContentResolver(), uris);
-                try {
-                    startIntentSenderForResult(editPendingIntent.getIntentSender(), VIDEO_DELETION_REQUEST_CODE, null, 0, 0, 0);
-                } catch (IntentSender.SendIntentException e) {
-                    Log.e("SwAlSh", "Couldn't ask to delete videos", e);
-                }
-            } else {
-                AlertDialog.Builder adb = new AlertDialog.Builder(this);
-                adb.setTitle(getString(R.string.delete_all_videos_confirmation_formatted, videoItems.size()));
-                adb.setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
-                adb.setPositiveButton(R.string.yes, (dialog, which) -> {
-                    new Thread(() -> {
-                        // Delete them
-                        for (Uri u: uris) {
-                            getContentResolver().delete(u, null, null);
-                        }
-                        TabLayout tb = findViewById(R.id.album_tabs);
-                        if (tb.getSelectedTabPosition() == 1) {
-                            // If videos is the selected tab, refresh it
-                            getVideos();
-                            runOnUiThread(this::setupRecyclerForVideos);
-                        }
-
-                    }).start();
-                });
-                adb.show();
-            }
+            showDeleteVideosPopup(item);
             return true;
         }
         return false;
@@ -413,5 +305,126 @@ public class AlbumActivity extends AppCompatActivity {
             });
         });
         retrieveThread.start();
+    }
+
+    private void showSortItemsPopup(MenuItem item) {
+        View anchor = findViewById(R.id.sort_items);
+        if (anchor != null) {
+            PopupMenu pm = new PopupMenu(this, anchor);
+            pm.inflate(R.menu.sort_menu);
+            if (mediaSortDescending)
+                pm.getMenu().findItem(R.id.sort_descending).setChecked(true);
+            else
+                pm.getMenu().findItem(R.id.sort_ascending).setChecked(true);
+            pm.setOnMenuItemClickListener(sortItem -> {
+                if (sortItem.getItemId() == R.id.sort_by_date_added) {
+                    mediaSortOrder = MediaStore.Images.Media.DATE_ADDED;
+                    retrieveItemsOnSeparateThread();
+                } else if (sortItem.getItemId() == R.id.sort_by_date_taken) {
+                    mediaSortOrder = MediaStore.Images.Media.DISPLAY_NAME;
+                    retrieveItemsOnSeparateThread();
+                } else if (sortItem.getItemId() == R.id.sort_by_game) {
+                    Toast.makeText(this, "Game sorting chosen, but isn't implemented yet", Toast.LENGTH_SHORT).show();
+                    // TODO: replace with another activity?
+                } else if (sortItem.getItemId() == R.id.sort_ascending) {
+                    mediaSortDescending = false;
+                    sortItem.setChecked(true);
+                    retrieveItemsOnSeparateThread();
+                } else if (sortItem.getItemId() == R.id.sort_descending) {
+                    mediaSortDescending = true;
+                    sortItem.setChecked(true);
+                    retrieveItemsOnSeparateThread();
+                } else {
+                    return false;
+                }
+                return true;
+            });
+            pm.show();
+        } else {
+            Toast.makeText(this, "Anchor (item.getActionView()) is null?", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void showDeletePicturesPopup(MenuItem item) {
+        getPictures();
+        if (pictureItems.isEmpty()) {
+            Toast.makeText(this, "There are no pictures to remove", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        ArrayList<Uri> uris = new ArrayList<>();
+        for (PictureItem pi: pictureItems) {
+            uris.add(pi.uri);
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // Use the native delete UI
+            PendingIntent editPendingIntent = MediaStore.createDeleteRequest(getContentResolver(), uris);
+            try {
+                startIntentSenderForResult(editPendingIntent.getIntentSender(), PICTURE_DELETION_REQUEST_CODE, null, 0, 0, 0);
+            } catch (IntentSender.SendIntentException e) {
+                Log.e("SwAlSh", "Couldn't ask to delete pictures", e);
+            }
+        } else {
+            AlertDialog.Builder adb = new AlertDialog.Builder(this);
+            adb.setTitle(getString(R.string.delete_all_pictures_confirmation_formatted, pictureItems.size()));
+            adb.setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
+            adb.setPositiveButton(R.string.yes, (dialog, which) -> {
+                new Thread(() -> {
+                    // Delete them
+                    for (Uri u: uris) {
+                        getContentResolver().delete(u, null, null);
+                    }
+                    TabLayout tb = findViewById(R.id.album_tabs);
+                    if (tb.getSelectedTabPosition() == 0) {
+                        // If pictures is the selected tab, refresh it
+                        getPictures();
+                        runOnUiThread(this::setupRecyclerForPictures);
+                    }
+                }).start();
+            });
+            adb.show();
+        }
+    }
+
+    private void showDeleteVideosPopup(MenuItem item) {
+        getVideos();
+        if (videoItems.isEmpty()) {
+            Toast.makeText(this, "There are no videos to remove", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        ArrayList<Uri> uris = new ArrayList<>();
+        for (VideoItem vi: videoItems) {
+            uris.add(vi.uri);
+        }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            // Use the native delete UI
+            PendingIntent editPendingIntent = MediaStore.createDeleteRequest(getContentResolver(), uris);
+            try {
+                startIntentSenderForResult(editPendingIntent.getIntentSender(), VIDEO_DELETION_REQUEST_CODE, null, 0, 0, 0);
+            } catch (IntentSender.SendIntentException e) {
+                Log.e("SwAlSh", "Couldn't ask to delete videos", e);
+            }
+        } else {
+            AlertDialog.Builder adb = new AlertDialog.Builder(this);
+            adb.setTitle(getString(R.string.delete_all_videos_confirmation_formatted, videoItems.size()));
+            adb.setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
+            adb.setPositiveButton(R.string.yes, (dialog, which) -> {
+                new Thread(() -> {
+                    // Delete them
+                    for (Uri u: uris) {
+                        getContentResolver().delete(u, null, null);
+                    }
+                    TabLayout tb = findViewById(R.id.album_tabs);
+                    if (tb.getSelectedTabPosition() == 1) {
+                        // If videos is the selected tab, refresh it
+                        getVideos();
+                        runOnUiThread(this::setupRecyclerForVideos);
+                    }
+
+                }).start();
+            });
+            adb.show();
+        }
     }
 }
