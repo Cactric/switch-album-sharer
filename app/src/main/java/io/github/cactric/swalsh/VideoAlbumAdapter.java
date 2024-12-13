@@ -15,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.MutableLiveData;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -26,6 +27,7 @@ import java.util.Date;
 
 public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.ViewHolder> {
     private final ArrayList<VideoItem> media;
+    private final MutableLiveData<Integer> numOfVideos;
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private final ImageView videoThumbnail;
         private final TextView lengthText;
@@ -57,8 +59,9 @@ public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.Vi
     }
 
     // Takes an array of file paths to the pictures that should be displayed
-    public VideoAlbumAdapter(VideoItem[] media) {
+    public VideoAlbumAdapter(VideoItem[] media, MutableLiveData<Integer> numOfVideos) {
         this.media = new ArrayList<>(Arrays.asList(media));
+        this.numOfVideos = numOfVideos;
     }
 
     // Create new views
@@ -158,6 +161,8 @@ public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.Vi
         contentResolver.delete(item.uri, null, null);
         VideoAlbumAdapter.this.notifyItemRemoved(media.indexOf(item));
         media.remove(item);
+        if (numOfVideos != null && numOfVideos.getValue() != null)
+            numOfVideos.postValue(numOfVideos.getValue() - 1);
     }
 
     @Override

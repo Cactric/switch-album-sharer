@@ -15,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.MutableLiveData;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -26,6 +27,7 @@ import java.util.Date;
 
 public class PictureAlbumAdapter extends RecyclerView.Adapter<PictureAlbumAdapter.ViewHolder> {
     private final ArrayList<PictureItem> media;
+    private final MutableLiveData<Integer> numOfPictures;
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private final ImageView imageView;
         private final TextView lengthText;
@@ -57,8 +59,9 @@ public class PictureAlbumAdapter extends RecyclerView.Adapter<PictureAlbumAdapte
     }
 
     // Takes an array of file paths to the pictures that should be displayed
-    public PictureAlbumAdapter(PictureItem[] media) {
+    public PictureAlbumAdapter(PictureItem[] media, MutableLiveData<Integer> numOfPictures) {
         this.media = new ArrayList<>(Arrays.asList(media));
+        this.numOfPictures = numOfPictures;
     }
 
     // Create new views
@@ -156,6 +159,8 @@ public class PictureAlbumAdapter extends RecyclerView.Adapter<PictureAlbumAdapte
         contentResolver.delete(item.uri, null, null);
         PictureAlbumAdapter.this.notifyItemRemoved(media.indexOf(item));
         media.remove(item);
+        if (numOfPictures != null && numOfPictures.getValue() != null)
+            numOfPictures.postValue(numOfPictures.getValue() - 1);
     }
 
     @Override
