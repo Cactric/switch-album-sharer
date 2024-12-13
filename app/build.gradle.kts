@@ -10,7 +10,7 @@ android {
         applicationId = "io.github.cactric.swalsh"
         // Increased to 29 for WifiNetworkSpecifier
         minSdk = 29
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
