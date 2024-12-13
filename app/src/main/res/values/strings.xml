@@ -53,4 +53,10 @@
     <string name="zoom_reset">Reset zoom</string>
     <string name="comm_error">A communication error has occurred</string>
     <string name="source_code">Source code</string>
+    <string name="sort">Sort</string>
+    <string name="sort_ascending_time">Oldest first</string>
+    <string name="sort_descending_time">Newest first</string>
+    <string name="by_game">Game</string>
+    <string name="by_date_taken">Date captured</string>
+    <string name="by_date_added">Date downloaded</string>
 </resources>

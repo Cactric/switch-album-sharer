@@ -25,6 +25,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -45,6 +46,9 @@ public class AlbumActivity extends AppCompatActivity {
     private final MutableLiveData<Integer> numOfVideos = new MutableLiveData<Integer>();
     private static final int PICTURE_DELETION_REQUEST_CODE = 8583; // chosen by echo $RANDOM
     private static final int VIDEO_DELETION_REQUEST_CODE = 30202; // chosen by echo $RANDOM
+    private String mediaSortOrder = MediaStore.Images.Media.DATE_ADDED;
+    private boolean mediaSortDescending = true;
+    private TabLayout tabLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +67,7 @@ public class AlbumActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         // Set up tabs
-        TabLayout tabLayout = findViewById(R.id.album_tabs);
+        tabLayout = findViewById(R.id.album_tabs);
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
@@ -98,25 +102,7 @@ public class AlbumActivity extends AppCompatActivity {
                 tab.setText(getString(R.string.videos_format_str, num));
         });
 
-        Thread retrieveThread = new Thread(() -> {
-            // TODO: synchronise adding to array list
-            getPictures();
-            getVideos();
-
-            runOnUiThread(() -> {
-                // On Pictures initially, unless there aren't any pictures and there are some videos
-                Integer pics = numOfPictures.getValue();
-                Integer vids = numOfVideos.getValue();
-                if ((pics != null && pics == 0) &&
-                        (vids != null && vids > 0)) {
-                    tabLayout.selectTab(tabLayout.getTabAt(1));
-                    setupRecyclerForVideos();
-                } else {
-                    setupRecyclerForPictures();
-                }
-            });
-        });
-        retrieveThread.start();
+        retrieveItemsOnSeparateThread();
     }
 
     @Override
@@ -127,7 +113,43 @@ public class AlbumActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.delete_all_pictures) {
+        if (item.getItemId() == R.id.sort_items) {
+            View anchor = findViewById(R.id.sort_items);
+            if (anchor != null) {
+                PopupMenu pm = new PopupMenu(this, anchor);
+                pm.inflate(R.menu.sort_menu);
+                if (mediaSortDescending)
+                    pm.getMenu().findItem(R.id.sort_descending).setChecked(true);
+                else
+                    pm.getMenu().findItem(R.id.sort_ascending).setChecked(true);
+                pm.setOnMenuItemClickListener(sortItem -> {
+                    if (sortItem.getItemId() == R.id.sort_by_date_added) {
+                        mediaSortOrder = MediaStore.Images.Media.DATE_ADDED;
+                        retrieveItemsOnSeparateThread();
+                    } else if (sortItem.getItemId() == R.id.sort_by_date_taken) {
+                        mediaSortOrder = MediaStore.Images.Media.DISPLAY_NAME;
+                        retrieveItemsOnSeparateThread();
+                    } else if (sortItem.getItemId() == R.id.sort_by_game) {
+                        Toast.makeText(this, "Game sorting chosen, but isn't implemented yet", Toast.LENGTH_SHORT).show();
+                        // TODO: replace with another activity?
+                    } else if (sortItem.getItemId() == R.id.sort_ascending) {
+                        mediaSortDescending = false;
+                        sortItem.setChecked(true);
+                        retrieveItemsOnSeparateThread();
+                    } else if (sortItem.getItemId() == R.id.sort_descending) {
+                        mediaSortDescending = true;
+                        sortItem.setChecked(true);
+                        retrieveItemsOnSeparateThread();
+                    } else {
+                        return false;
+                    }
+                    return true;
+                });
+                pm.show();
+            } else {
+                Toast.makeText(this, "Anchor (item.getActionView()) is null?", Toast.LENGTH_SHORT).show();
+            }
+        } else if (item.getItemId() == R.id.delete_all_pictures) {
             getPictures();
             if (pictureItems.isEmpty()) {
                 Toast.makeText(this, "There are no pictures to remove", Toast.LENGTH_SHORT).show();
@@ -231,8 +253,6 @@ public class AlbumActivity extends AppCompatActivity {
                     setupRecyclerForVideos();
                 }
             }
-        } else {
-            Toast.makeText(this, "They were not deleted", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -306,7 +326,7 @@ public class AlbumActivity extends AppCompatActivity {
                 pics_projection,
                 null,
                 null,
-                MediaStore.Images.Media.DATE_ADDED + " DESC"
+                mediaSortOrder + (mediaSortDescending ? " DESC" : "")
         )) {
             if (cursor == null)
                 throw new NullPointerException();
@@ -342,7 +362,7 @@ public class AlbumActivity extends AppCompatActivity {
                 vid_projection,
                 null,
                 null,
-                MediaStore.Video.Media.DATE_ADDED + " DESC"
+                mediaSortOrder + (mediaSortDescending ? " DESC" : "")
         )) {
             if (cursor == null)
                 throw new NullPointerException();
@@ -370,5 +390,28 @@ public class AlbumActivity extends AppCompatActivity {
                 videoItems.add(item);
             }
         }
+    }
+
+    private void retrieveItemsOnSeparateThread() {
+        Thread retrieveThread = new Thread(() -> {
+            // TODO: synchronise adding to array list
+            getPictures();
+            getVideos();
+
+            runOnUiThread(() -> {
+                // On Pictures initially, unless there aren't any pictures and there are some videos
+                Integer pics = numOfPictures.getValue();
+                Integer vids = numOfVideos.getValue();
+                if ((pics != null && pics == 0) &&
+                        (vids != null && vids > 0)) {
+                    if (tabLayout != null)
+                        tabLayout.selectTab(tabLayout.getTabAt(1));
+                    setupRecyclerForVideos();
+                } else {
+                    setupRecyclerForPictures();
+                }
+            });
+        });
+        retrieveThread.start();
     }
 }
