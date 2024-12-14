@@ -7,7 +7,7 @@
         <item>Failed to parse data.json — possibly the format changed or an application bug?</item>
 
         <item>Disconnected from network</item>
-        <item>Unable to find network</item>
+        <item>Unable to find network.\nMake sure you\'re in range of the console and try again.</item>
 
         <item>Missing permissions</item>
         <item>Unknown error (see log for some details hopefully)</item>
