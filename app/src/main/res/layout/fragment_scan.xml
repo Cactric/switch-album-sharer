@@ -7,12 +7,10 @@
     android:orientation="vertical"
     tools:context=".IntroFragment">
 
-    <com.budiyev.android.codescanner.CodeScannerView
-        android:id="@+id/scanner"
+    <androidx.camera.view.PreviewView
+        android:id="@+id/camera_preview"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        app:frameCornersRadius="4dp"
-        app:flashButtonVisible="false" />
+        android:layout_weight="1" />
 
 </LinearLayout>

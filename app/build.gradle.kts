@@ -44,6 +44,10 @@ dependencies {
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
 
-    implementation(libs.code.scanner)
     implementation(libs.preference.ktx)
+    implementation(libs.zxing.core)
+    implementation(libs.camera.core)
+    implementation(libs.camera.view)
+    implementation(libs.camera.lifecycle)
+    implementation(libs.camera.camera2)
 }
