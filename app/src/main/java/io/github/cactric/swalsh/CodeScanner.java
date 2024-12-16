@@ -1,8 +1,6 @@
 package io.github.cactric.swalsh;
 
-import android.graphics.Matrix;
 import android.util.Log;
-import android.util.Size;
 
 import androidx.annotation.NonNull;
 import androidx.camera.core.ImageAnalysis;
@@ -19,8 +17,8 @@ import java.nio.ByteBuffer;
 
 public class CodeScanner implements ImageAnalysis.Analyzer {
     // Use the QR specific reader since I only care about QR codes specifically
-    private QRCodeReader reader = new QRCodeReader();
-    private BarcodeDetectionListener listener;
+    private final QRCodeReader reader = new QRCodeReader();
+    private final BarcodeDetectionListener listener;
     public CodeScanner(BarcodeDetectionListener listener) {
         this.listener = listener;
     }
@@ -35,12 +33,9 @@ public class CodeScanner implements ImageAnalysis.Analyzer {
             if (planeBuffer.hasArray()) {
                 imageData = planeBuffer.array();
             } else {
-                Log.d("SwAlSh", "Copying array: Limit: " + planeBuffer.limit());
                 imageData = new byte[planeBuffer.limit()];
                 planeBuffer.get(imageData);
             }
-
-            Log.d("SwAlSh", "Image crop is " + image.getCropRect());
 
             PlanarYUVLuminanceSource source = new PlanarYUVLuminanceSource(
                     imageData,
@@ -54,7 +49,7 @@ public class CodeScanner implements ImageAnalysis.Analyzer {
             );
             BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
             Result r = reader.decode(bitmap);
-            listener.onBarcodeFound(r);
+            listener.onDecoded(r);
         } catch (NotFoundException ignored) {
         } catch (Exception e) {
             Log.e("SwAlSh", "Exception while analysing image", e);

@@ -79,7 +79,6 @@ public class ScanFragment extends Fragment {
         ListenableFuture<ProcessCameraProvider> camProviderFuture = ProcessCameraProvider.getInstance(requireContext());
         camProviderFuture.addListener(() -> {
             try {
-                Log.d("SwAlSh", "In CamProviderFuture");
                 ProcessCameraProvider camProvider = camProviderFuture.get();
                 camProvider.unbindAll();
 
@@ -91,11 +90,10 @@ public class ScanFragment extends Fragment {
                 imageAnalysis.setAnalyzer(requireContext().getMainExecutor(), scanner);
 
                 preview.setSurfaceProvider(previewView.getSurfaceProvider());
-                Camera cam = camProvider.bindToLifecycle(getViewLifecycleOwner(),
+                camProvider.bindToLifecycle(getViewLifecycleOwner(),
                         camSelector,
                         preview,
                         imageAnalysis);
-                // TODO: autofocus
             } catch (ExecutionException | InterruptedException e) {
                 Log.e("SwAlSh", "Binding failed", e);
             }
