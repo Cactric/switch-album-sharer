@@ -2,17 +2,22 @@ package io.github.cactric.swalsh;
 
 import android.Manifest;
 import android.app.ActivityOptions;
+import android.content.Context;
 import android.content.Intent;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 
+import android.provider.Settings;
 import android.transition.TransitionInflater;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -40,10 +45,25 @@ public class IntroFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View root = inflater.inflate(R.layout.fragment_intro, container, false);
+
+        // Setup button functionality
         root.findViewById(R.id.intro_scan_button).setOnClickListener(v -> {
-            storedNavController = Navigation.findNavController(v);
-            requestPermLauncher.launch(Manifest.permission.CAMERA);
+            if (checkWifiIsEnabled()) {
+                storedNavController = Navigation.findNavController(v);
+                requestPermLauncher.launch(Manifest.permission.CAMERA);
+            }
         });
+
+        root.findViewById(R.id.intro_manual_button).setOnClickListener(v -> {
+            if (checkWifiIsEnabled())
+                Navigation.findNavController(v).navigate(R.id.action_manual_entry);
+        });
+
+        root.findViewById(R.id.intro_album_button).setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), AlbumActivity.class);
+            startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(getActivity()).toBundle());
+        });
+
         requireActivity().addMenuProvider(new MenuProvider() {
             @Override
             public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
@@ -60,13 +80,6 @@ public class IntroFragment extends Fragment {
                 return false;
             }
         }, getViewLifecycleOwner());
-
-        root.findViewById(R.id.intro_manual_button).setOnClickListener(v -> Navigation.findNavController(v).navigate(R.id.action_manual_entry));
-
-        root.findViewById(R.id.intro_album_button).setOnClickListener(v -> {
-            Intent intent = new Intent(getActivity(), AlbumActivity.class);
-            startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(getActivity()).toBundle());
-        });
         return root;
     }
 
@@ -79,4 +92,30 @@ public class IntroFragment extends Fragment {
             Toast.makeText(getContext(), "Camera permission is needed to scan the QR code", Toast.LENGTH_SHORT).show();
         }
     });
+
+    /**
+     * Checks if Wifi is enabled. If it is, it returns true, otherwise it alerts the user to turn it
+     * on and returns false.
+     * @return True if Wifi is enabled
+     */
+    private boolean checkWifiIsEnabled() {
+        WifiManager wifiManager = (WifiManager) requireContext().getSystemService(Context.WIFI_SERVICE);
+        if (wifiManager.isWifiEnabled()) {
+            return true;
+        } else {
+            // Alert the user and then return false
+            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+            builder.setMessage(R.string.wifi_disabled_message);
+            builder.setTitle(R.string.wifi_disabled);
+            builder.setPositiveButton(R.string.wifi_settings, (dialog, which) -> {
+                Intent wifiSettingsIntent = new Intent(Settings.ACTION_WIFI_SETTINGS);
+                if (wifiSettingsIntent.resolveActivity(requireContext().getPackageManager()) != null) {
+                    startActivity(wifiSettingsIntent);
+                }
+            });
+            builder.setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.dismiss());
+            builder.create().show();
+            return false;
+        }
+    }
 }

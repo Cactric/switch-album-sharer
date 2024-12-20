@@ -63,33 +63,6 @@ public class ConnectFragment extends Fragment {
         // Inflate the layout for this fragment
         View root = inflater.inflate(R.layout.fragment_connect, container, false);
 
-        // Check Wifi is enabled
-        WifiManager wifiManager = (WifiManager) requireContext().getSystemService(Context.WIFI_SERVICE);
-        if (!wifiManager.isWifiEnabled()) {
-            // Complain if Wifi is disabled
-            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-            builder.setMessage(R.string.wifi_disabled_message);
-            builder.setTitle(R.string.wifi_disabled);
-            builder.setPositiveButton(R.string.wifi_settings, (dialog, which) -> {
-                Intent wifiSettingsIntent = new Intent(Settings.ACTION_WIFI_SETTINGS);
-                if (wifiSettingsIntent.resolveActivity(requireContext().getPackageManager()) != null) {
-                    startActivity(wifiSettingsIntent);
-                }
-            });
-            builder.setOnDismissListener(dialog -> {
-                // Go back to code scanner
-                NavHostFragment navHostFragment = (NavHostFragment)
-                        requireActivity().getSupportFragmentManager().findFragmentById(R.id.mainFragmentContainer);
-                NavController navController;
-                if (navHostFragment != null) {
-                    navController = navHostFragment.getNavController();
-                    navController.popBackStack();
-                }
-            });
-            builder.create().show();
-            return root;
-        }
-
         if (getArguments() != null) {
             String scannedData = getArguments().getString(ARG_SCANNED_DATA);
             WifiNetworkSpecifier netSpec = null;

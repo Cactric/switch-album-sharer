@@ -29,7 +29,7 @@
     <string name="password_required">You need to put in a password</string>
     <string name="nothing_here">Nothing here</string>
     <string name="wifi_disabled">Wi-Fi is not enabled</string>
-    <string name="wifi_disabled_message">Enable it to continue.</string>
+    <string name="wifi_disabled_message">Enable it then try again.</string>
     <string name="wifi_settings">Wi-Fi settings</string>
     <string name="not_ready_to_share">Not ready to share yet</string>
     <string name="delete_confirmation">Are you sure you want to delete this item?</string>
