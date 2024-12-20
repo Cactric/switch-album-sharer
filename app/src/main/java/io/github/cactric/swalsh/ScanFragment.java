@@ -15,12 +15,11 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.camera.camera2.Camera2Config;
 import androidx.camera.core.Camera;
-import androidx.camera.core.CameraProvider;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.CameraXConfig;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.Preview;
-import androidx.camera.core.impl.CameraConfig;
+import androidx.camera.core.ZoomState;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.view.MenuProvider;
@@ -37,6 +36,7 @@ import java.util.concurrent.ExecutionException;
 public class ScanFragment extends Fragment {
     private CodeScanner scanner;
     private ScaleGestureDetector pinchDetector;
+    private Camera cam;
 
     public ScanFragment() {
         // Required empty public constructor
@@ -92,7 +92,7 @@ public class ScanFragment extends Fragment {
                 imageAnalysis.setAnalyzer(requireContext().getMainExecutor(), scanner);
 
                 preview.setSurfaceProvider(previewView.getSurfaceProvider());
-                camProvider.bindToLifecycle(getViewLifecycleOwner(),
+                cam = camProvider.bindToLifecycle(getViewLifecycleOwner(),
                         camSelector,
                         preview,
                         imageAnalysis);
@@ -105,18 +105,8 @@ public class ScanFragment extends Fragment {
         pinchDetector = new ScaleGestureDetector(requireContext(), new ScaleGestureDetector.SimpleOnScaleGestureListener() {
             @Override
             public boolean onScale(@NonNull ScaleGestureDetector detector) {
-//                int zoom = scanner.getZoom();
-//                int zoomAmount = (int) ((detector.getScaleFactor() - 1.0f) / 0.005f);
-//
-//                zoom += zoomAmount;
-//                if (zoom < 0)
-//                    zoom = 0;
-//
-//                try {
-//                    scanner.setZoom(zoom);
-//                } catch (Exception ignored) {
-//                }
-                // TODO: add bounds on the scale factor
+                float zoomAmount = (detector.getScaleFactor() - 1.0f) / 0.4f;
+                changeZoom(zoomAmount);
                 return true;
             }
         });
@@ -137,20 +127,39 @@ public class ScanFragment extends Fragment {
 
             @Override
             public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
-//                final int ZOOM_AMOUNT = 3;
-//                if (menuItem.getItemId() == R.id.menu_zoom_in) {
-//                    scanner.setZoom(scanner.getZoom() + ZOOM_AMOUNT);
-//                    return true;
-//                } else if (menuItem.getItemId() == R.id.menu_zoom_out) {
-//                    scanner.setZoom(Math.max(scanner.getZoom() - ZOOM_AMOUNT, 0));
-//                    return true;
-//                } else if (menuItem.getItemId() == R.id.menu_zoom_reset) {
-//                    scanner.setZoom(0);
-//                    return true;
-//                }
+                final float ZOOM_AMOUNT = 0.2f;
+                if (menuItem.getItemId() == R.id.menu_zoom_in) {
+                    changeZoom(ZOOM_AMOUNT);
+                    return true;
+                } else if (menuItem.getItemId() == R.id.menu_zoom_out) {
+                    changeZoom(-ZOOM_AMOUNT);
+                    return true;
+                } else if (menuItem.getItemId() == R.id.menu_zoom_reset) {
+                    // Set to the furthest out it can be
+                    cam.getCameraControl().setLinearZoom(0.0f);
+                    return true;
+                }
                 return false;
             }
         }, getViewLifecycleOwner());
         return root;
+    }
+
+    /**
+     * Zoom in or out the camera by adding amount to the zoom ratio, then applying bounds checks
+     * @param amount Amount to add to the zoom ratio
+     */
+    private void changeZoom(float amount) {
+        ZoomState zoomState = cam.getCameraInfo().getZoomState().getValue();
+        if (zoomState != null) {
+            float zoomRatio = zoomState.getZoomRatio();
+            zoomRatio += amount;
+            // Apply bounds
+            zoomRatio = Float.max(zoomState.getMinZoomRatio(), zoomRatio);
+            zoomRatio = Float.min(zoomState.getMaxZoomRatio(), zoomRatio);
+            cam.getCameraControl().setZoomRatio(zoomRatio);
+        } else {
+            Log.e("SwAlSh", "Zoom state obtained from Camera Info is null - zoom not applied");
+        }
     }
 }
