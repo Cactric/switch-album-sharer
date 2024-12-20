@@ -2,10 +2,18 @@ package io.github.cactric.swalsh;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.res.TypedArray;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,6 +22,10 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 public class InfoActivity extends AppCompatActivity {
+    private final Library[] libraries = {
+            new Library("Material Icons", Uri.parse("https://fonts.google.com/icons"), "Apache 2.0", Library.APACHE_2_URI),
+            new Library("ZXing", Uri.parse("https://github.com/zxing/zxing"), "Apache 2.0", Library.APACHE_2_URI)
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,9 +46,69 @@ public class InfoActivity extends AppCompatActivity {
             try {
                 startActivity(intent);
             } catch (ActivityNotFoundException e) {
+                Toast.makeText(this, getString(R.string.no_browser), Toast.LENGTH_SHORT).show();
                 Log.e("SwAlSh", "No browser?", e);
             }
         });
 
+        // Add libraries to list view
+        LinearLayout libList = findViewById(R.id.library_list);
+        for (Library l: libraries) {
+            // Add a separator if it's not the first element
+            if (libList.getChildCount() > 0) {
+                try (TypedArray attributes = obtainStyledAttributes(new int[]{android.R.attr.listDivider});) {
+                    Drawable bg = attributes.getDrawable(0);
+                    View divider = new View(this);
+                    divider.setBackground(bg);
+                    libList.addView(divider);
+                }
+            }
+
+            View v = getLayoutInflater().inflate(R.layout.library_list_element, null);
+
+            TextView libName = v.findViewById(R.id.library_name);
+            libName.setText(l.name);
+            TextView libLicense = v.findViewById(R.id.library_license);
+            libLicense.setText(l.license);
+            ImageButton libWebButton = v.findViewById(R.id.library_website_button);
+            libWebButton.setOnClickListener(button -> {
+                // Go to library website
+                Intent intent = new Intent(Intent.ACTION_VIEW, l.website);
+                try {
+                    startActivity(intent);
+                } catch (ActivityNotFoundException e) {
+                    Toast.makeText(this, getString(R.string.no_browser), Toast.LENGTH_SHORT).show();
+                    Log.e("SwAlSh", "No browser?", e);
+                }
+            });
+            ImageButton libLicenseButton = v.findViewById(R.id.library_license_button);
+            libLicenseButton.setOnClickListener(button -> {
+                // Go to license website
+                Intent intent = new Intent(Intent.ACTION_VIEW, l.license_link);
+                try {
+                    startActivity(intent);
+                } catch (ActivityNotFoundException e) {
+                    Toast.makeText(this, getString(R.string.no_browser), Toast.LENGTH_SHORT).show();
+                    Log.e("SwAlSh", "No browser?", e);
+                }
+            });
+            libList.addView(v);
+        }
+    }
+
+    private static class Library {
+        String name;
+        Uri website;
+        String license;
+        Uri license_link;
+
+        static final Uri APACHE_2_URI = Uri.parse("http://www.apache.org/licenses/LICENSE-2.0.html");
+
+        public Library(String name, Uri website, String license, Uri license_link) {
+            this.name = name;
+            this.website = website;
+            this.license = license;
+            this.license_link = license_link;
+        }
     }
 }

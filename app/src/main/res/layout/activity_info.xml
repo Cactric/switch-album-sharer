@@ -38,6 +38,11 @@
         android:text="@string/source_code"
         app:icon="@drawable/ic_code" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/licenses"/>
+
     <Space
         android:layout_width="match_parent"
         android:layout_height="24dp" />
@@ -45,6 +50,19 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/licenses"/>
+        android:text="@string/library_list_heading"
+        android:layout_gravity="start"
+        android:textSize="16sp" />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <!-- This linear layout will get populated in the code. Maybe I should switch to a RecyclerView but doing so would be a lot of code -->
+        <LinearLayout
+            android:id="@+id/library_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+        </LinearLayout>
+    </ScrollView>
 
 </LinearLayout>
