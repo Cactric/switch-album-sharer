@@ -86,7 +86,9 @@ public class ScanFragment extends Fragment {
                 // TODO: allow user to change to front camera?
                 // Not sure how necessary that would be though
                 CameraSelector camSelector = CameraSelector.DEFAULT_BACK_CAMERA;
-                ImageAnalysis imageAnalysis = new ImageAnalysis.Builder().build();
+                ImageAnalysis imageAnalysis = new ImageAnalysis.Builder()
+                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        .build();
                 imageAnalysis.setAnalyzer(requireContext().getMainExecutor(), scanner);
 
                 preview.setSurfaceProvider(previewView.getSurfaceProvider());

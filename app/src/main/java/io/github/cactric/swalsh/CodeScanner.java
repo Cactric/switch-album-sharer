@@ -25,7 +25,7 @@ public class CodeScanner implements ImageAnalysis.Analyzer {
 
     @Override
     public void analyze(@NonNull ImageProxy image) {
-        try {
+        try (image) {
             ByteBuffer planeBuffer = image.getPlanes()[0].getBuffer();
             byte[] imageData;
             // If the plane's buffer has an underlying array, just use it
