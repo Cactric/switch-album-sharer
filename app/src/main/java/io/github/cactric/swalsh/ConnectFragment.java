@@ -87,6 +87,7 @@ public class ConnectFragment extends Fragment {
                 }
             });
             builder.create().show();
+            return root;
         }
 
         if (getArguments() != null) {
