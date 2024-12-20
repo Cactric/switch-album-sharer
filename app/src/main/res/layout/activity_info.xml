@@ -8,7 +8,7 @@
     android:layout_margin="16dp"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    tools:context=".InfoActivity">
+    tools:context=".ui.InfoActivity">
 
     <ImageView
         android:id="@+id/info_logo"

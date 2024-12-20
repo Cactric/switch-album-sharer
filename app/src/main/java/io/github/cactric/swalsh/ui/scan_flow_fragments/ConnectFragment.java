@@ -1,19 +1,16 @@
-package io.github.cactric.swalsh;
+package io.github.cactric.swalsh.ui.scan_flow_fragments;
 
 import static android.content.Context.BIND_AUTO_CREATE;
 import static android.view.View.VISIBLE;
 import static io.github.cactric.swalsh.WifiUtils.parseNetwork;
 
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.net.Uri;
-import android.net.wifi.WifiManager;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.provider.Settings;
 import android.transition.TransitionInflater;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -32,6 +29,10 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import io.github.cactric.swalsh.DownloadService;
+import io.github.cactric.swalsh.R;
+import io.github.cactric.swalsh.ui.AlbumActivity;
 
 public class ConnectFragment extends Fragment {
 

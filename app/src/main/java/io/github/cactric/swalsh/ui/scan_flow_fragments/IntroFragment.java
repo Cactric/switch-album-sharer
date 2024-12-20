@@ -1,4 +1,4 @@
-package io.github.cactric.swalsh;
+package io.github.cactric.swalsh.ui.scan_flow_fragments;
 
 import android.Manifest;
 import android.app.ActivityOptions;
@@ -15,7 +15,6 @@ import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
-import androidx.navigation.fragment.NavHostFragment;
 
 import android.provider.Settings;
 import android.transition.TransitionInflater;
@@ -26,6 +25,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+
+import io.github.cactric.swalsh.R;
+import io.github.cactric.swalsh.ui.AlbumActivity;
+import io.github.cactric.swalsh.ui.InfoActivity;
 
 public class IntroFragment extends Fragment {
     public IntroFragment() {

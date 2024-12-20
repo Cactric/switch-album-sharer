@@ -1,4 +1,4 @@
-package io.github.cactric.swalsh;
+package io.github.cactric.swalsh.ui;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -20,6 +19,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import io.github.cactric.swalsh.R;
 
 public class InfoActivity extends AppCompatActivity {
     private final Library[] libraries = {

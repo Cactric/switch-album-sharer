@@ -1,4 +1,4 @@
-package io.github.cactric.swalsh;
+package io.github.cactric.swalsh.ui.scan_flow_fragments;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
@@ -32,6 +32,9 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 import java.util.Date;
 import java.util.concurrent.ExecutionException;
+
+import io.github.cactric.swalsh.CodeScanner;
+import io.github.cactric.swalsh.R;
 
 public class ScanFragment extends Fragment {
     private CodeScanner scanner;

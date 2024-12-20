@@ -1,4 +1,4 @@
-package io.github.cactric.swalsh;
+package io.github.cactric.swalsh.ui;
 
 import static android.provider.MediaStore.VOLUME_EXTERNAL;
 
@@ -38,6 +38,10 @@ import com.google.android.material.tabs.TabLayout;
 
 import java.io.IOException;
 import java.util.ArrayList;
+
+import io.github.cactric.swalsh.PictureItem;
+import io.github.cactric.swalsh.R;
+import io.github.cactric.swalsh.VideoItem;
 
 public class AlbumActivity extends AppCompatActivity {
     private final ArrayList<PictureItem> pictureItems = new ArrayList<>();

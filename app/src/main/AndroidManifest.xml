@@ -28,11 +28,11 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="34">
         <activity
-            android:name=".InfoActivity"
+            android:name=".ui.InfoActivity"
             android:exported="false">
         </activity>
         <activity
-            android:name=".AlbumActivity"
+            android:name=".ui.AlbumActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -47,7 +47,7 @@
             android:exported="false" />
 
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

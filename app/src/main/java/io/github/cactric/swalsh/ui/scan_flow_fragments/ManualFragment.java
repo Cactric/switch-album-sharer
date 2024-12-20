@@ -1,4 +1,4 @@
-package io.github.cactric.swalsh;
+package io.github.cactric.swalsh.ui.scan_flow_fragments;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -17,6 +17,8 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.preference.PreferenceManager;
 
 import java.util.Date;
+
+import io.github.cactric.swalsh.R;
 
 public class ManualFragment extends Fragment {
     public ManualFragment() {

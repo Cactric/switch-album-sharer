@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center"
-    tools:context=".ConnectFragment"
+    tools:context=".ui.scan_flow_fragments.ConnectFragment"
     android:animateLayoutChanges="true"
     android:orientation="vertical">
 
