@@ -3,7 +3,7 @@
     <string-array name="connection_states">
         <item>Waiting…</item>
         <item>Searching for the console…</item>
-        <item>Connected</item>
+        <item>Connected, waiting for response…</item>
         <item>Downloading</item>
         <item>Done</item>
         <item>Error</item>
