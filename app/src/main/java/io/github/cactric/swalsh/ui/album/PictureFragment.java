@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -194,7 +195,7 @@ public class PictureFragment extends Fragment {
                 }
                 getPictures();
                 requireActivity().runOnUiThread(() -> {
-                    adapter.notifyItemRangeRemoved(0, adapter.getItemCount());
+                    adapter.notifyDataSetChanged();
                 });
             }).start();
         });

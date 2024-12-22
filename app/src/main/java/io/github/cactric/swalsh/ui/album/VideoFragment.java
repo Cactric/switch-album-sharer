@@ -205,7 +205,7 @@ public class VideoFragment extends Fragment {
                 }
                 getVideos();
                 requireActivity().runOnUiThread(() -> {
-                    adapter.notifyItemRangeRemoved(0, adapter.getItemCount());
+                    adapter.notifyDataSetChanged();
                 });
             }).start();
         });
