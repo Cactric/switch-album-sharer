@@ -51,8 +51,6 @@ import io.github.cactric.swalsh.R;
 import io.github.cactric.swalsh.VideoItem;
 
 public class AlbumActivity extends AppCompatActivity {
-
-    private static final int VIDEO_DELETION_REQUEST_CODE = 30202; // chosen by echo $RANDOM
     private TabLayout tabLayout;
 
     @Override
@@ -71,6 +69,9 @@ public class AlbumActivity extends AppCompatActivity {
         toolbar.setTitle(R.string.title_activity_album);
         setSupportActionBar(toolbar);
 
+        // Set up tabs
+        tabLayout = findViewById(R.id.album_tabs);
+
         // Set up View Pager
         FragmentStateAdapter adapter = new FragmentStateAdapter(this) {
             @Override
@@ -82,30 +83,29 @@ public class AlbumActivity extends AppCompatActivity {
             @Override
             public Fragment createFragment(int position) {
                 // Create corresponding fragment based on position
-                Fragment f;
-                if (position == 1)
-                    f = new VideoFragment();
-                else
-                    f = new PictureFragment();
-                return f;
+                if (position == 1) {
+                    VideoFragment f = new VideoFragment();
+                    f.getNumOfVideos().observe(AlbumActivity.this, num -> {
+                        TabLayout.Tab tab = tabLayout.getTabAt(1);
+                        if (num != null & tab != null) {
+                            tab.setText(getString(R.string.videos_format_str, num));
+                        }
+                    });
+                    return f;
+                } else {
+                    PictureFragment f = new PictureFragment();
+                    f.getNumOfPictures().observe(AlbumActivity.this, num -> {
+                        TabLayout.Tab tab = tabLayout.getTabAt(0);
+                        if (num != null & tab != null) {
+                            tab.setText(getString(R.string.pictures_format_str, num));
+                        }
+                    });
+                    return f;
+                }
             }
         };
         ViewPager2 pager = findViewById(R.id.album_pager);
         pager.setAdapter(adapter);
-
-        // Set up tabs
-        tabLayout = findViewById(R.id.album_tabs);
-//        numOfPictures.observe(this, num -> {
-//            TabLayout.Tab tab = tabLayout.getTabAt(0);
-//            if (num != null && tab != null) {
-//                tab.setText(getString(R.string.pictures_format_str, num));
-//            }
-//        });
-//        numOfVideos.observe(this, num -> {
-//            TabLayout.Tab tab = tabLayout.getTabAt(1);
-//            if (num != null && tab != null)
-//                tab.setText(getString(R.string.videos_format_str, num));
-//        });
 
         new TabLayoutMediator(tabLayout, pager, (tab, pos) -> {
             if (pos == 0)

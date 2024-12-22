@@ -12,6 +12,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -121,6 +122,10 @@ public class PictureFragment extends Fragment {
                 pictureItems.add(item);
             }
         }
+    }
+
+    public LiveData<Integer> getNumOfPictures() {
+        return numOfPictures;
     }
 
     private void retrieveItemsOnSeparateThread() {
