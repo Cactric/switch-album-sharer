@@ -202,18 +202,14 @@ public class VideoFragment extends Fragment {
         AlertDialog.Builder adb = new AlertDialog.Builder(requireContext());
         adb.setTitle(getString(R.string.delete_all_videos_confirmation_formatted, videoItems.size()));
         adb.setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
-        adb.setPositiveButton(R.string.yes, (dialog, which) -> {
-            new Thread(() -> {
-                // Delete them
-                for (Uri u: uris) {
-                    requireContext().getContentResolver().delete(u, MediaStore.Video.Media.OWNER_PACKAGE_NAME + " == '" + requireActivity().getPackageName() + "'", null);
-                }
-                getVideos();
-                requireActivity().runOnUiThread(() -> {
-                    adapter.notifyDataSetChanged();
-                });
-            }).start();
-        });
+        adb.setPositiveButton(R.string.yes, (dialog, which) -> new Thread(() -> {
+            // Delete them
+            for (Uri u: uris) {
+                requireContext().getContentResolver().delete(u, MediaStore.Video.Media.OWNER_PACKAGE_NAME + " == '" + requireActivity().getPackageName() + "'", null);
+            }
+            getVideos();
+            requireActivity().runOnUiThread(() -> adapter.notifyDataSetChanged());
+        }).start());
         adb.show();
     }
 }

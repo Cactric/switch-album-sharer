@@ -18,7 +18,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -192,18 +191,14 @@ public class PictureFragment extends Fragment {
         AlertDialog.Builder adb = new AlertDialog.Builder(requireContext());
         adb.setTitle(getString(R.string.delete_all_pictures_confirmation_formatted, pictureItems.size()));
         adb.setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
-        adb.setPositiveButton(R.string.yes, (dialog, which) -> {
-            new Thread(() -> {
-                // Delete them
-                for (Uri u: uris) {
-                    requireContext().getContentResolver().delete(u, MediaStore.Images.Media.OWNER_PACKAGE_NAME + " == '" + requireActivity().getPackageName() + "'", null);
-                }
-                getPictures();
-                requireActivity().runOnUiThread(() -> {
-                    adapter.notifyDataSetChanged();
-                });
-            }).start();
-        });
+        adb.setPositiveButton(R.string.yes, (dialog, which) -> new Thread(() -> {
+            // Delete them
+            for (Uri u: uris) {
+                requireContext().getContentResolver().delete(u, MediaStore.Images.Media.OWNER_PACKAGE_NAME + " == '" + requireActivity().getPackageName() + "'", null);
+            }
+            getPictures();
+            requireActivity().runOnUiThread(() -> adapter.notifyDataSetChanged());
+        }).start());
         adb.show();
 
     }

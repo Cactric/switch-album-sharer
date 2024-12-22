@@ -21,7 +21,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -139,9 +138,7 @@ public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.Vi
                 boolean[] checkedItems = new boolean[selectionItems.length];
                 AlertDialog.Builder adb = new AlertDialog.Builder(context);
                 adb.setTitle(R.string.delete_confirmation);
-                adb.setMultiChoiceItems(selectionItems, checkedItems, (dialog, which, isChecked) -> {
-                    checkedItems[which] = isChecked;
-                });
+                adb.setMultiChoiceItems(selectionItems, checkedItems, (dialog, which, isChecked) -> checkedItems[which] = isChecked);
                 adb.setPositiveButton(R.string.yes, (dialog, which) -> {
                     // Check if user wants to not see this dialog again
                     if (checkedItems[0]) {

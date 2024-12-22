@@ -57,7 +57,7 @@ public class InfoActivity extends AppCompatActivity {
         for (Library l: libraries) {
             // Add a separator if it's not the first element
             if (libList.getChildCount() > 0) {
-                try (TypedArray attributes = obtainStyledAttributes(new int[]{android.R.attr.listDivider});) {
+                try (TypedArray attributes = obtainStyledAttributes(new int[]{android.R.attr.listDivider})) {
                     Drawable bg = attributes.getDrawable(0);
                     View divider = new View(this);
                     divider.setBackground(bg);

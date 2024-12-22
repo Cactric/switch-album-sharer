@@ -1,54 +1,22 @@
 package io.github.cactric.swalsh.ui.album;
 
-import static android.provider.MediaStore.VOLUME_EXTERNAL;
-
-import android.app.Activity;
-import android.app.PendingIntent;
-import android.content.ContentUris;
-import android.content.Intent;
-import android.content.IntentSender;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.PersistableBundle;
-import android.provider.MediaStore;
-import android.util.Log;
-import android.util.Size;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
-import io.github.cactric.swalsh.PictureItem;
 import io.github.cactric.swalsh.R;
-import io.github.cactric.swalsh.VideoItem;
 
 public class AlbumActivity extends AppCompatActivity {
     private TabLayout tabLayout;
