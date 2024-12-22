@@ -190,7 +190,7 @@ public class PictureFragment extends Fragment {
             new Thread(() -> {
                 // Delete them
                 for (Uri u: uris) {
-                    requireContext().getContentResolver().delete(u, MediaStore.Images.Media.OWNER_PACKAGE_NAME + " == " + requireActivity().getPackageName(), null);
+                    requireContext().getContentResolver().delete(u, MediaStore.Images.Media.OWNER_PACKAGE_NAME + " == '" + requireActivity().getPackageName() + "'", null);
                 }
                 getPictures();
                 requireActivity().runOnUiThread(() -> {

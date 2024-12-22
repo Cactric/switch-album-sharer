@@ -201,7 +201,7 @@ public class VideoFragment extends Fragment {
             new Thread(() -> {
                 // Delete them
                 for (Uri u: uris) {
-                    requireContext().getContentResolver().delete(u, MediaStore.Video.Media.OWNER_PACKAGE_NAME + " == " + requireActivity().getPackageName(), null);
+                    requireContext().getContentResolver().delete(u, MediaStore.Video.Media.OWNER_PACKAGE_NAME + " == '" + requireActivity().getPackageName() + "'", null);
                 }
                 getVideos();
                 requireActivity().runOnUiThread(() -> {
