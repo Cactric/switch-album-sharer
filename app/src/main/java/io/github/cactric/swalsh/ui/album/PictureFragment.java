@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -39,6 +40,7 @@ public class PictureFragment extends Fragment {
     private TextView nothingFoundText;
     private String mediaSortOrder = MediaStore.Images.Media.DATE_ADDED;
     private boolean mediaSortDescending = true;
+    private final PictureMenuProvider pictureMenuProvider = new PictureMenuProvider();
 
     public PictureFragment() {
     }
@@ -63,28 +65,40 @@ public class PictureFragment extends Fragment {
             }
         });
 
-        requireActivity().addMenuProvider(new MenuProvider() {
-            @Override
-            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
-                menuInflater.inflate(R.menu.album_picture_menu, menu);
-            }
-
-            @Override
-            public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
-                if (menuItem.getItemId() == R.id.sort_pictures) {
-                    showSortItemsPopup();
-                    return true;
-                } else if (menuItem.getItemId() == R.id.delete_all_pictures) {
-                    showDeletePicturesPopup();
-                    return true;
-                }
-                return false;
-            }
-        }, getViewLifecycleOwner());
-
         retrieveItemsOnSeparateThread();
 
         return v;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        requireActivity().removeMenuProvider(pictureMenuProvider);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        requireActivity().addMenuProvider(pictureMenuProvider, getViewLifecycleOwner());
+    }
+
+    private class PictureMenuProvider implements MenuProvider {
+        @Override
+        public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+            menuInflater.inflate(R.menu.album_picture_menu, menu);
+        }
+
+        @Override
+        public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+            if (menuItem.getItemId() == R.id.sort_pictures) {
+                showSortItemsPopup();
+                return true;
+            } else if (menuItem.getItemId() == R.id.delete_all_pictures) {
+                showDeletePicturesPopup();
+                return true;
+            }
+            return false;
+        }
     }
 
     private void getPictures() {

@@ -72,6 +72,7 @@ public class AlbumActivity extends AppCompatActivity {
                 }
             }
         };
+
         ViewPager2 pager = findViewById(R.id.album_pager);
         pager.setAdapter(adapter);
 

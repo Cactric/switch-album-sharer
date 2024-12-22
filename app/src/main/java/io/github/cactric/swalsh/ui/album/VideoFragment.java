@@ -42,6 +42,7 @@ public class VideoFragment extends Fragment {
     private boolean mediaSortDescending = true;
     private TextView nothingFoundText;
     private VideoAlbumAdapter adapter;
+    private final VideoMenuProvider videoMenuProvider = new VideoMenuProvider();
 
     public VideoFragment() {
     }
@@ -66,28 +67,40 @@ public class VideoFragment extends Fragment {
             }
         });
 
-        requireActivity().addMenuProvider(new MenuProvider() {
-            @Override
-            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
-                menuInflater.inflate(R.menu.album_video_menu, menu);
-            }
-
-            @Override
-            public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
-                if (menuItem.getItemId() == R.id.sort_videos) {
-                    showSortItemsPopup();
-                    return true;
-                } else if (menuItem.getItemId() == R.id.delete_all_videos) {
-                    showDeleteVideosPopup();
-                    return true;
-                }
-                return false;
-            }
-        }, getViewLifecycleOwner());
-
         retrieveItemsOnSeparateThread();
 
         return v;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        requireActivity().removeMenuProvider(videoMenuProvider);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        requireActivity().addMenuProvider(videoMenuProvider, getViewLifecycleOwner());
+    }
+
+    private class VideoMenuProvider implements MenuProvider {
+        @Override
+        public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+            menuInflater.inflate(R.menu.album_video_menu, menu);
+        }
+
+        @Override
+        public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+            if (menuItem.getItemId() == R.id.sort_videos) {
+                showSortItemsPopup();
+                return true;
+            } else if (menuItem.getItemId() == R.id.delete_all_videos) {
+                showDeleteVideosPopup();
+                return true;
+            }
+            return false;
+        }
     }
 
     private void getVideos() {
