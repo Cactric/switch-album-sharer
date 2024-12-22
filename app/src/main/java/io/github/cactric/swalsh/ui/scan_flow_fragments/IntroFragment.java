@@ -31,6 +31,8 @@ import io.github.cactric.swalsh.ui.album.AlbumActivity;
 import io.github.cactric.swalsh.ui.InfoActivity;
 
 public class IntroFragment extends Fragment {
+    private final IntroMenuProvider introMenuProvider = new IntroMenuProvider();
+
     public IntroFragment() {
         // Required empty public constructor
     }
@@ -67,23 +69,19 @@ public class IntroFragment extends Fragment {
             startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(getActivity()).toBundle());
         });
 
-        requireActivity().addMenuProvider(new MenuProvider() {
-            @Override
-            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
-                menuInflater.inflate(R.menu.main_menu, menu);
-            }
-
-            @Override
-            public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
-                if (menuItem.getItemId() == R.id.info_option) {
-                    Intent intent = new Intent(getContext(), InfoActivity.class);
-                    startActivity(intent);
-                    return true;
-                }
-                return false;
-            }
-        }, getViewLifecycleOwner());
         return root;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        requireActivity().removeMenuProvider(introMenuProvider);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        requireActivity().addMenuProvider(introMenuProvider, getViewLifecycleOwner());
     }
 
     private NavController storedNavController;
@@ -118,6 +116,23 @@ public class IntroFragment extends Fragment {
             });
             builder.setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.dismiss());
             builder.create().show();
+            return false;
+        }
+    }
+
+    private class IntroMenuProvider implements MenuProvider {
+        @Override
+        public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+            menuInflater.inflate(R.menu.main_menu, menu);
+        }
+
+        @Override
+        public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+            if (menuItem.getItemId() == R.id.info_option) {
+                Intent intent = new Intent(getContext(), InfoActivity.class);
+                startActivity(intent);
+                return true;
+            }
             return false;
         }
     }

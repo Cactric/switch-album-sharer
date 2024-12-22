@@ -41,6 +41,8 @@ public class ScanFragment extends Fragment {
     private ScaleGestureDetector pinchDetector;
     private Camera cam;
 
+    private final ScanMenuProvider scanMenuProvider = new ScanMenuProvider();
+
     public ScanFragment() {
         // Required empty public constructor
     }
@@ -120,32 +122,20 @@ public class ScanFragment extends Fragment {
             pinchDetector.onTouchEvent(event);
             return true;
         });
-
-        // Add menu with zoom buttons (in/out/reset)
-        requireActivity().addMenuProvider(new MenuProvider() {
-            @Override
-            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
-                menuInflater.inflate(R.menu.zoom_menu, menu);
-            }
-
-            @Override
-            public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
-                final float ZOOM_AMOUNT = 0.2f;
-                if (menuItem.getItemId() == R.id.menu_zoom_in) {
-                    changeZoom(ZOOM_AMOUNT);
-                    return true;
-                } else if (menuItem.getItemId() == R.id.menu_zoom_out) {
-                    changeZoom(-ZOOM_AMOUNT);
-                    return true;
-                } else if (menuItem.getItemId() == R.id.menu_zoom_reset) {
-                    // Set to the furthest out it can be
-                    cam.getCameraControl().setLinearZoom(0.0f);
-                    return true;
-                }
-                return false;
-            }
-        }, getViewLifecycleOwner());
         return root;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        requireActivity().removeMenuProvider(scanMenuProvider);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Add menu with zoom buttons (in/out/reset)
+        requireActivity().addMenuProvider(scanMenuProvider, getViewLifecycleOwner());
     }
 
     /**
@@ -163,6 +153,30 @@ public class ScanFragment extends Fragment {
             cam.getCameraControl().setZoomRatio(zoomRatio);
         } else {
             Log.e("SwAlSh", "Zoom state obtained from Camera Info is null - zoom not applied");
+        }
+    }
+
+    private class ScanMenuProvider implements MenuProvider {
+        @Override
+        public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+            menuInflater.inflate(R.menu.zoom_menu, menu);
+        }
+
+        @Override
+        public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+            final float ZOOM_AMOUNT = 0.2f;
+            if (menuItem.getItemId() == R.id.menu_zoom_in) {
+                changeZoom(ZOOM_AMOUNT);
+                return true;
+            } else if (menuItem.getItemId() == R.id.menu_zoom_out) {
+                changeZoom(-ZOOM_AMOUNT);
+                return true;
+            } else if (menuItem.getItemId() == R.id.menu_zoom_reset) {
+                // Set to the furthest out it can be
+                cam.getCameraControl().setLinearZoom(0.0f);
+                return true;
+            }
+            return false;
         }
     }
 }
