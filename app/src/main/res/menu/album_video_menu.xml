@@ -2,15 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/sort_items"
+        android:id="@+id/sort_videos"
         android:title="@string/sort"
         android:icon="@drawable/ic_sort"
-        app:showAsAction="ifRoom"
-        />
-    <item
-        android:id="@+id/delete_all_pictures"
-        android:title="@string/delete_all_pictures"
-        app:showAsAction="never" />
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/delete_all_videos"
         android:title="@string/delete_all_videos"

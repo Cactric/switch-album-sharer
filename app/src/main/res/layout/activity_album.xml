@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.AlbumActivity">
+    tools:context=".ui.album.AlbumActivity">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/album_toolbar"
@@ -19,32 +19,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <com.google.android.material.tabs.TabItem
-            android:id="@+id/album_pictures_tab"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/pictures" />
-
-        <com.google.android.material.tabs.TabItem
-            android:id="@+id/album_videos_tab"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/videos" />
-
     </com.google.android.material.tabs.TabLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/album_recycler"
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/album_pager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <TextView
-        android:id="@+id/album_nothing_found"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:visibility="gone"
-        android:text="@string/nothing_here" />
 </LinearLayout>

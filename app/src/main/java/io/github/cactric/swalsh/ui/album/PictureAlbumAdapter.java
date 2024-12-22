@@ -1,4 +1,4 @@
-package io.github.cactric.swalsh.ui;
+package io.github.cactric.swalsh.ui.album;
 
 import android.app.AlertDialog;
 import android.content.ContentResolver;
@@ -25,27 +25,27 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
+import io.github.cactric.swalsh.PictureItem;
 import io.github.cactric.swalsh.R;
-import io.github.cactric.swalsh.VideoItem;
 
-public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.ViewHolder> {
-    private final ArrayList<VideoItem> media;
-    private final MutableLiveData<Integer> numOfVideos;
+public class PictureAlbumAdapter extends RecyclerView.Adapter<PictureAlbumAdapter.ViewHolder> {
+    private final ArrayList<PictureItem> media;
+    private final MutableLiveData<Integer> numOfPictures;
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        private final ImageView videoThumbnail;
+        private final ImageView imageView;
         private final TextView lengthText;
         private final ImageButton shareButton;
         private final ImageButton deleteButton;
         public ViewHolder(View view) {
             super(view);
-            videoThumbnail = view.findViewById(R.id.album_video);
+            imageView = view.findViewById(R.id.album_picture);
             lengthText = view.findViewById(R.id.album_length_text);
             shareButton = view.findViewById(R.id.album_share_button);
             deleteButton = view.findViewById(R.id.album_delete_button);
         }
 
-        public ImageView getVideoThumbnail() {
-            return videoThumbnail;
+        public ImageView getImageView() {
+            return imageView;
         }
 
         public TextView getLengthText() {
@@ -62,27 +62,28 @@ public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.Vi
     }
 
     // Takes an array of file paths to the pictures that should be displayed
-    public VideoAlbumAdapter(VideoItem[] media, MutableLiveData<Integer> numOfVideos) {
-        this.media = new ArrayList<>(Arrays.asList(media));
-        this.numOfVideos = numOfVideos;
+    public PictureAlbumAdapter(ArrayList<PictureItem> media, MutableLiveData<Integer> numOfPictures) {
+        this.media = media;
+        this.numOfPictures = numOfPictures;
     }
 
     // Create new views
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.recycler_vids, parent, false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.recycler_pics, parent, false);
         return new ViewHolder(v);
     }
 
     // Replace the contents of views
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Context context = holder.getVideoThumbnail().getContext();
-        VideoItem item = media.get(position);
+        Context context = holder.getImageView().getContext();
+        PictureItem item = media.get(position);
         // Update views
         // Then set the image URI
-        holder.getVideoThumbnail().setImageBitmap(item.thumbnail);
+        holder.getImageView().setImageURI(item.uri);
+        
 
         // Try to parse the display name and use that as a date
         String dateStr = null;
@@ -91,7 +92,7 @@ public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.Vi
         try {
             String name = item.display_name;
             calBuilder.set(Calendar.YEAR, Integer.parseInt(name.substring(0, 4)));
-            calBuilder.set(Calendar.MONTH, Integer.parseInt(name.substring(4, 6)));
+            calBuilder.set(Calendar.MONTH, Integer.parseInt(name.substring(4, 6)) - 1);
             calBuilder.set(Calendar.DAY_OF_MONTH, Integer.parseInt(name.substring(6, 8)));
             calBuilder.set(Calendar.HOUR_OF_DAY, Integer.parseInt(name.substring(8, 10)));
             calBuilder.set(Calendar.MINUTE, Integer.parseInt(name.substring(10, 12)));
@@ -109,28 +110,25 @@ public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.Vi
             dateStr = item.display_name;
 
         Resources res = context.getResources();
-        holder.getLengthText().setText(res.getString(R.string.video_text_format,
-                item.duration_in_milliseconds / 1000.0,
+        holder.getLengthText().setText(res.getString(R.string.picture_text_format,
                 dateStr));
 
-        holder.getVideoThumbnail().setOnClickListener(v -> {
+        holder.getImageView().setOnClickListener(v -> {
             // When tapped, open the video in whatever app
             Intent videoIntent = new Intent(Intent.ACTION_VIEW);
-            videoIntent.setDataAndType(item.uri, "video/mp4");
+            videoIntent.setDataAndType(item.uri, "image/jpeg");
             context.startActivity(videoIntent);
         });
-
 
         holder.getShareButton().setOnClickListener(v -> {
             Intent shareIntent = new Intent(Intent.ACTION_SEND);
             shareIntent.putExtra(Intent.EXTRA_STREAM, item.uri);
-            shareIntent.setType("video/mp4");
+            shareIntent.setType("image/jpeg");
             context.startActivity(Intent.createChooser(shareIntent, null));
         });
         holder.getDeleteButton().setOnClickListener(v -> {
-            // Delete item
             SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-            boolean skipConfirmation = sp.getBoolean("video_no_delete_confirmation", false);
+            boolean skipConfirmation = sp.getBoolean("picture_no_delete_confirmation", false);
             if (skipConfirmation) {
                 // Just delete it
                 deleteItem(context, item);
@@ -147,7 +145,7 @@ public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.Vi
                     if (checkedItems[0]) {
                         // Begone says thee!
                         SharedPreferences.Editor e = sp.edit();
-                        e.putBoolean("video_no_delete_confirmation", checkedItems[0]);
+                        e.putBoolean("picture_no_delete_confirmation", checkedItems[0]);
                         e.apply();
                     }
                     // Delete!
@@ -159,13 +157,13 @@ public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.Vi
         });
     }
 
-    private void deleteItem(Context context, VideoItem item) {
+    private void deleteItem(Context context, PictureItem item) {
         ContentResolver contentResolver = context.getContentResolver();
         contentResolver.delete(item.uri, null, null);
-        VideoAlbumAdapter.this.notifyItemRemoved(media.indexOf(item));
+        PictureAlbumAdapter.this.notifyItemRemoved(media.indexOf(item));
         media.remove(item);
-        if (numOfVideos != null && numOfVideos.getValue() != null)
-            numOfVideos.postValue(numOfVideos.getValue() - 1);
+        if (numOfPictures != null && numOfPictures.getValue() != null)
+            numOfPictures.postValue(numOfPictures.getValue() - 1);
     }
 
     @Override

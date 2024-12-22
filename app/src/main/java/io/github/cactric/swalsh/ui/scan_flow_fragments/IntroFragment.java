@@ -27,7 +27,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import io.github.cactric.swalsh.R;
-import io.github.cactric.swalsh.ui.AlbumActivity;
+import io.github.cactric.swalsh.ui.album.AlbumActivity;
 import io.github.cactric.swalsh.ui.InfoActivity;
 
 public class IntroFragment extends Fragment {

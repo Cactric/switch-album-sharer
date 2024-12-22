@@ -32,7 +32,7 @@ import java.util.List;
 
 import io.github.cactric.swalsh.DownloadService;
 import io.github.cactric.swalsh.R;
-import io.github.cactric.swalsh.ui.AlbumActivity;
+import io.github.cactric.swalsh.ui.album.AlbumActivity;
 
 public class ConnectFragment extends Fragment {
 

@@ -1,0 +1,117 @@
+package io.github.cactric.swalsh.ui.album;
+
+import static android.provider.MediaStore.VOLUME_EXTERNAL;
+
+import android.app.Activity;
+import android.app.PendingIntent;
+import android.content.ContentUris;
+import android.content.Intent;
+import android.content.IntentSender;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.PersistableBundle;
+import android.provider.MediaStore;
+import android.util.Log;
+import android.util.Size;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
+
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
+
+import java.io.IOException;
+import java.util.ArrayList;
+
+import io.github.cactric.swalsh.PictureItem;
+import io.github.cactric.swalsh.R;
+import io.github.cactric.swalsh.VideoItem;
+
+public class AlbumActivity extends AppCompatActivity {
+
+    private static final int VIDEO_DELETION_REQUEST_CODE = 30202; // chosen by echo $RANDOM
+    private TabLayout tabLayout;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
+        setContentView(R.layout.activity_album);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
+
+        // Set up toolbar
+        Toolbar toolbar = findViewById(R.id.album_toolbar);
+        toolbar.setTitle(R.string.title_activity_album);
+        setSupportActionBar(toolbar);
+
+        // Set up View Pager
+        FragmentStateAdapter adapter = new FragmentStateAdapter(this) {
+            @Override
+            public int getItemCount() {
+                return 2;
+            }
+
+            @NonNull
+            @Override
+            public Fragment createFragment(int position) {
+                // Create corresponding fragment based on position
+                Fragment f;
+                if (position == 1)
+                    f = new VideoFragment();
+                else
+                    f = new PictureFragment();
+                return f;
+            }
+        };
+        ViewPager2 pager = findViewById(R.id.album_pager);
+        pager.setAdapter(adapter);
+
+        // Set up tabs
+        tabLayout = findViewById(R.id.album_tabs);
+//        numOfPictures.observe(this, num -> {
+//            TabLayout.Tab tab = tabLayout.getTabAt(0);
+//            if (num != null && tab != null) {
+//                tab.setText(getString(R.string.pictures_format_str, num));
+//            }
+//        });
+//        numOfVideos.observe(this, num -> {
+//            TabLayout.Tab tab = tabLayout.getTabAt(1);
+//            if (num != null && tab != null)
+//                tab.setText(getString(R.string.videos_format_str, num));
+//        });
+
+        new TabLayoutMediator(tabLayout, pager, (tab, pos) -> {
+            if (pos == 0)
+                tab.setText(R.string.pictures);
+            if (pos == 1)
+                tab.setText(R.string.videos);
+        }).attach();
+    }
+}

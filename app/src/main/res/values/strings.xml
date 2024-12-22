@@ -5,7 +5,7 @@
     <string name="connection_state">%1$s: downloaded %2$d of %3$d</string>
     <string name="scan_another_code">Scan Another</string>
     <string name="open_album">Album</string>
-    <string name="title_activity_album">AlbumActivity</string>
+    <string name="title_activity_album">Album</string>
     <string name="share">Share</string>
     <string name="screenshot_from_a_switch">Screenshot from a Switch</string>
     <string name="delete">Delete</string>
@@ -63,4 +63,8 @@
     <string name="library_license_button_text">License</string>
     <string name="no_browser">You don\'t seem to have a browser installed…</string>
     <string name="library_list_heading">List of libraries used: (incomplete)</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="no_pictures">No pictures</string>
+    <string name="no_videos">No videos</string>
 </resources>
