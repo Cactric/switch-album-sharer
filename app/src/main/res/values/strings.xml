@@ -27,7 +27,6 @@
     <string name="bad_password">The password should be 8 characters long.\nLong-press the connect button to bypass this check</string>
     <string name="ssid_required">You need to put in a SSID</string>
     <string name="password_required">You need to put in a password</string>
-    <string name="nothing_here">Nothing here</string>
     <string name="wifi_disabled">Wi-Fi is not enabled</string>
     <string name="wifi_disabled_message">Enable it then try again.</string>
     <string name="wifi_settings">Wi-Fi settings</string>
@@ -54,7 +53,6 @@
     <string name="app_logo">App logo</string>
     <string name="info_author">By Cactric</string>
     <string name="licenses">This app is licensed under the GPLv3</string>
-    <string name="view_license">Details</string>
     <string name="pictures_format_str">Pictures (%1$d)</string>
     <string name="videos_format_str">Videos (%1$d)</string>
     <string name="zoom_in">Zoom in</string>
@@ -72,8 +70,6 @@
     <string name="library_license_button_text">License</string>
     <string name="no_browser">You don\'t seem to have a browser installed…</string>
     <string name="library_list_heading">List of libraries used: (incomplete)</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="no_pictures">No pictures</string>
     <string name="no_videos">No videos</string>
 </resources>
