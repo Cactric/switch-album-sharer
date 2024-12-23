@@ -2,6 +2,7 @@ package io.github.cactric.swalsh.ui.album;
 
 import static android.provider.MediaStore.VOLUME_EXTERNAL;
 
+import android.annotation.SuppressLint;
 import android.content.ContentUris;
 import android.database.Cursor;
 import android.net.Uri;
@@ -142,7 +143,7 @@ public class PictureFragment extends Fragment {
     }
 
     private void retrieveItemsOnSeparateThread() {
-        Thread retrieveThread = new Thread(() -> {
+        @SuppressLint("NotifyDataSetChanged") Thread retrieveThread = new Thread(() -> {
             getPictures();
             requireActivity().runOnUiThread(() -> {
                 nothingFoundText.setVisibility(adapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
@@ -190,6 +191,7 @@ public class PictureFragment extends Fragment {
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private void showDeletePicturesPopup() {
         getPictures();
         if (pictureItems.isEmpty()) {

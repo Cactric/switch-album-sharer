@@ -153,7 +153,7 @@ public class VideoFragment extends Fragment {
     }
 
     private void retrieveItemsOnSeparateThread() {
-        Thread retrieveThread = new Thread(() -> {
+        @SuppressLint("NotifyDataSetChanged") Thread retrieveThread = new Thread(() -> {
             getVideos();
             requireActivity().runOnUiThread(() -> {
                 nothingFoundText.setVisibility(adapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
@@ -201,6 +201,7 @@ public class VideoFragment extends Fragment {
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private void showDeleteVideosPopup() {
         getVideos();
         if (videoItems.isEmpty()) {
