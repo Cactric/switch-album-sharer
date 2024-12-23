@@ -153,7 +153,11 @@ public class ConnectFragment extends Fragment {
                                             numFailed.getValue() > 0) {
                                         // Alert the user that some failed
                                         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-                                        builder.setMessage(getString(R.string.n_failed_to_download_format, numFailed.getValue()));
+                                        builder.setMessage(getResources().getQuantityString(
+                                                R.plurals.n_failed_to_download_format,
+                                                numFailed.getValue(), // Used for deciding which plural string to use
+                                                numFailed.getValue() // Used for formatting
+                                        ));
                                         builder.setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss());
                                         builder.create().show();
                                     }

@@ -2,6 +2,7 @@ package io.github.cactric.swalsh.ui.album;
 
 import static android.provider.MediaStore.VOLUME_EXTERNAL;
 
+import android.annotation.SuppressLint;
 import android.content.ContentUris;
 import android.database.Cursor;
 import android.net.Uri;
@@ -213,7 +214,11 @@ public class VideoFragment extends Fragment {
         }
 
         AlertDialog.Builder adb = new AlertDialog.Builder(requireContext());
-        adb.setTitle(getString(R.string.delete_all_videos_confirmation_formatted, videoItems.size()));
+        adb.setTitle(getResources().getQuantityString(
+                R.plurals.delete_all_videos_confirmation_formatted,
+                videoItems.size(), // Used for deciding which plural string to use
+                videoItems.size() // Use for formatting
+        ));
         adb.setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
         adb.setPositiveButton(R.string.yes, (dialog, which) -> new Thread(() -> {
             // Delete them

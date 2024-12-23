@@ -203,7 +203,11 @@ public class PictureFragment extends Fragment {
         }
 
         AlertDialog.Builder adb = new AlertDialog.Builder(requireContext());
-        adb.setTitle(getString(R.string.delete_all_pictures_confirmation_formatted, pictureItems.size()));
+        adb.setTitle(getResources().getQuantityString(
+                R.plurals.delete_all_pictures_confirmation_formatted,
+                pictureItems.size(), // Used for deciding which plural string to use
+                pictureItems.size() // Used for formatting
+        ));
         adb.setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
         adb.setPositiveButton(R.string.yes, (dialog, which) -> new Thread(() -> {
             // Delete them

@@ -37,10 +37,19 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="delete_all_pictures">Delete all pictures</string>
-    <string name="delete_all_pictures_confirmation_formatted">Delete %1$d picture(s) obtained through this app?</string>
-    <string name="delete_all_videos_confirmation_formatted">Delete all %1$d video(s) obtained through this app?</string>
+    <plurals name="delete_all_pictures_confirmation_formatted">
+        <item quantity="one">Delete the %1$d picture obtained through this app?</item>
+        <item quantity="other">Delete all %1$d pictures obtained through this app?</item>
+    </plurals>
+    <plurals name="delete_all_videos_confirmation_formatted">
+        <item quantity="one">Delete the %1$d videos obtained through this app?</item>
+        <item quantity="other">Delete all %1$d videos obtained through this app?</item>
+    </plurals>
     <string name="delete_all_videos">Delete all videos</string>
-    <string name="n_failed_to_download_format">%1$d file(s) failed to download</string>
+    <plurals name="n_failed_to_download_format">
+        <item quantity="one">%1$d file failed to download</item>
+        <item quantity="other">%1$d files failed to download</item>
+    </plurals>
     <string name="info">Info</string>
     <string name="app_logo">App logo</string>
     <string name="info_author">By Cactric</string>
