@@ -65,7 +65,7 @@ public class InfoActivity extends AppCompatActivity {
                 libList.addView(divider);
             }
 
-            View v = getLayoutInflater().inflate(R.layout.library_list_element, null);
+            View v = getLayoutInflater().inflate(R.layout.library_list_element, libList, false);
 
             TextView libName = v.findViewById(R.id.library_name);
             libName.setText(l.name);
