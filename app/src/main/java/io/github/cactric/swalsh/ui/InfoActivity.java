@@ -57,12 +57,12 @@ public class InfoActivity extends AppCompatActivity {
         for (Library l: libraries) {
             // Add a separator if it's not the first element
             if (libList.getChildCount() > 0) {
-                try (TypedArray attributes = obtainStyledAttributes(new int[]{android.R.attr.listDivider})) {
-                    Drawable bg = attributes.getDrawable(0);
-                    View divider = new View(this);
-                    divider.setBackground(bg);
-                    libList.addView(divider);
-                }
+                TypedArray attributes = obtainStyledAttributes(new int[]{android.R.attr.listDivider});
+                Drawable bg = attributes.getDrawable(0);
+                attributes.recycle();
+                View divider = new View(this);
+                divider.setBackground(bg);
+                libList.addView(divider);
             }
 
             View v = getLayoutInflater().inflate(R.layout.library_list_element, null);
