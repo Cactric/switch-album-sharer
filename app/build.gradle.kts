@@ -50,4 +50,7 @@ dependencies {
     implementation(libs.camera.view)
     implementation(libs.camera.lifecycle)
     implementation(libs.camera.camera2)
+
+    implementation(libs.room.runtime)
+    annotationProcessor(libs.room.annotations)
 }

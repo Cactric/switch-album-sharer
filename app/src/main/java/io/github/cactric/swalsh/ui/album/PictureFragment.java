@@ -4,11 +4,13 @@ import static android.provider.MediaStore.VOLUME_EXTERNAL;
 
 import android.annotation.SuppressLint;
 import android.content.ContentUris;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.core.view.MenuProvider;
@@ -19,6 +21,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.provider.MediaStore;
+import android.util.ArraySet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -37,13 +40,40 @@ import io.github.cactric.swalsh.R;
 public class PictureFragment extends Fragment {
     private final MutableLiveData<Integer> numOfPictures = new MutableLiveData<>();
     private final ArrayList<PictureItem> pictureItems = new ArrayList<>();
+    private final ArraySet<String> gameIds = new ArraySet<>();
     private PictureAlbumAdapter adapter;
     private TextView nothingFoundText;
     private String mediaSortOrder = MediaStore.Images.Media.DATE_ADDED;
     private boolean mediaSortDescending = true;
     private final PictureMenuProvider pictureMenuProvider = new PictureMenuProvider();
 
+    private final static String PARAM_GAME_ID = "param_game_id";
+    private String gameId;
+
+    private boolean wentToGamePickerActivity = false;
+
     public PictureFragment() {
+    }
+
+    /**
+     * Get an instance with the game ID parameter set to filter by that game ID
+     * @param gameId Game ID to filter by
+     * @return A new instance of the fragment which only shows pictures from the specified game (by ID)
+     */
+    public static PictureFragment newInstance(@Nullable String gameId) {
+        PictureFragment f = new PictureFragment();
+        Bundle args = new Bundle();
+        args.putString(PARAM_GAME_ID, gameId);
+        f.setArguments(args);
+        return f;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            gameId = getArguments().getString(PARAM_GAME_ID);
+        }
     }
 
     @Override
@@ -83,10 +113,22 @@ public class PictureFragment extends Fragment {
         requireActivity().addMenuProvider(pictureMenuProvider, getViewLifecycleOwner());
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (wentToGamePickerActivity)
+            // If the user went to the game picker activity, they might have changed the names,
+            // so tell the adapter about it
+            if (adapter.getItemCount() > 0) {
+                adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+                wentToGamePickerActivity = false;
+            }
+    }
+
     private class PictureMenuProvider implements MenuProvider {
         @Override
         public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
-            menuInflater.inflate(R.menu.album_picture_menu, menu);
+            menuInflater.inflate(gameId == null ? R.menu.album_picture_menu : R.menu.by_game_album_picture_menu, menu);
         }
 
         @Override
@@ -105,17 +147,26 @@ public class PictureFragment extends Fragment {
     private void getPictures() {
         // Pictures:
         pictureItems.clear();
+        gameIds.clear();
         // Which columns from the query?
         String[] pics_projection = new String[] {
                 MediaStore.Images.Media._ID,
                 MediaStore.Images.Media.DISPLAY_NAME
         };
 
+        // Select all pictures when game ID is null; select only pictures from the specified game when not null
+        String selection = null;
+        final String[] selectionArgs = {""};
+        if (gameId != null) {
+            selection = MediaStore.Images.Media.DISPLAY_NAME + " LIKE ?";
+            selectionArgs[0] = "%" + gameId + "%";
+        }
+
         try (Cursor cursor = requireContext().getContentResolver().query(
                 MediaStore.Images.Media.getContentUri(VOLUME_EXTERNAL),
                 pics_projection,
-                null,
-                null,
+                selection,
+                gameId == null ? null : selectionArgs,
                 mediaSortOrder + (mediaSortDescending ? " DESC" : "")
         )) {
             if (cursor == null)
@@ -134,6 +185,7 @@ public class PictureFragment extends Fragment {
                 item.uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
                 item.display_name = cursor.getString(displayNameColumn);
                 pictureItems.add(item);
+                gameIds.add(item.display_name.substring(17, 49));
             }
         }
     }
@@ -157,7 +209,7 @@ public class PictureFragment extends Fragment {
         View anchor = requireActivity().findViewById(R.id.sort_pictures);
         if (anchor != null) {
             PopupMenu pm = new PopupMenu(requireContext(), anchor);
-            pm.inflate(R.menu.sort_menu);
+            pm.inflate(gameId == null ? R.menu.sort_menu : R.menu.by_game_sort_menu);
             if (mediaSortDescending)
                 pm.getMenu().findItem(R.id.sort_descending).setChecked(true);
             else
@@ -170,8 +222,10 @@ public class PictureFragment extends Fragment {
                     mediaSortOrder = MediaStore.Images.Media.DISPLAY_NAME;
                     retrieveItemsOnSeparateThread();
                 } else if (sortItem.getItemId() == R.id.sort_by_game) {
-                    Toast.makeText(getContext(), "Game sorting chosen, but isn't implemented yet", Toast.LENGTH_SHORT).show();
-                    // TODO: replace with another activity?
+                    Intent intent = new Intent(getActivity(), GamePickerActivity.class);
+                    intent.putExtra("EXTRA_GAME_ID_LIST", gameIds.toArray(new String[]{}));
+                    wentToGamePickerActivity = true;
+                    startActivity(intent);
                 } else if (sortItem.getItemId() == R.id.sort_ascending) {
                     mediaSortDescending = false;
                     sortItem.setChecked(true);

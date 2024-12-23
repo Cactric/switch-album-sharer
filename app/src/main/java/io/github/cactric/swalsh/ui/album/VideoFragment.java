@@ -4,10 +4,12 @@ import static android.provider.MediaStore.VOLUME_EXTERNAL;
 
 import android.annotation.SuppressLint;
 import android.content.ContentUris;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.ArraySet;
 import android.util.Log;
 import android.util.Size;
 import android.view.LayoutInflater;
@@ -39,13 +41,40 @@ import io.github.cactric.swalsh.VideoItem;
 public class VideoFragment extends Fragment {
     private final MutableLiveData<Integer> numOfVideos = new MutableLiveData<>();
     private final ArrayList<VideoItem> videoItems = new ArrayList<>();
+    private final ArraySet<String> gameIds = new ArraySet<>();
     private String mediaSortOrder = MediaStore.Video.Media.DATE_ADDED;
     private boolean mediaSortDescending = true;
     private TextView nothingFoundText;
     private VideoAlbumAdapter adapter;
     private final VideoMenuProvider videoMenuProvider = new VideoMenuProvider();
 
+    private final static String PARAM_GAME_ID = "param_game_id";
+    private String gameId;
+
+    private boolean wentToGamePickerActivity = false;
+
     public VideoFragment() {
+    }
+
+    /**
+     * Get an instance with the game ID parameter set to filter by that game ID
+     * @param gameId Game ID to filter by
+     * @return A new instance of the fragment which only shows videos from the specified game (by ID)
+     */
+    public static VideoFragment newInstance(@Nullable String gameId) {
+        VideoFragment f = new VideoFragment();
+        Bundle args = new Bundle();
+        args.putString(PARAM_GAME_ID, gameId);
+        f.setArguments(args);
+        return f;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            gameId = getArguments().getString(PARAM_GAME_ID);
+        }
     }
 
     @Nullable
@@ -85,10 +114,22 @@ public class VideoFragment extends Fragment {
         requireActivity().addMenuProvider(videoMenuProvider, getViewLifecycleOwner());
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (wentToGamePickerActivity)
+            // If the user went to the game picker activity, they might have changed the names,
+            // so tell the adapter about it
+            if (adapter.getItemCount() > 0) {
+                adapter.notifyItemRangeChanged(0, adapter.getItemCount());
+                wentToGamePickerActivity = false;
+            }
+    }
+
     private class VideoMenuProvider implements MenuProvider {
         @Override
         public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
-            menuInflater.inflate(R.menu.album_video_menu, menu);
+            menuInflater.inflate(gameId == null ? R.menu.album_video_menu : R.menu.by_game_album_video_menu, menu);
         }
 
         @Override
@@ -106,6 +147,7 @@ public class VideoFragment extends Fragment {
 
     private void getVideos() {
         videoItems.clear();
+        gameIds.clear();
         // Videos
         String[] vid_projection = new String[] {
                 MediaStore.Video.Media._ID,
@@ -113,11 +155,20 @@ public class VideoFragment extends Fragment {
                 MediaStore.Video.Media.DURATION
         };
 
+        // Select all videos when game ID is null; select only pictures from the specified game when not null
+        String selection = null;
+        final String[] selectionArgs = {""};
+        if (gameId != null) {
+            selection = MediaStore.Images.Media.DISPLAY_NAME + " LIKE ?";
+            selectionArgs[0] = "%" + gameId + "%";
+        }
+
+
         try (Cursor cursor = requireContext().getContentResolver().query(
                 MediaStore.Video.Media.getContentUri(VOLUME_EXTERNAL),
                 vid_projection,
-                null,
-                null,
+                selection,
+                gameId == null ? null : selectionArgs,
                 mediaSortOrder + (mediaSortDescending ? " DESC" : "")
         )) {
             if (cursor == null)
@@ -144,6 +195,7 @@ public class VideoFragment extends Fragment {
                     item.thumbnail = null;
                 }
                 videoItems.add(item);
+                gameIds.add(item.display_name.substring(17, 49));
             }
         }
     }
@@ -167,7 +219,7 @@ public class VideoFragment extends Fragment {
         View anchor = requireActivity().findViewById(R.id.sort_videos);
         if (anchor != null) {
             PopupMenu pm = new PopupMenu(requireContext(), anchor);
-            pm.inflate(R.menu.sort_menu);
+            pm.inflate(gameId == null ? R.menu.sort_menu : R.menu.by_game_sort_menu);
             if (mediaSortDescending)
                 pm.getMenu().findItem(R.id.sort_descending).setChecked(true);
             else
@@ -180,8 +232,10 @@ public class VideoFragment extends Fragment {
                     mediaSortOrder = MediaStore.Images.Media.DISPLAY_NAME;
                     retrieveItemsOnSeparateThread();
                 } else if (sortItem.getItemId() == R.id.sort_by_game) {
-                    Toast.makeText(getContext(), "Game sorting chosen, but isn't implemented yet", Toast.LENGTH_SHORT).show();
-                    // TODO: replace with another activity?
+                    Intent intent = new Intent(getActivity(), GamePickerActivity.class);
+                    intent.putExtra("EXTRA_GAME_ID_LIST", gameIds.toArray(new String[]{}));
+                    wentToGamePickerActivity = true;
+                    startActivity(intent);
                 } else if (sortItem.getItemId() == R.id.sort_ascending) {
                     mediaSortDescending = false;
                     sortItem.setChecked(true);

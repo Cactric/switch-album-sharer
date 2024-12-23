@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import io.github.cactric.swalsh.games.GameUtils;
 import io.github.cactric.swalsh.PictureItem;
 import io.github.cactric.swalsh.R;
 
@@ -101,22 +102,29 @@ public class PictureAlbumAdapter extends RecyclerView.Adapter<PictureAlbumAdapte
             d.setTime(calBuilder.build().getTimeInMillis());
             DateFormat df = DateFormat.getDateTimeInstance();
             dateStr = df.format(d);
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException | IndexOutOfBoundsException e) {
             Log.e("SwAlSh", "Failed to parse " + item.display_name, e);
         }
 
         if (dateStr == null)
             dateStr = item.display_name;
 
+        GameUtils gameUtils = new GameUtils(context);
+
+        // Use the display name to get the game ID and try to look it up to get the game's name
+        String gameId = item.display_name.substring(17,49);
+        String gameName = gameUtils.lookupGameName(gameId);
+
         Resources res = context.getResources();
         holder.getLengthText().setText(res.getString(R.string.picture_text_format,
+                gameName,
                 dateStr));
 
         holder.getImageView().setOnClickListener(v -> {
-            // When tapped, open the video in whatever app
-            Intent videoIntent = new Intent(Intent.ACTION_VIEW);
-            videoIntent.setDataAndType(item.uri, "image/jpeg");
-            context.startActivity(videoIntent);
+            // When tapped, open the picture in whatever app
+            Intent pictureIntent = new Intent(Intent.ACTION_VIEW);
+            pictureIntent.setDataAndType(item.uri, "image/jpeg");
+            context.startActivity(pictureIntent);
         });
 
         holder.getShareButton().setOnClickListener(v -> {

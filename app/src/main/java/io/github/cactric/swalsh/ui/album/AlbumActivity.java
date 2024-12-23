@@ -16,6 +16,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+import io.github.cactric.swalsh.games.GameUtils;
 import io.github.cactric.swalsh.R;
 
 public class AlbumActivity extends AppCompatActivity {
@@ -26,15 +27,21 @@ public class AlbumActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_album);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.album_root_layout), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
+        GameUtils gameUtils = new GameUtils(this);
+        String gameId = getIntent().getStringExtra("EXTRA_GAME_ID");
+
         // Set up toolbar
         Toolbar toolbar = findViewById(R.id.album_toolbar);
-        toolbar.setTitle(R.string.title_activity_album);
+        if (gameId == null)
+            toolbar.setTitle(R.string.title_activity_album);
+        else
+            toolbar.setTitle(gameUtils.lookupGameName(gameId));
         setSupportActionBar(toolbar);
 
         // Set up tabs
@@ -52,7 +59,7 @@ public class AlbumActivity extends AppCompatActivity {
             public Fragment createFragment(int position) {
                 // Create corresponding fragment based on position
                 if (position == 1) {
-                    VideoFragment f = new VideoFragment();
+                    VideoFragment f = VideoFragment.newInstance(gameId);
                     f.getNumOfVideos().observe(AlbumActivity.this, num -> {
                         TabLayout.Tab tab = tabLayout.getTabAt(1);
                         if (num != null & tab != null) {
@@ -61,7 +68,7 @@ public class AlbumActivity extends AppCompatActivity {
                     });
                     return f;
                 } else {
-                    PictureFragment f = new PictureFragment();
+                    PictureFragment f = PictureFragment.newInstance(gameId);
                     f.getNumOfPictures().observe(AlbumActivity.this, num -> {
                         TabLayout.Tab tab = tabLayout.getTabAt(0);
                         if (num != null & tab != null) {

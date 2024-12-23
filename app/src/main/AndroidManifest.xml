@@ -28,9 +28,11 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="34">
         <activity
+            android:name=".ui.album.GamePickerActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.InfoActivity"
-            android:exported="false">
-        </activity>
+            android:exported="false"></activity>
         <activity
             android:name=".ui.album.AlbumActivity"
             android:exported="true">

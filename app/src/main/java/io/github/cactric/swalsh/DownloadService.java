@@ -235,6 +235,11 @@ public class DownloadService extends Service {
                                     if (numFailed.getValue() != null) {
                                         numFailed.postValue(numFailed.getValue() + 1);
                                     }
+                                } catch (IllegalArgumentException e) {
+                                    Log.e("SwAlSh", "Download error with file " + i + ": ", e);
+                                    if (numFailed.getValue() != null) {
+                                        numFailed.postValue(numFailed.getValue() + 1);
+                                    }
                                 }
                             }
 

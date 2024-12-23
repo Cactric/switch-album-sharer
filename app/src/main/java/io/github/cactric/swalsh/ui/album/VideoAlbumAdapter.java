@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import io.github.cactric.swalsh.games.GameUtils;
 import io.github.cactric.swalsh.R;
 import io.github.cactric.swalsh.VideoItem;
 
@@ -107,9 +108,15 @@ public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.Vi
         if (dateStr == null)
             dateStr = item.display_name;
 
+        GameUtils gameUtils = new GameUtils(context);
+        // Use the display name to get the game ID and then try to look it up to get the game's name
+        String gameId = item.display_name.substring(17,49);
+        String gameName = gameUtils.lookupGameName(gameId);
+
         Resources res = context.getResources();
         holder.getLengthText().setText(res.getString(R.string.video_text_format,
                 item.duration_in_milliseconds / 1000.0,
+                gameName,
                 dateStr));
 
         holder.getVideoThumbnail().setOnClickListener(v -> {

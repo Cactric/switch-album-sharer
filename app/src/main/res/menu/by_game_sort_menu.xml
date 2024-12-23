@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/sort_by_date_added"
+        android:title="@string/by_date_added" />
+    <item
+        android:id="@+id/sort_by_date_taken"
+        android:title="@string/by_date_taken" />
+    <group android:checkableBehavior="single">
+        <item android:id="@+id/sort_ascending" android:title="@string/sort_ascending_time" />
+        <item android:id="@+id/sort_descending" android:title="@string/sort_descending_time" />
+    </group>
+</menu>
