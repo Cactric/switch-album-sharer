@@ -75,7 +75,7 @@
     <string name="unknown_game_name_format">Unknown Game [ID: %1$s…]</string>
     <string name="no_games_found">No games found</string>
     <string name="edit_game_name">Edit game\'s name</string>
-    <string name="game_name_hint">Game name...</string>
+    <string name="game_name_hint">Game name…</string>
     <string name="edit_game_name_dialog_title">Edit game name</string>
     <string name="title_activity_game_picker">Sort by game</string>
 </resources>

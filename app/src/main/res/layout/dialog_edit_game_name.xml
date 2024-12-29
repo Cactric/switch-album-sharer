@@ -10,6 +10,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="@string/game_name_hint"
+        android:inputType="text"
+        android:importantForAutofill="no"
         android:minHeight="48dp" />
 
 </LinearLayout>
