@@ -1,11 +1,10 @@
 package io.github.cactric.swalsh.ui.album;
 
-import static android.provider.MediaStore.VOLUME_EXTERNAL;
-
 import android.annotation.SuppressLint;
-import android.content.ContentUris;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
+import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -15,13 +14,11 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.IBinder;
 import android.provider.MediaStore;
-import android.util.ArraySet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -34,14 +31,13 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import io.github.cactric.swalsh.MediaService;
 import io.github.cactric.swalsh.PictureItem;
 import io.github.cactric.swalsh.R;
 
 public class PictureFragment extends Fragment {
-    private final MutableLiveData<Integer> numOfPictures = new MutableLiveData<>();
-    private final ArrayList<PictureItem> pictureItems = new ArrayList<>();
-    private final ArraySet<String> gameIds = new ArraySet<>();
     private PictureAlbumAdapter adapter;
+    private RecyclerView recyclerView;
     private TextView nothingFoundText;
     private String mediaSortOrder = MediaStore.Images.Media.DATE_ADDED;
     private boolean mediaSortDescending = true;
@@ -49,6 +45,7 @@ public class PictureFragment extends Fragment {
 
     private final static String PARAM_GAME_ID = "param_game_id";
     private String gameId;
+    private MediaService.MediaBinder binder;
 
     private boolean wentToGamePickerActivity = false;
 
@@ -81,22 +78,28 @@ public class PictureFragment extends Fragment {
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_picture, container, false);
 
-        // Make the adapter, etc.
         nothingFoundText = v.findViewById(R.id.album_nothing_found);
-        RecyclerView recyclerView = v.findViewById(R.id.album_recycler);
+        recyclerView = v.findViewById(R.id.album_recycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        adapter = new PictureAlbumAdapter(pictureItems, numOfPictures);
-        recyclerView.setAdapter(adapter);
-        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+        // Bind to the media scan service
+        Intent mssIntent = new Intent(requireContext(), MediaService.class);
+        ServiceConnection connection = new ServiceConnection() {
             @Override
-            public void onChanged() {
-                super.onChanged();
-                nothingFoundText.setVisibility(adapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
+            public void onServiceConnected(ComponentName name, IBinder iBinder) {
+                binder = (MediaService.MediaBinder) iBinder;
+                binder.getNumOfPictures().observe(requireActivity(), num -> {
+                    nothingFoundText.setVisibility(num == 0 ? View.VISIBLE : View.GONE);
+                });
+                retrieveItemsOnSeparateThread();
             }
-        });
 
-        retrieveItemsOnSeparateThread();
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                binder = null;
+            }
+        };
+        requireContext().bindService(mssIntent, connection, Context.BIND_AUTO_CREATE);
 
         return v;
     }
@@ -144,65 +147,17 @@ public class PictureFragment extends Fragment {
         }
     }
 
-    private void getPictures() {
-        // Pictures:
-        pictureItems.clear();
-        gameIds.clear();
-        // Which columns from the query?
-        String[] pics_projection = new String[] {
-                MediaStore.Images.Media._ID,
-                MediaStore.Images.Media.DISPLAY_NAME
-        };
-
-        // Select all pictures when game ID is null; select only pictures from the specified game when not null
-        String selection = null;
-        final String[] selectionArgs = {""};
-        if (gameId != null) {
-            selection = MediaStore.Images.Media.DISPLAY_NAME + " LIKE ?";
-            selectionArgs[0] = "%" + gameId + "%";
-        }
-
-        try (Cursor cursor = requireContext().getContentResolver().query(
-                MediaStore.Images.Media.getContentUri(VOLUME_EXTERNAL),
-                pics_projection,
-                selection,
-                gameId == null ? null : selectionArgs,
-                mediaSortOrder + (mediaSortDescending ? " DESC" : "")
-        )) {
-            if (cursor == null)
-                throw new NullPointerException();
-            int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
-            int displayNameColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME);
-
-            // Set count
-            numOfPictures.postValue(cursor.getCount());
-
-            // Loop through results
-            while (cursor.moveToNext()) {
-                long id = cursor.getLong(idColumn);
-                PictureItem item = new PictureItem();
-                item.id = id;
-                item.uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-                item.display_name = cursor.getString(displayNameColumn);
-                pictureItems.add(item);
-                gameIds.add(item.display_name.substring(17, 49));
-            }
-        }
-    }
-
-    public LiveData<Integer> getNumOfPictures() {
-        return numOfPictures;
-    }
-
     private void retrieveItemsOnSeparateThread() {
-        @SuppressLint("NotifyDataSetChanged") Thread retrieveThread = new Thread(() -> {
-            getPictures();
-            requireActivity().runOnUiThread(() -> {
-                nothingFoundText.setVisibility(adapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
-                adapter.notifyDataSetChanged();
+        if (binder != null) {
+            binder.scanPictures(gameId, mediaSortOrder, mediaSortDescending, items -> {
+                requireActivity().runOnUiThread(() -> {
+                    adapter = new PictureAlbumAdapter(items, binder);
+                    recyclerView.setAdapter(adapter);
+                });
             });
-        });
-        retrieveThread.start();
+        } else {
+            Log.e("SwAlSh", "Retrieve items called before binder was set");
+        }
     }
 
     private void showSortItemsPopup() {
@@ -223,7 +178,7 @@ public class PictureFragment extends Fragment {
                     retrieveItemsOnSeparateThread();
                 } else if (sortItem.getItemId() == R.id.sort_by_game) {
                     Intent intent = new Intent(getActivity(), GamePickerActivity.class);
-                    intent.putExtra("EXTRA_GAME_ID_LIST", gameIds.toArray(new String[]{}));
+                    intent.putExtra("EXTRA_GAME_ID_LIST", binder.getFoundGameIds().toArray(new String[]{}));
                     wentToGamePickerActivity = true;
                     startActivity(intent);
                 } else if (sortItem.getItemId() == R.id.sort_ascending) {
@@ -247,33 +202,38 @@ public class PictureFragment extends Fragment {
 
     @SuppressLint("NotifyDataSetChanged")
     private void showDeletePicturesPopup() {
-        getPictures();
-        if (pictureItems.isEmpty()) {
-            Toast.makeText(getContext(), "There are no pictures to remove", Toast.LENGTH_SHORT).show();
+        if (binder == null) {
+            Toast.makeText(getContext(), getString(R.string.error_deleting_items), Toast.LENGTH_SHORT).show();
             return;
         }
 
-        ArrayList<Uri> uris = new ArrayList<>();
-        for (PictureItem pi: pictureItems) {
-            uris.add(pi.uri);
-        }
+        binder.scanPictures(gameId, mediaSortOrder, mediaSortDescending, pictureItems -> {
+            requireActivity().runOnUiThread(() -> {
+                if (pictureItems.isEmpty()) {
+                    Toast.makeText(getContext(), "There are no pictures to remove", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-        AlertDialog.Builder adb = new AlertDialog.Builder(requireContext());
-        adb.setTitle(getResources().getQuantityString(
-                R.plurals.delete_all_pictures_confirmation_formatted,
-                pictureItems.size(), // Used for deciding which plural string to use
-                pictureItems.size() // Used for formatting
-        ));
-        adb.setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
-        adb.setPositiveButton(R.string.yes, (dialog, which) -> new Thread(() -> {
-            // Delete them
-            for (Uri u: uris) {
-                requireContext().getContentResolver().delete(u, MediaStore.Images.Media.OWNER_PACKAGE_NAME + " == '" + requireActivity().getPackageName() + "'", null);
-            }
-            getPictures();
-            requireActivity().runOnUiThread(() -> adapter.notifyDataSetChanged());
-        }).start());
-        adb.show();
-
+                AlertDialog.Builder adb = new AlertDialog.Builder(requireContext());
+                adb.setTitle(getResources().getQuantityString(
+                        R.plurals.delete_all_pictures_confirmation_formatted,
+                        pictureItems.size(), // Used for deciding which plural string to use
+                        pictureItems.size() // Used for formatting
+                ));
+                adb.setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
+                adb.setPositiveButton(R.string.yes, (dialog, which) -> new Thread(() -> {
+                    // Delete them
+                    Integer oldNumOfPictures = binder.getNumOfPictures().getValue();
+                    if (oldNumOfPictures == null) {
+                        Toast.makeText(getContext(), getString(R.string.error_deleting_items), Toast.LENGTH_SHORT).show();
+                        Log.e("SwAlSh", "Refusing to delete all pictures since oldNumOfPictures is null");
+                        return;
+                    }
+                    binder.deleteAllPictures();
+                    requireActivity().runOnUiThread(this::retrieveItemsOnSeparateThread);
+                }).start());
+                adb.show();
+            });
+        });
     }
 }

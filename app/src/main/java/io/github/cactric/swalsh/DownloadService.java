@@ -1,5 +1,6 @@
 package io.github.cactric.swalsh;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.ContentResolver;
 import android.content.ContentValues;

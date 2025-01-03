@@ -1,7 +1,6 @@
 package io.github.cactric.swalsh.ui.album;
 
 import android.app.AlertDialog;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -15,7 +14,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.lifecycle.MutableLiveData;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -24,13 +22,14 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import io.github.cactric.swalsh.MediaService;
 import io.github.cactric.swalsh.games.GameUtils;
 import io.github.cactric.swalsh.PictureItem;
 import io.github.cactric.swalsh.R;
 
 public class PictureAlbumAdapter extends RecyclerView.Adapter<PictureAlbumAdapter.ViewHolder> {
     private final ArrayList<PictureItem> media;
-    private final MutableLiveData<Integer> numOfPictures;
+    private final MediaService.MediaBinder binder;
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private final ImageView imageView;
         private final TextView lengthText;
@@ -62,9 +61,9 @@ public class PictureAlbumAdapter extends RecyclerView.Adapter<PictureAlbumAdapte
     }
 
     // Takes an array of file paths to the pictures that should be displayed
-    public PictureAlbumAdapter(ArrayList<PictureItem> media, MutableLiveData<Integer> numOfPictures) {
+    public PictureAlbumAdapter(ArrayList<PictureItem> media, MediaService.MediaBinder binder) {
         this.media = media;
-        this.numOfPictures = numOfPictures;
+        this.binder = binder;
     }
 
     // Create new views
@@ -138,7 +137,7 @@ public class PictureAlbumAdapter extends RecyclerView.Adapter<PictureAlbumAdapte
             boolean skipConfirmation = sp.getBoolean("picture_no_delete_confirmation", false);
             if (skipConfirmation) {
                 // Just delete it
-                deleteItem(context, item);
+                deleteItem(item);
             } else {
                 CharSequence[] selectionItems = {res.getString(R.string.no_more_confirm_prompt)};
                 boolean[] checkedItems = new boolean[selectionItems.length];
@@ -154,7 +153,7 @@ public class PictureAlbumAdapter extends RecyclerView.Adapter<PictureAlbumAdapte
                         e.apply();
                     }
                     // Delete!
-                    deleteItem(context, item);
+                    deleteItem(item);
                 });
                 adb.setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
                 adb.show();
@@ -162,13 +161,10 @@ public class PictureAlbumAdapter extends RecyclerView.Adapter<PictureAlbumAdapte
         });
     }
 
-    private void deleteItem(Context context, PictureItem item) {
-        ContentResolver contentResolver = context.getContentResolver();
-        contentResolver.delete(item.uri, null, null);
+    private void deleteItem(PictureItem item) {
+        binder.deletePicture(item.uri);
         PictureAlbumAdapter.this.notifyItemRemoved(media.indexOf(item));
         media.remove(item);
-        if (numOfPictures != null && numOfPictures.getValue() != null)
-            numOfPictures.postValue(numOfPictures.getValue() - 1);
     }
 
     @Override

@@ -78,4 +78,5 @@
     <string name="game_name_hint">Game name…</string>
     <string name="edit_game_name_dialog_title">Edit game name</string>
     <string name="title_activity_game_picker">Sort by game</string>
+    <string name="error_deleting_items">Error deleting items</string>
 </resources>

@@ -24,13 +24,14 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import io.github.cactric.swalsh.MediaService;
 import io.github.cactric.swalsh.games.GameUtils;
 import io.github.cactric.swalsh.R;
 import io.github.cactric.swalsh.VideoItem;
 
 public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.ViewHolder> {
     private final ArrayList<VideoItem> media;
-    private final MutableLiveData<Integer> numOfVideos;
+    private final MediaService.MediaBinder binder;
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private final ImageView videoThumbnail;
         private final TextView lengthText;
@@ -62,9 +63,9 @@ public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.Vi
     }
 
     // Takes an array of file paths to the pictures that should be displayed
-    public VideoAlbumAdapter(ArrayList<VideoItem> media, MutableLiveData<Integer> numOfVideos) {
+    public VideoAlbumAdapter(ArrayList<VideoItem> media, MediaService.MediaBinder binder) {
         this.media = media;
-        this.numOfVideos = numOfVideos;
+        this.binder = binder;
     }
 
     // Create new views
@@ -139,7 +140,7 @@ public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.Vi
             boolean skipConfirmation = sp.getBoolean("video_no_delete_confirmation", false);
             if (skipConfirmation) {
                 // Just delete it
-                deleteItem(context, item);
+                deleteItem(item);
             } else {
                 CharSequence[] selectionItems = {res.getString(R.string.no_more_confirm_prompt)};
                 boolean[] checkedItems = new boolean[selectionItems.length];
@@ -155,7 +156,7 @@ public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.Vi
                         e.apply();
                     }
                     // Delete!
-                    deleteItem(context, item);
+                    deleteItem(item);
                 });
                 adb.setNegativeButton(R.string.no, (dialog, which) -> dialog.dismiss());
                 adb.show();
@@ -163,13 +164,10 @@ public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.Vi
         });
     }
 
-    private void deleteItem(Context context, VideoItem item) {
-        ContentResolver contentResolver = context.getContentResolver();
-        contentResolver.delete(item.uri, null, null);
+    private void deleteItem(VideoItem item) {
+        binder.deleteVideo(item.uri);
         VideoAlbumAdapter.this.notifyItemRemoved(media.indexOf(item));
         media.remove(item);
-        if (numOfVideos != null && numOfVideos.getValue() != null)
-            numOfVideos.postValue(numOfVideos.getValue() - 1);
     }
 
     @Override

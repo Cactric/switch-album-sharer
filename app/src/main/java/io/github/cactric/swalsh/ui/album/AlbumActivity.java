@@ -1,6 +1,11 @@
 package io.github.cactric.swalsh.ui.album;
 
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.provider.MediaStore;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -16,11 +21,13 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+import io.github.cactric.swalsh.MediaService;
 import io.github.cactric.swalsh.games.GameUtils;
 import io.github.cactric.swalsh.R;
 
 public class AlbumActivity extends AppCompatActivity {
     private TabLayout tabLayout;
+    private MediaService.MediaBinder binder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,23 +66,9 @@ public class AlbumActivity extends AppCompatActivity {
             public Fragment createFragment(int position) {
                 // Create corresponding fragment based on position
                 if (position == 1) {
-                    VideoFragment f = VideoFragment.newInstance(gameId);
-                    f.getNumOfVideos().observe(AlbumActivity.this, num -> {
-                        TabLayout.Tab tab = tabLayout.getTabAt(1);
-                        if (num != null & tab != null) {
-                            tab.setText(getString(R.string.videos_format_str, num));
-                        }
-                    });
-                    return f;
+                    return VideoFragment.newInstance(gameId);
                 } else {
-                    PictureFragment f = PictureFragment.newInstance(gameId);
-                    f.getNumOfPictures().observe(AlbumActivity.this, num -> {
-                        TabLayout.Tab tab = tabLayout.getTabAt(0);
-                        if (num != null & tab != null) {
-                            tab.setText(getString(R.string.pictures_format_str, num));
-                        }
-                    });
-                    return f;
+                    return PictureFragment.newInstance(gameId);
                 }
             }
         };
@@ -89,5 +82,37 @@ public class AlbumActivity extends AppCompatActivity {
             if (pos == 1)
                 tab.setText(R.string.videos);
         }).attach();
+
+        // Setup connection to MediaScanService
+        // (in this activity, it just updates the numbers in the tab labels)
+        ServiceConnection connection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder iBinder) {
+                binder = (MediaService.MediaBinder) iBinder;
+                binder.getNumOfPictures().observe(AlbumActivity.this, num -> {
+                    TabLayout.Tab tab = tabLayout.getTabAt(0);
+                    if (num != null & tab != null) {
+                        tab.setText(getString(R.string.pictures_format_str, num));
+                    }
+                });
+                binder.getNumOfVideos().observe(AlbumActivity.this, num -> {
+                    TabLayout.Tab tab = tabLayout.getTabAt(1);
+                    if (num != null & tab != null) {
+                        tab.setText(getString(R.string.videos_format_str, num));
+                    }
+                });
+
+                // Be cheeky and fetch the data for videos so that the number in the tab is populated
+                binder.scanVideos(null, MediaStore.Video.Media.DATE_ADDED, true, items -> {});
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                /* do nothing */
+            }
+        };
+
+        Intent mssIntent = new Intent(this, MediaService.class);
+        bindService(mssIntent, connection, BIND_AUTO_CREATE);
     }
 }
