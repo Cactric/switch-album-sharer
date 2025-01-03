@@ -1,6 +1,7 @@
 package io.github.cactric.swalsh.ui.album;
 
 import android.os.Bundle;
+import android.util.ArraySet;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -17,11 +18,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 
 import io.github.cactric.swalsh.games.Game;
+import io.github.cactric.swalsh.games.GameDatabase;
 import io.github.cactric.swalsh.games.GameUtils;
 import io.github.cactric.swalsh.R;
 
 public class GamePickerActivity extends AppCompatActivity {
-    private final ArrayList<Game> games = new ArrayList<>();
+    private final ArraySet<Game> games = new ArraySet<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +50,9 @@ public class GamePickerActivity extends AppCompatActivity {
             finish();
             return;
         }
+        // Add games in database
+        GameDatabase db = GameDatabase.getDatabase(this);
+        games.addAll(db.gameDao().getAll());
 
         // Set up toolbar
         Toolbar toolbar = findViewById(R.id.gp_toolbar);

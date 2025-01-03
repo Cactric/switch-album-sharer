@@ -1,6 +1,7 @@
 package io.github.cactric.swalsh.ui.album;
 
 import android.content.Intent;
+import android.util.ArraySet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,9 +22,9 @@ import io.github.cactric.swalsh.R;
 import io.github.cactric.swalsh.games.GameDatabase;
 
 public class GamePickerAdapter extends RecyclerView.Adapter<GamePickerAdapter.ViewHolder> {
-    private final ArrayList<Game> games;
+    private final ArraySet<Game> games;
 
-    public GamePickerAdapter(ArrayList<Game> games) {
+    public GamePickerAdapter(ArraySet<Game> games) {
         this.games = games;
     }
 
@@ -36,7 +37,7 @@ public class GamePickerAdapter extends RecyclerView.Adapter<GamePickerAdapter.Vi
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Game game = games.get(position);
+        Game game = games.valueAt(position);
         holder.getGameName().setText(game.gameName);
 
         holder.getGameRoot().setOnClickListener(v -> {
