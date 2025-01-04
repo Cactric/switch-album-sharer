@@ -1,7 +1,6 @@
 package io.github.cactric.swalsh.ui.album;
 
 import android.os.Bundle;
-import android.util.ArraySet;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;

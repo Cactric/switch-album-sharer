@@ -30,4 +30,4 @@ room-annotations = {group = "androidx.room", name="room-compiler", version.ref =
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-
+room-plugin = {id = "androidx.room", version.ref = "room"}

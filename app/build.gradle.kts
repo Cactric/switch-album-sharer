@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.room.plugin)
 }
 
 android {
@@ -34,6 +35,10 @@ android {
     buildFeatures {
         viewBinding = true
     }
+}
+
+room {
+    schemaDirectory(projectDir.path + "/roomSchema")
 }
 
 dependencies {

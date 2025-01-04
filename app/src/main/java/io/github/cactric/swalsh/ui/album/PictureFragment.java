@@ -5,7 +5,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -29,10 +28,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-
 import io.github.cactric.swalsh.MediaService;
-import io.github.cactric.swalsh.PictureItem;
 import io.github.cactric.swalsh.R;
 
 public class PictureFragment extends Fragment {

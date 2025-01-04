@@ -1,21 +1,14 @@
 package io.github.cactric.swalsh.ui.album;
 
-import static android.provider.MediaStore.VOLUME_EXTERNAL;
-
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
-import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.MediaStore;
-import android.util.ArraySet;
 import android.util.Log;
-import android.util.Size;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -31,17 +24,11 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
 import io.github.cactric.swalsh.MediaService;
 import io.github.cactric.swalsh.R;
-import io.github.cactric.swalsh.VideoItem;
 
 public class VideoFragment extends Fragment {
     private String mediaSortOrder = MediaStore.Video.Media.DATE_ADDED;
