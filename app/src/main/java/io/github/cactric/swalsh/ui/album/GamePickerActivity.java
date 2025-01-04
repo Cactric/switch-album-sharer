@@ -23,7 +23,7 @@ import io.github.cactric.swalsh.games.GameUtils;
 import io.github.cactric.swalsh.R;
 
 public class GamePickerActivity extends AppCompatActivity {
-    private final ArraySet<Game> games = new ArraySet<>();
+    private final ArrayList<Game> games = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +52,15 @@ public class GamePickerActivity extends AppCompatActivity {
         }
         // Add games in database
         GameDatabase db = GameDatabase.getDatabase(this);
-        games.addAll(db.gameDao().getAll());
+        for (Game g: db.gameDao().getAll()) {
+            if (!games.contains(g))
+                games.add(g);
+        }
+
+        // Debug: print games list
+        for (Game g: games) {
+            System.out.println(g.game_primary_key + ": " + "id = " + g.gameId + " / " + g.gameName);
+        }
 
         // Set up toolbar
         Toolbar toolbar = findViewById(R.id.gp_toolbar);

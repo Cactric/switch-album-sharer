@@ -103,7 +103,7 @@ public class AlbumActivity extends AppCompatActivity {
                 });
 
                 // Be cheeky and fetch the data for videos so that the number in the tab is populated
-                binder.scanVideos(null, MediaStore.Video.Media.DATE_ADDED, true, items -> {});
+                binder.scanVideos(gameId, MediaStore.Video.Media.DATE_ADDED, true, items -> {});
             }
 
             @Override

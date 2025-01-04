@@ -56,6 +56,8 @@ public class VideoFragment extends Fragment {
     private MediaService.MediaBinder binder;
 
     private boolean wentToGamePickerActivity = false;
+    private Integer oldNumOfPictures;
+    private Integer oldNumOfVideos;
 
     public VideoFragment() {
     }
@@ -131,6 +133,8 @@ public class VideoFragment extends Fragment {
             // If the user went to the game picker activity, they might have changed the names,
             // so tell the adapter about it
             if (adapter.getItemCount() > 0) {
+                binder.getNumOfPictures().setValue(oldNumOfPictures);
+                binder.getNumOfVideos().setValue(oldNumOfVideos);
                 adapter.notifyItemRangeChanged(0, adapter.getItemCount());
                 wentToGamePickerActivity = false;
             }
@@ -186,6 +190,8 @@ public class VideoFragment extends Fragment {
                     Intent intent = new Intent(getActivity(), GamePickerActivity.class);
                     intent.putExtra("EXTRA_GAME_ID_LIST", binder.getFoundGameIds().toArray(new String[]{}));
                     wentToGamePickerActivity = true;
+                    oldNumOfPictures = binder.getNumOfPictures().getValue();
+                    oldNumOfVideos = binder.getNumOfVideos().getValue();
                     startActivity(intent);
                 } else if (sortItem.getItemId() == R.id.sort_ascending) {
                     mediaSortDescending = false;
