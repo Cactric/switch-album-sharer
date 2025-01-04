@@ -62,7 +62,7 @@ public class GamePickerAdapter extends RecyclerView.Adapter<GamePickerAdapter.Vi
                 nameTextField.setText(game.gameName);
 
                 // Also add a Remove button if it's actually in the DB
-                builder.setNeutralButton("Clear name", (dialog, which) -> {
+                builder.setNeutralButton(R.string.clear_name, (dialog, which) -> {
                     GameDatabase db = GameDatabase.getDatabase(v.getContext());
                     db.gameDao().delete(game);
                     GameUtils gameUtils = new GameUtils(v.getContext());
@@ -72,7 +72,7 @@ public class GamePickerAdapter extends RecyclerView.Adapter<GamePickerAdapter.Vi
             }
             builder.setView(dialogView);
             builder.setTitle(R.string.edit_game_name_dialog_title);
-            builder.setPositiveButton("Save", (dialog, which) -> {
+            builder.setPositiveButton(R.string.save, (dialog, which) -> {
                 // Save the name
                 String name = nameTextField.getText().toString();
 
