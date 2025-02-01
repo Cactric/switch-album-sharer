@@ -1,7 +1,7 @@
 ![SwAlSh Logo](icons/logo.svg) 
 # Switch Album Sharer
 
-Android app to make it easier to share captured pictures/videos from a Nintendo Switch.
+Android app that makes it easier to share captured pictures/videos from a Nintendo Switch.
 
 This app uses the "Send to Smart Device" functionality from the Album - it automates the process of connecting to the network and downloading the files; it gives you a share button for them when done.
 
