@@ -16,6 +16,19 @@
         android:textSize="18sp"
         tools:text="Downloading 1 of 4" />
 
+    <TextView
+        android:id="@+id/save_location_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center_horizontal"
+        android:textSize="12sp"
+        android:layout_marginHorizontal="4dp"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"
+        tools:visibility="visible"
+        tools:text="The pictures have also been saved in the folder “Pictures/Switch Screenshots”" />
+
     <ProgressBar
         android:id="@+id/progressBar"
         style="?android:attr/progressBarStyleHorizontal"

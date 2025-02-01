@@ -87,6 +87,7 @@ public class ConnectFragment extends Fragment {
                 requireContext().startService(intent);
 
                 TextView stateText = root.findViewById(R.id.state_text);
+                TextView saveDirText = root.findViewById(R.id.save_location_text);
                 ProgressBar progressBar = root.findViewById(R.id.progressBar);
 
                 Button sacButton = root.findViewById(R.id.another_code);
@@ -161,6 +162,17 @@ public class ConnectFragment extends Fragment {
                                         builder.setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss());
                                         builder.create().show();
                                     }
+
+                                    saveDirText.setVisibility(VISIBLE);
+                                    Integer amount = binder.getNumDownloaded().getValue();
+                                    if (amount == null)
+                                        amount = 1; // Avoid null problems by setting amount explicitly if necessary
+                                    if (binder.getFileType().equals("photo")) {
+                                        saveDirText.setText(getResources().getQuantityString(R.plurals.pictures_location_format, amount, binder.getPicturesDir()));
+                                    } else if (binder.getFileType().equals("movie")) {
+                                        saveDirText.setText(getResources().getQuantityString(R.plurals.videos_location_format, amount, binder.getVideosDir()));
+                                    }
+
                                     sacButton.setVisibility(VISIBLE);
                                     albumButton.setVisibility(VISIBLE);
                                     shareButton.setVisibility(VISIBLE);

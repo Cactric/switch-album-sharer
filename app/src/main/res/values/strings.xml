@@ -81,4 +81,14 @@
     <string name="error_deleting_items">Error deleting items</string>
     <string name="clear_name">Clear name</string>
     <string name="save">Save</string>
+    <string name="captured_pictures_dir">Switch Screenshots</string>
+    <string name="captured_videos_dir">Switch Clips</string>
+    <plurals name="pictures_location_format">
+        <item quantity="one">The picture has also been saved in the folder “%1$s”</item>
+        <item quantity="other">The pictures have also been saved in the folder “%1$s”</item>
+    </plurals>
+    <plurals name="videos_location_format">
+        <item quantity="one">The video has also been saved in the folder “%1$s”</item>
+        <item quantity="other">The videos have also been saved in the folder “%1$s”</item>
+    </plurals>
 </resources>

@@ -51,7 +51,18 @@ public class DownloadService extends Service {
     private WifiNetworkSpecifier netSpec;
     private MutableLiveData<Long> scanTime = new MutableLiveData<>(-1L);
 
+    private String picturesRelPath;
+    private String videosRelPath;
+
     public DownloadService() {
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        // Need to wait for Context to not be null
+        picturesRelPath = Environment.DIRECTORY_PICTURES + "/" + getString(R.string.captured_pictures_dir);
+        videosRelPath = Environment.DIRECTORY_MOVIES + "/" + getString(R.string.captured_videos_dir);
     }
 
     @Override
@@ -167,13 +178,13 @@ public class DownloadService extends Service {
                                         contentCollection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
 
                                         contentDetails.put(MediaStore.Images.Media.DISPLAY_NAME, fileNames.getString(i));
-                                        contentDetails.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Switch Screenshots");
+                                        contentDetails.put(MediaStore.Images.Media.RELATIVE_PATH, picturesRelPath);
                                         // Mark it as pending until I write the file out
                                         contentDetails.put(MediaStore.Images.Media.IS_PENDING, 1);
                                     } else if (fileType.equals("movie")) {
                                         contentCollection = MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
                                         contentDetails.put(MediaStore.Video.Media.DISPLAY_NAME, fileNames.getString(i));
-                                        contentDetails.put(MediaStore.Video.Media.RELATIVE_PATH, Environment.DIRECTORY_MOVIES + "/Switch Clips");
+                                        contentDetails.put(MediaStore.Video.Media.RELATIVE_PATH, videosRelPath);
                                         contentDetails.put(MediaStore.Video.Media.IS_PENDING, 1);
                                     } else {
                                         Log.e("SwAlSh", "Unknown file type '" + fileType + "'");
@@ -320,6 +331,12 @@ public class DownloadService extends Service {
         }
         public LiveData<Long> getScanTime() {
             return scanTime;
+        }
+        public String getPicturesDir() {
+            return picturesRelPath;
+        }
+        public String getVideosDir() {
+            return videosRelPath;
         }
     }
 
