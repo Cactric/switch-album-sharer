@@ -6,9 +6,6 @@
     <item
         android:id="@+id/sort_by_date_taken"
         android:title="@string/by_date_taken" />
-    <item
-        android:id="@+id/sort_by_game"
-        android:title="@string/by_game" />
     <group android:checkableBehavior="single">
         <item android:id="@+id/sort_ascending" android:title="@string/sort_ascending_time" />
         <item android:id="@+id/sort_descending" android:title="@string/sort_descending_time" />

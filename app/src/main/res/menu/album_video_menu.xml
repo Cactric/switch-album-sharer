@@ -7,6 +7,11 @@
         android:icon="@drawable/ic_sort"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/filter_by_game"
+        android:title="@string/filter_by_game"
+        android:icon="@drawable/filter_by_game"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/delete_all_videos"
         android:title="@string/delete_all_videos"
         app:showAsAction="never" />

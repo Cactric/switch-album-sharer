@@ -138,6 +138,13 @@ public class VideoFragment extends Fragment {
             if (menuItem.getItemId() == R.id.sort_videos) {
                 showSortItemsPopup();
                 return true;
+            } else if (menuItem.getItemId() == R.id.filter_by_game) {
+                Intent intent = new Intent(getActivity(), GamePickerActivity.class);
+                intent.putExtra("EXTRA_GAME_ID_LIST", binder.getFoundGameIds().toArray(new String[]{}));
+                wentToGamePickerActivity = true;
+                oldNumOfPictures = binder.getNumOfPictures().getValue();
+                oldNumOfVideos = binder.getNumOfVideos().getValue();
+                startActivity(intent);
             } else if (menuItem.getItemId() == R.id.delete_all_videos) {
                 showDeleteVideosPopup();
                 return true;
@@ -173,13 +180,6 @@ public class VideoFragment extends Fragment {
                 } else if (sortItem.getItemId() == R.id.sort_by_date_taken) {
                     mediaSortOrder = MediaStore.Images.Media.DISPLAY_NAME;
                     retrieveItemsOnSeparateThread();
-                } else if (sortItem.getItemId() == R.id.sort_by_game) {
-                    Intent intent = new Intent(getActivity(), GamePickerActivity.class);
-                    intent.putExtra("EXTRA_GAME_ID_LIST", binder.getFoundGameIds().toArray(new String[]{}));
-                    wentToGamePickerActivity = true;
-                    oldNumOfPictures = binder.getNumOfPictures().getValue();
-                    oldNumOfVideos = binder.getNumOfVideos().getValue();
-                    startActivity(intent);
                 } else if (sortItem.getItemId() == R.id.sort_ascending) {
                     mediaSortDescending = false;
                     sortItem.setChecked(true);

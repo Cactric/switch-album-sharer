@@ -77,12 +77,13 @@
     <string name="edit_game_name">Edit game\'s name</string>
     <string name="game_name_hint">Game name…</string>
     <string name="edit_game_name_dialog_title">Edit game name</string>
-    <string name="title_activity_game_picker">Sort by game</string>
+    <string name="title_activity_game_picker">Pick game to filter by</string>
     <string name="error_deleting_items">Error deleting items</string>
     <string name="clear_name">Clear name</string>
     <string name="save">Save</string>
     <string name="captured_pictures_dir">Switch Screenshots</string>
     <string name="captured_videos_dir">Switch Clips</string>
+    <string name="filter_by_game">Filter by game</string>
     <plurals name="pictures_location_format">
         <item quantity="one">The picture has also been saved in the folder “%1$s”</item>
         <item quantity="other">The pictures have also been saved in the folder “%1$s”</item>
