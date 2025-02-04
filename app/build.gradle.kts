@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "io.github.cactric.swalsh"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "io.github.cactric.swalsh"
