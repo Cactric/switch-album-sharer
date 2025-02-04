@@ -45,15 +45,15 @@ public class DownloadService extends Service {
 
     private final ArrayList<Uri> savedContentUris = new ArrayList<>();
     private String fileType = null;
-    private MutableLiveData<State> state = new MutableLiveData<>(State.NOT_STARTED);
-    private MutableLiveData<Integer> numDownloaded = new MutableLiveData<>(0);
-    private MutableLiveData<Integer> numFailed = new MutableLiveData<>(0);
-    private MutableLiveData<Float> downloadProgress = new MutableLiveData<>(0.0f);
+    private final MutableLiveData<State> state = new MutableLiveData<>(State.NOT_STARTED);
+    private final MutableLiveData<Integer> numDownloaded = new MutableLiveData<>(0);
+    private final MutableLiveData<Integer> numFailed = new MutableLiveData<>(0);
+    private final MutableLiveData<Float> downloadProgress = new MutableLiveData<>(0.0f);
     // Index of the errors string array of the string that corresponds to the error, when state == ERROR
-    private MutableLiveData<Integer> errorStringIndex = new MutableLiveData<>(0);
+    private final MutableLiveData<Integer> errorStringIndex = new MutableLiveData<>(0);
     private int numToDownload = 0;
     private WifiNetworkSpecifier netSpec;
-    private MutableLiveData<Long> scanTime = new MutableLiveData<>(-1L);
+    private final MutableLiveData<Long> scanTime = new MutableLiveData<>(-1L);
 
     private String picturesRelPath;
     private String videosRelPath;
@@ -168,7 +168,7 @@ public class DownloadService extends Service {
                             for (int i = 0; i < fileNames.length(); i++) {
                                 Log.d("SwAlSh", "File name " + i + " = " + fileNames.getString(i));
                                 ContentResolver resolver = getApplicationContext().getContentResolver();
-                                Uri contentUri = null;
+                                Uri contentUri;
                                 try {
                                     URL fileURL = new URL(PROTOCOL, HOST, PORT, "img/" + fileNames.getString(i));
                                     HttpURLConnection fileConnection = (HttpURLConnection) network.openConnection(fileURL);
