@@ -39,6 +39,10 @@ import java.util.List;
 import java.util.Objects;
 
 public class DownloadService extends Service {
+    private final String PROTOCOL = "http";
+    private final String HOST = "192.168.0.1";
+    private final int PORT = 80;
+
     private final ArrayList<Uri> savedContentUris = new ArrayList<>();
     private String fileType = null;
     private MutableLiveData<State> state = new MutableLiveData<>(State.NOT_STARTED);
@@ -118,7 +122,7 @@ public class DownloadService extends Service {
                         // Download the data.json file
                         String dataJson;
                         try {
-                            URL url = new URL("http://192.168.0.1/data.json");
+                            URL url = new URL(PROTOCOL, HOST, PORT, "data.json");
                             HttpURLConnection urlConnection = (HttpURLConnection) network.openConnection(url);
                             try {
                                 InputStream in = new BufferedInputStream(urlConnection.getInputStream());
@@ -166,7 +170,7 @@ public class DownloadService extends Service {
                                 ContentResolver resolver = getApplicationContext().getContentResolver();
                                 Uri contentUri = null;
                                 try {
-                                    URL fileURL = new URL("http://192.168.0.1/img/" + fileNames.getString(i));
+                                    URL fileURL = new URL(PROTOCOL, HOST, PORT, "img/" + fileNames.getString(i));
                                     HttpURLConnection fileConnection = (HttpURLConnection) network.openConnection(fileURL);
                                     long contentLength = fileConnection.getContentLengthLong();
                                     InputStream in = new BufferedInputStream(fileConnection.getInputStream());
