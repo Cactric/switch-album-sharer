@@ -87,6 +87,7 @@
     <string name="filter_by_game">Filter by game</string>
     <string name="export_game_list">Export game list</string>
     <string name="import_game_list">Import game list</string>
+    <string name="export_complete">Export completed</string>
     <plurals name="pictures_location_format">
         <item quantity="one">The picture has also been saved in the folder “%1$s”</item>
         <item quantity="other">The pictures have also been saved in the folder “%1$s”</item>
