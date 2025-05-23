@@ -2,13 +2,19 @@ package io.github.cactric.swalsh.ui.album;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
+import androidx.core.view.MenuProvider;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -57,13 +63,14 @@ public class GamePickerActivity extends AppCompatActivity {
         }
 
         // Debug: print games list
-        for (Game g: games) {
+        /*for (Game g: games) {
             System.out.println(g.game_primary_key + ": " + "id = " + g.gameId + " / " + g.gameName);
-        }
+        }*/
 
         // Set up toolbar
         Toolbar toolbar = findViewById(R.id.gp_toolbar);
         toolbar.setTitle(R.string.title_activity_game_picker);
+        addMenuProvider(new PickerMenuProvider(), this);
         setSupportActionBar(toolbar);
 
         // Set up recycler view
@@ -85,4 +92,21 @@ public class GamePickerActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
     }
 
+    private class PickerMenuProvider implements MenuProvider {
+        @Override
+        public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+            menuInflater.inflate(R.menu.picker_menu, menu);
+            Log.d("SwAlSh", "Picker menu inflated");
+        }
+
+        @Override
+        public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+            if (menuItem.getItemId() == R.id.picker_menu_import) {
+                Toast.makeText(GamePickerActivity.this, "Import not implemented yet", Toast.LENGTH_SHORT).show();
+            } else if (menuItem.getItemId() == R.id.picker_menu_export) {
+                Toast.makeText(GamePickerActivity.this, "Export not implemented yet", Toast.LENGTH_SHORT).show();
+            }
+            return false;
+        }
+    }
 }

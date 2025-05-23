@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/picker_menu_import"
+        android:title="@string/import_game_list"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/picker_menu_export"
+        android:title="@string/export_game_list"
+        app:showAsAction="never" />
+
+</menu>
