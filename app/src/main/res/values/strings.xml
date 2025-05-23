@@ -70,10 +70,10 @@
     <string name="library_website_button_text">Website</string>
     <string name="library_license_button_text">License</string>
     <string name="no_browser">You don\'t seem to have a browser installed…</string>
-    <string name="library_list_heading">List of libraries used: (incomplete)</string>
+    <string name="library_list_heading">Acknowledgements</string>
     <string name="no_pictures">No pictures</string>
     <string name="no_videos">No videos</string>
-    <string name="unknown_game_name_format">Unknown Game [ID: %1$s…]</string>
+    <string name="unknown_game_name_format">Unknown [ID: %1$s…]</string>
     <string name="no_games_found">No games found</string>
     <string name="edit_game_name">Edit game\'s name</string>
     <string name="game_name_hint">Game name…</string>
