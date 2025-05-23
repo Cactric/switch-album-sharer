@@ -107,6 +107,8 @@ public class ConnectFragment extends Fragment {
 
                 albumButton.setOnClickListener(v -> {
                     Intent albumIntent = new Intent(getActivity(), AlbumActivity.class);
+                    if (binder.getFileType().equals("movie"))
+                        albumIntent.putExtra("EXTRA_STARTING_TAB", 1);
                     startActivity(albumIntent);
                 });
 
@@ -247,6 +249,8 @@ public class ConnectFragment extends Fragment {
                                 if (binder.getNumToDownload() <= 1) {
                                     progressBar.setIndeterminate(num <= 0.0f);
                                     progressBar.setProgress((int) (num * 100), true);
+                                    if (state.getValue() != null)
+                                        formatStateText(state.getValue());
                                 }
                             });
 
@@ -263,14 +267,26 @@ public class ConnectFragment extends Fragment {
                             case NOT_STARTED, CONNECTING, CONNECTED ->
                                     stateText.setText(states[newState.ordinal()]);
                             case DOWNLOADING, DONE -> {
-                                String formattedStr = getString(R.string.connection_state,
-                                        states[newState.ordinal()],
-                                        numDownloaded.getValue(),
-                                        binder.getNumToDownload());
-                                stateText.setText(formattedStr);
+                                if (binder.getNumToDownload() == 1) {
+                                    // Show percent downloaded if there's only one file
+                                    float percent = 0.0f;
+                                    if (binder.getDownloadProgress().getValue() != null) {
+                                        percent = binder.getDownloadProgress().getValue() * 100.0f;
+                                    }
+                                    String formattedStr = getString(R.string.connection_state_single,
+                                            states[newState.ordinal()],
+                                            percent);
+                                    stateText.setText(formattedStr);
+                                } else {
+                                    String formattedStr = getString(R.string.connection_state,
+                                            states[newState.ordinal()],
+                                            numDownloaded.getValue(),
+                                            binder.getNumToDownload());
+                                    stateText.setText(formattedStr);
+                                }
                             }
                             case ERROR -> {
-                                if (binder.getNumToDownload() == 0) {
+                                if (binder.getNumToDownload() > 1) {
                                     stateText.setText(states[newState.ordinal()]);
                                 } else {
                                     String formattedStr = getString(R.string.connection_state,

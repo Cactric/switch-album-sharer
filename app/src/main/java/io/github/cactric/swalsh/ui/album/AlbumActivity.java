@@ -42,6 +42,7 @@ public class AlbumActivity extends AppCompatActivity {
 
         GameUtils gameUtils = new GameUtils(this);
         String gameId = getIntent().getStringExtra("EXTRA_GAME_ID");
+        int startingTab = getIntent().getIntExtra("EXTRA_STARTING_TAB", 0);
 
         // Set up toolbar
         Toolbar toolbar = findViewById(R.id.album_toolbar);
@@ -83,6 +84,8 @@ public class AlbumActivity extends AppCompatActivity {
                 tab.setText(R.string.videos);
         }).attach();
 
+        tabLayout.selectTab(tabLayout.getTabAt(startingTab));
+
         // Setup connection to MediaScanService
         // (in this activity, it just updates the numbers in the tab labels)
         ServiceConnection connection = new ServiceConnection() {
@@ -102,8 +105,11 @@ public class AlbumActivity extends AppCompatActivity {
                     }
                 });
 
-                // Be cheeky and fetch the data for videos so that the number in the tab is populated
-                binder.scanVideos(gameId, MediaStore.Video.Media.DATE_ADDED, true, items -> {});
+                // Be cheeky and fetch the data for the other tab so that the number in the tab is populated
+                if (startingTab == 0)
+                    binder.scanVideos(gameId, MediaStore.Video.Media.DATE_ADDED, true, items -> {});
+                else
+                    binder.scanPictures(gameId, MediaStore.Images.Media.DATE_ADDED, true, items -> {});
             }
 
             @Override

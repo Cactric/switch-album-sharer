@@ -3,6 +3,7 @@
     <string name="app_name_long">Switch Album Sharer</string>
     <string name="error">Error</string>
     <string name="connection_state">%1$s: downloaded %2$d of %3$d</string>
+    <string name="connection_state_single">%1$s: %2$.0f%% downloaded</string>
     <string name="scan_another_code">Scan Another</string>
     <string name="open_album">Album</string>
     <string name="title_activity_album">Album</string>
