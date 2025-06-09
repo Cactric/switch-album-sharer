@@ -19,7 +19,7 @@ public abstract class GameDatabase extends RoomDatabase {
                 instance = Room.databaseBuilder(context.getApplicationContext(),
                                 GameDatabase.class,
                                 "game_database")
-                        .fallbackToDestructiveMigration()
+                        .fallbackToDestructiveMigration(true)
                         .allowMainThreadQueries() // TODO: rewrite to remove this. Although the DB shouldn't get THAT big...
                         .build();
             }
