@@ -90,7 +90,7 @@ public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.Vi
         try {
             String name = item.display_name;
             calBuilder.set(Calendar.YEAR, Integer.parseInt(name.substring(0, 4)));
-            calBuilder.set(Calendar.MONTH, Integer.parseInt(name.substring(4, 6)));
+            calBuilder.set(Calendar.MONTH, Integer.parseInt(name.substring(4, 6)) - 1);
             calBuilder.set(Calendar.DAY_OF_MONTH, Integer.parseInt(name.substring(6, 8)));
             calBuilder.set(Calendar.HOUR_OF_DAY, Integer.parseInt(name.substring(8, 10)));
             calBuilder.set(Calendar.MINUTE, Integer.parseInt(name.substring(10, 12)));
