@@ -21,7 +21,7 @@
     <string name="ssid">SSID</string>
     <string name="password">Password</string>
     <string name="connect">Connect</string>
-    <string name="manual_explanation">Press + (\'Trouble Connecting?\') when the QR code is visible to find the following details.\nNote that the password will change each time.\nThe SSID will stay the same for each Switch and the app will save it.</string>
+    <string name="manual_explanation">Press + (\'Trouble Connecting?\') when the QR code is visible to find the following details.\n\n• Note that the password will change each time.\n•The SSID will stay the same for each Switch and the app will save it.</string>
     <string name="prefilled_ssid">switch_</string>
     <string name="bad_qr_contents">The scanned code does not seem to be for a Wifi network</string>
     <string name="bad_prefix">The SSID (Wifi name) should start with \'switch_\'.\nLong-press the connect button to bypass this check</string>
@@ -88,6 +88,7 @@
     <string name="export_game_list">Export game list</string>
     <string name="import_game_list">Import game list</string>
     <string name="export_complete">Export completed</string>
+    <string name="connect_to_console">Connect to console</string>
     <plurals name="pictures_location_format">
         <item quantity="one">The picture has also been saved in the folder “%1$s”</item>
         <item quantity="other">The pictures have also been saved in the folder “%1$s”</item>

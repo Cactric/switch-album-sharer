@@ -7,13 +7,12 @@ import java.util.Scanner;
 
 public class WifiUtils {
     public static WifiNetworkSpecifier parseNetwork(String qrWifiString) throws IllegalArgumentException {
-
         WifiNetworkSpecifier.Builder builder = new WifiNetworkSpecifier.Builder();
 
         // Check it begins with "WIFI:"
         if (!qrWifiString.startsWith("WIFI:")) {
             Log.e("SwAlSh", "The scanned code" + qrWifiString + "is not a Wifi code?");
-            throw new IllegalArgumentException("The scanned codes doesn't seem to be a Wifi code");
+            throw new IllegalArgumentException("The scanned code doesn't seem to be a Wifi code");
         }
         Scanner scanner = new Scanner(qrWifiString.substring(5)).useDelimiter(";");
 
@@ -45,5 +44,13 @@ public class WifiUtils {
         }
 
         return builder.build();
+    }
+
+    public static WifiNetworkSpecifier basicNetwork(String ssid, String pass) {
+        WifiNetworkSpecifier.Builder builder = new WifiNetworkSpecifier.Builder();
+        return builder.setSsid(ssid)
+                .setWpa2Passphrase(pass)
+                .setIsHiddenSsid(false)
+                .build();
     }
 }

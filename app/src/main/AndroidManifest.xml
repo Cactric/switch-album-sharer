@@ -28,10 +28,20 @@
         android:theme="@style/Theme.SwAlSh"
         android:usesCleartextTraffic="true"
         tools:targetApi="34">
+        <activity
+            android:name=".ui.ConnectActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.ScanActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.ManualActivity"
+            android:exported="false" />
+
         <service
             android:name=".MediaService"
             android:enabled="true"
-            android:exported="false"></service>
+            android:exported="false" />
 
         <activity
             android:name=".ui.album.GamePickerActivity"
