@@ -163,8 +163,9 @@ public class ScanActivity extends AppCompatActivity {
     private final ActivityResultLauncher<String> requestPermLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
         if (!granted) {
             AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
-            alertBuilder.setMessage("Camera permission is needed to scan the QR code");
-            alertBuilder.setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss());
+            alertBuilder.setTitle(R.string.camera_perm_needed);
+            alertBuilder.setMessage(R.string.no_camera_message);
+            alertBuilder.setPositiveButton(R.string.back, (dialog, which) -> dialog.dismiss());
             alertBuilder.setOnDismissListener(d -> finish());
             alertBuilder.show();
             // TODO: add a button to go to settings

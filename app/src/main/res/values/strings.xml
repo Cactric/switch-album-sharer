@@ -89,6 +89,9 @@
     <string name="import_game_list">Import game list</string>
     <string name="export_complete">Export completed</string>
     <string name="connect_to_console">Connect to console</string>
+    <string name="back">Back</string>
+    <string name="camera_perm_needed">Camera permission is needed to scan the QR code</string>
+    <string name="no_camera_message">As an alternative, you can also enter the information manually - choose \"Manual Entry\" on the main menu</string>
     <plurals name="pictures_location_format">
         <item quantity="one">The picture has also been saved in the folder “%1$s”</item>
         <item quantity="other">The pictures have also been saved in the folder “%1$s”</item>
