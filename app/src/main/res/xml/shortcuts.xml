@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="scan"
+        android:enabled="true"
+        android:icon="@drawable/ic_scan_qr_code"
+        android:shortcutShortLabel="@string/scan_code"
+        android:shortcutLongLabel="@string/scan_code"
+        android:shortcutDisabledMessage="@string/error"
+    >
+        <!--TODO: re-do the strings to be specific to the shortcut -->
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="io.github.cactric.swalsh"
+            android:targetClass="io.github.cactric.swalsh.ui.ScanActivity" />
+    </shortcut>
+</shortcuts>

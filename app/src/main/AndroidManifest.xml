@@ -30,13 +30,13 @@
         tools:targetApi="34">
         <activity
             android:name=".ui.ConnectActivity"
-            android:exported="false" />
+            android:exported="true" />
         <activity
             android:name=".ui.ScanActivity"
-            android:exported="false" />
+            android:exported="true" />
         <activity
             android:name=".ui.ManualActivity"
-            android:exported="false" />
+            android:exported="true" />
 
         <service
             android:name=".MediaService"
@@ -72,6 +72,8 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity>
     </application>
 
