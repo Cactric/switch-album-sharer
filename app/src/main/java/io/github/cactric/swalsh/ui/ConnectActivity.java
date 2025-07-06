@@ -3,12 +3,15 @@ package io.github.cactric.swalsh.ui;
 import static android.view.View.VISIBLE;
 
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -65,6 +68,12 @@ public class ConnectActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.connect_toolbar);
         toolbar.setTitle(R.string.connect_to_console);
 
+        if (checkWifiIsEnabled()) {
+            connectToConsole();
+        }
+    }
+
+    private void connectToConsole() {
         WifiNetworkSpecifier netSpec = null;
         Intent arguments = getIntent();
         if (arguments.hasExtra("scanned_data")) {
@@ -122,6 +131,7 @@ public class ConnectActivity extends AppCompatActivity {
         );
 
         bindService(intent, connection, BIND_AUTO_CREATE);
+
     }
 
     private class ConnectServiceConnection implements ServiceConnection {
@@ -321,6 +331,37 @@ public class ConnectActivity extends AppCompatActivity {
         @Override
         public void onServiceDisconnected(ComponentName name) {
 
+        }
+    }
+
+    /**
+     * Checks if Wifi is enabled. If it is, it returns true, otherwise it alerts the user to turn it
+     * on and returns false.
+     * @return True if Wifi is enabled
+     */
+    private boolean checkWifiIsEnabled() {
+        WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        if (wifiManager.isWifiEnabled()) {
+            return true;
+        } else {
+            // Alert the user and then return false
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage(R.string.wifi_disabled_message);
+            builder.setTitle(R.string.wifi_disabled);
+            builder.setNeutralButton(R.string.wifi_settings, (dialog, which) -> {
+                Intent wifiSettingsIntent = new Intent(Settings.ACTION_WIFI_SETTINGS);
+                if (wifiSettingsIntent.resolveActivity(getPackageManager()) != null) {
+                    startActivity(wifiSettingsIntent);
+                }
+            });
+            builder.setPositiveButton("Try again", (dialog, which) -> {
+                if (checkWifiIsEnabled())
+                    connectToConsole();
+            });
+            builder.setNegativeButton(R.string.back, (dialog, which) -> finish());
+            builder.setCancelable(false);
+            builder.create().show();
+            return false;
         }
     }
 }

@@ -63,17 +63,13 @@ public class MainActivity extends AppCompatActivity {
 
         // Setup button functionality
         findViewById(R.id.intro_scan_button).setOnClickListener(v -> {
-            if (checkWifiIsEnabled()) {
-                Intent intent = new Intent(this, ScanActivity.class);
-                startActivity(intent);
-            }
+            Intent intent = new Intent(this, ScanActivity.class);
+            startActivity(intent);
         });
 
         findViewById(R.id.intro_manual_button).setOnClickListener(v -> {
-            if (checkWifiIsEnabled()) {
-                Intent intent = new Intent(this, ManualActivity.class);
-                startActivity(intent);
-            }
+            Intent intent = new Intent(this, ManualActivity.class);
+            startActivity(intent);
         });
 
         findViewById(R.id.intro_album_button).setOnClickListener(v -> {
@@ -83,29 +79,5 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    /**
-     * Checks if Wifi is enabled. If it is, it returns true, otherwise it alerts the user to turn it
-     * on and returns false.
-     * @return True if Wifi is enabled
-     */
-    private boolean checkWifiIsEnabled() {
-        WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-        if (wifiManager.isWifiEnabled()) {
-            return true;
-        } else {
-            // Alert the user and then return false
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage(R.string.wifi_disabled_message);
-            builder.setTitle(R.string.wifi_disabled);
-            builder.setPositiveButton(R.string.wifi_settings, (dialog, which) -> {
-                Intent wifiSettingsIntent = new Intent(Settings.ACTION_WIFI_SETTINGS);
-                if (wifiSettingsIntent.resolveActivity(getPackageManager()) != null) {
-                    startActivity(wifiSettingsIntent);
-                }
-            });
-            builder.setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.dismiss());
-            builder.create().show();
-            return false;
-        }
-    }
+
 }

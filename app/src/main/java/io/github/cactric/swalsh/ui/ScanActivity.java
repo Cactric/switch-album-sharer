@@ -2,8 +2,12 @@ package io.github.cactric.swalsh.ui;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Application;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -24,6 +28,7 @@ import androidx.camera.core.Preview;
 import androidx.camera.core.ZoomState;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.MenuProvider;
 import androidx.core.view.ViewCompat;
@@ -55,7 +60,24 @@ public class ScanActivity extends AppCompatActivity {
             return insets;
         });
 
-        requestPermLauncher.launch(Manifest.permission.CAMERA);
+        // Check if we have the camera permission, if we need to show a rationale or if we can just ask for it
+        String wantedPerm = Manifest.permission.CAMERA;
+        if (ContextCompat.checkSelfPermission(this, wantedPerm) == PackageManager.PERMISSION_DENIED) {
+            if (shouldShowRequestPermissionRationale(wantedPerm)) {
+                AlertDialog.Builder permDialogBuilder = new AlertDialog.Builder(this);
+                permDialogBuilder.setMessage(R.string.camera_perm_needed_long)
+                        .setPositiveButton(R.string.grant, (dialog, which) -> {
+                            requestPermLauncher.launch(wantedPerm);
+                        })
+                        .setNegativeButton(R.string.manual_entry, (dialog, which) -> {
+                            Intent meIntent = new Intent(ScanActivity.this, ManualActivity.class);
+                            startActivity(meIntent);
+                        })
+                        .show();
+            } else {
+                requestPermLauncher.launch(wantedPerm);
+            }
+        }
 
         scanner = new CodeScanner(result -> runOnUiThread(() -> {
             Intent intent = new Intent(ScanActivity.this, ConnectActivity.class);
@@ -167,8 +189,13 @@ public class ScanActivity extends AppCompatActivity {
             alertBuilder.setMessage(R.string.no_camera_message);
             alertBuilder.setPositiveButton(R.string.back, (dialog, which) -> dialog.dismiss());
             alertBuilder.setOnDismissListener(d -> finish());
+            alertBuilder.setNeutralButton("Settings", (dialog, which) -> {
+                Intent appInfoIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                appInfoIntent.setData(Uri.parse("package:" + getPackageName()));
+                if (appInfoIntent.resolveActivity(getPackageManager()) != null)
+                    startActivity(appInfoIntent);
+            });
             alertBuilder.show();
-            // TODO: add a button to go to settings
         }
     });
 
