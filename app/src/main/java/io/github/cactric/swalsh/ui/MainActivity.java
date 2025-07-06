@@ -64,7 +64,8 @@ public class MainActivity extends AppCompatActivity {
         // Setup button functionality
         findViewById(R.id.intro_scan_button).setOnClickListener(v -> {
             if (checkWifiIsEnabled()) {
-                requestPermLauncher.launch(Manifest.permission.CAMERA);
+                Intent intent = new Intent(this, ScanActivity.class);
+                startActivity(intent);
             }
         });
 
@@ -81,20 +82,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
-
-    // TODO: maybe move this logic to the scanning activity
-    private final ActivityResultLauncher<String> requestPermLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
-        if (granted) {
-            Intent intent = new Intent(this, ScanActivity.class);
-            startActivity(intent);
-        } else {
-            AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
-            alertBuilder.setMessage("Camera permission is needed to scan the QR code");
-            alertBuilder.setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss());
-            alertBuilder.setOnDismissListener(d -> {});
-            alertBuilder.show();
-        }
-    });
 
     /**
      * Checks if Wifi is enabled. If it is, it returns true, otherwise it alerts the user to turn it

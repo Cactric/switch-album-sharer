@@ -1,5 +1,6 @@
 package io.github.cactric.swalsh.ui;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,7 +11,10 @@ import android.view.MenuItem;
 import android.view.ScaleGestureDetector;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.camera.core.Camera;
@@ -50,6 +54,8 @@ public class ScanActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        requestPermLauncher.launch(Manifest.permission.CAMERA);
 
         scanner = new CodeScanner(result -> runOnUiThread(() -> {
             Intent intent = new Intent(ScanActivity.this, ConnectActivity.class);
@@ -153,5 +159,16 @@ public class ScanActivity extends AppCompatActivity {
             Log.e("SwAlSh", "Zoom state obtained from Camera Info is null - zoom not applied");
         }
     }
+
+    private final ActivityResultLauncher<String> requestPermLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
+        if (!granted) {
+            AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
+            alertBuilder.setMessage("Camera permission is needed to scan the QR code");
+            alertBuilder.setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss());
+            alertBuilder.setOnDismissListener(d -> finish());
+            alertBuilder.show();
+            // TODO: add a button to go to settings
+        }
+    });
 
 }
