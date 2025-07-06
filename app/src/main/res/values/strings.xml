@@ -11,9 +11,9 @@
     <string name="screenshot_from_a_switch">Screenshot from a Switch</string>
     <string name="delete">Delete</string>
     <string name="video_clip_from_a_switch">Video clip from a Switch</string>
-    <string name="scan_code">Scan code</string>
+    <string name="scan_code">Scan Code</string>
     <string name="intro_text">Make it easier to share Switch screenshots and clips by automating the send to phone process.\n\nGet started by going to the album on your Switch and selecting \"Send to Smart Device\" on an item.</string>
-    <string name="manual_entry">Manual entry</string>
+    <string name="manual_entry">Manual Entry</string>
     <string name="video_text_format">%1$.0f sec, from %2$s at %3$s</string>
     <string name="picture_text_format">Picture from %1$s at %2$s</string>
     <string name="pictures">Pictures</string>
