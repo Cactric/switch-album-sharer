@@ -93,7 +93,7 @@
     <string name="camera_perm_needed">Camera permission is needed to scan the QR code</string>
     <string name="no_camera_message">As an alternative, you can also enter the information manually - choose \"Manual Entry\" on the main menu</string>
     <string name="camera_perm_needed_long">Permission to use the device\'s camera is needed to scan a QR code.\nIf you don\'t want to grant permission, you can use Manual Entry instead.</string>
-    <string name="grant">Grant</string>
+    <string name="permission_dialog_continue">Continue</string>
     <plurals name="pictures_location_format">
         <item quantity="one">The picture has also been saved in the folder “%1$s”</item>
         <item quantity="other">The pictures have also been saved in the folder “%1$s”</item>

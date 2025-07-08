@@ -2,7 +2,6 @@ package io.github.cactric.swalsh.ui;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Application;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -66,7 +65,7 @@ public class ScanActivity extends AppCompatActivity {
             if (shouldShowRequestPermissionRationale(wantedPerm)) {
                 AlertDialog.Builder permDialogBuilder = new AlertDialog.Builder(this);
                 permDialogBuilder.setMessage(R.string.camera_perm_needed_long)
-                        .setPositiveButton(R.string.grant, (dialog, which) -> {
+                        .setPositiveButton(R.string.permission_dialog_continue, (dialog, which) -> {
                             requestPermLauncher.launch(wantedPerm);
                         })
                         .setNegativeButton(R.string.manual_entry, (dialog, which) -> {
