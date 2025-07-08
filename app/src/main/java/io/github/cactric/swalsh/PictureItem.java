@@ -6,4 +6,5 @@ public class PictureItem {
     public long id;
     public Uri uri;
     public String display_name;
+    public String display_text;
 }

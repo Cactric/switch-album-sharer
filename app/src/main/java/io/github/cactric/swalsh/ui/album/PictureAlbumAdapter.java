@@ -80,44 +80,8 @@ public class PictureAlbumAdapter extends RecyclerView.Adapter<PictureAlbumAdapte
         Context context = holder.getImageView().getContext();
         PictureItem item = media.get(position);
         // Update views
-        // Then set the image URI
         holder.getImageView().setImageURI(item.uri);
-        
-
-        // Try to parse the display name and use that as a date
-        String dateStr = null;
-        // Format: year, month, day, hour, minute, second, 00 - game id(?).jpg
-        Calendar.Builder calBuilder = new Calendar.Builder();
-        try {
-            String name = item.display_name;
-            calBuilder.set(Calendar.YEAR, Integer.parseInt(name.substring(0, 4)));
-            calBuilder.set(Calendar.MONTH, Integer.parseInt(name.substring(4, 6)) - 1);
-            calBuilder.set(Calendar.DAY_OF_MONTH, Integer.parseInt(name.substring(6, 8)));
-            calBuilder.set(Calendar.HOUR_OF_DAY, Integer.parseInt(name.substring(8, 10)));
-            calBuilder.set(Calendar.MINUTE, Integer.parseInt(name.substring(10, 12)));
-            calBuilder.set(Calendar.SECOND, Integer.parseInt(name.substring(12, 14)));
-
-            Date d = new Date();
-            d.setTime(calBuilder.build().getTimeInMillis());
-            DateFormat df = DateFormat.getDateTimeInstance();
-            dateStr = df.format(d);
-        } catch (NumberFormatException | IndexOutOfBoundsException e) {
-            Log.e("SwAlSh", "Failed to parse " + item.display_name, e);
-        }
-
-        if (dateStr == null)
-            dateStr = item.display_name;
-
-        GameUtils gameUtils = new GameUtils(context);
-
-        // Use the display name to get the game ID and try to look it up to get the game's name
-        String gameId = item.display_name.substring(17,49);
-        String gameName = gameUtils.lookupGameName(gameId);
-
-        Resources res = context.getResources();
-        holder.getLengthText().setText(res.getString(R.string.picture_text_format,
-                gameName,
-                dateStr));
+        holder.getLengthText().setText(item.display_text);
 
         holder.getImageView().setOnClickListener(v -> {
             // When tapped, open the picture in whatever app
@@ -132,6 +96,7 @@ public class PictureAlbumAdapter extends RecyclerView.Adapter<PictureAlbumAdapte
             shareIntent.setType("image/jpeg");
             context.startActivity(Intent.createChooser(shareIntent, null));
         });
+
         holder.getDeleteButton().setOnClickListener(v -> {
             SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
             boolean skipConfirmation = sp.getBoolean("picture_no_delete_confirmation", false);
@@ -139,6 +104,7 @@ public class PictureAlbumAdapter extends RecyclerView.Adapter<PictureAlbumAdapte
                 // Just delete it
                 deleteItem(item);
             } else {
+                Resources res = context.getResources();
                 CharSequence[] selectionItems = {res.getString(R.string.no_more_confirm_prompt)};
                 boolean[] checkedItems = new boolean[selectionItems.length];
                 AlertDialog.Builder adb = new AlertDialog.Builder(context);

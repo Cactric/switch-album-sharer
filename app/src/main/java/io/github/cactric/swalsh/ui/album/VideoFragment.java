@@ -29,6 +29,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import io.github.cactric.swalsh.MediaService;
 import io.github.cactric.swalsh.R;
+import io.github.cactric.swalsh.VideoItem;
 
 public class VideoFragment extends Fragment {
     private String mediaSortOrder = MediaStore.Video.Media.DATE_ADDED;
@@ -119,7 +120,7 @@ public class VideoFragment extends Fragment {
         if (wentToGamePickerActivity)
             // If the user went to the game picker activity, they might have changed the names,
             // so tell the adapter about it
-            if (adapter.getItemCount() > 0) {
+            if (adapter.getItemCount() > 0 && binder != null) {
                 binder.getNumOfPictures().setValue(oldNumOfPictures);
                 binder.getNumOfVideos().setValue(oldNumOfVideos);
                 adapter.notifyItemRangeChanged(0, adapter.getItemCount());

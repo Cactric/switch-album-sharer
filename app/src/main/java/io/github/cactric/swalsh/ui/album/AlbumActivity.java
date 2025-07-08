@@ -48,8 +48,13 @@ public class AlbumActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.album_toolbar);
         if (gameId == null)
             toolbar.setTitle(R.string.title_activity_album);
-        else
-            toolbar.setTitle(gameUtils.lookupGameName(gameId));
+        else {
+            // Do the DB lookup in a separate thread
+            new Thread(() -> {
+                String gameName = gameUtils.lookupGameName(gameId);
+                runOnUiThread(() -> toolbar.setTitle(gameName));
+            }).start();
+        }
         setSupportActionBar(toolbar);
 
         // Set up tabs

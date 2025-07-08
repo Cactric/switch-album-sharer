@@ -61,10 +61,12 @@ public class GamePickerAdapter extends RecyclerView.Adapter<GamePickerAdapter.Vi
 
                 // Also add a Remove button if it's actually in the DB
                 builder.setNeutralButton(R.string.clear_name, (dialog, which) -> {
-                    GameDatabase db = GameDatabase.getDatabase(v.getContext());
-                    db.gameDao().delete(game);
-                    GameUtils gameUtils = new GameUtils(v.getContext());
-                    games.set(position, gameUtils.lookupGame(game.gameId));
+                    new Thread(() -> {
+                        GameDatabase db = GameDatabase.getDatabase(v.getContext());
+                        db.gameDao().delete(game);
+                        GameUtils gameUtils = new GameUtils(v.getContext());
+                        games.set(position, gameUtils.lookupGame(game.gameId));
+                    }).start();
                     GamePickerAdapter.this.notifyItemChanged(position);
                 });
             }
@@ -74,12 +76,14 @@ public class GamePickerAdapter extends RecyclerView.Adapter<GamePickerAdapter.Vi
                 // Save the name
                 String name = nameTextField.getText().toString();
 
-                GameDatabase db = GameDatabase.getDatabase(v.getContext());
-                // Modify the gameName in the game object, then add it to the db to update it
-                game.gameName = name;
-                db.gameDao().addGame(game);
-                // Fetch the game from the DB, mainly to get the primary key set
-                games.set(position, db.gameDao().findByGameId(game.gameId));
+                new Thread(() -> {
+                    GameDatabase db = GameDatabase.getDatabase(v.getContext());
+                    // Modify the gameName in the game object, then add it to the db to update it
+                    game.gameName = name;
+                    db.gameDao().addGame(game);
+                    // Fetch the game from the DB, mainly to get the primary key set
+                    games.set(position, db.gameDao().findByGameId(game.gameId));
+                }).start();
                 GamePickerAdapter.this.notifyItemChanged(position);
             });
             builder.setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.dismiss());

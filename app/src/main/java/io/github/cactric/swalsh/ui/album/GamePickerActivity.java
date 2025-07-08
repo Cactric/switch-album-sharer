@@ -61,10 +61,35 @@ public class GamePickerActivity extends AppCompatActivity {
             return insets;
         });
 
-        GameUtils gameUtils = new GameUtils(this);
-
         // Get hopefully supplied argument with game IDs in
         String[] gameIds = getIntent().getStringArrayExtra("EXTRA_GAME_ID_LIST");
+
+        new Thread(() -> {
+            loadGameListFromDb(gameIds);
+            runOnUiThread(() -> {
+                // Check if there are no games, show placeholder text if so
+                showOrHidePlaceholder();
+                // Set adapter
+                adapter = new GamePickerAdapter(games);
+                recyclerView.setAdapter(adapter);
+            });
+        }).start();
+
+        // Set up toolbar
+        Toolbar toolbar = findViewById(R.id.gp_toolbar);
+        toolbar.setTitle(R.string.title_activity_game_picker);
+        addMenuProvider(new PickerMenuProvider(), this);
+        setSupportActionBar(toolbar);
+
+        // Set up recycler view
+        nothingFoundText = findViewById(R.id.gp_nothing);
+        recyclerView = findViewById(R.id.gp_recycler);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+    }
+
+    // Loads the game list from the database, should be run on a separate thread than the UI thread
+    private void loadGameListFromDb(String[] gameIds) {
+        GameUtils gameUtils = new GameUtils(this);
         if (gameIds != null) {
             for (String id: gameIds) {
                 games.add(gameUtils.lookupGame(id));
@@ -81,29 +106,6 @@ public class GamePickerActivity extends AppCompatActivity {
             if (!games.contains(g))
                 games.add(g);
         }
-
-        // Debug: print games list
-        /*for (Game g: games) {
-            System.out.println(g.game_primary_key + ": " + "id = " + g.gameId + " / " + g.gameName);
-        }*/
-
-        // Set up toolbar
-        Toolbar toolbar = findViewById(R.id.gp_toolbar);
-        toolbar.setTitle(R.string.title_activity_game_picker);
-        addMenuProvider(new PickerMenuProvider(), this);
-        setSupportActionBar(toolbar);
-
-        // Set up recycler view
-        nothingFoundText = findViewById(R.id.gp_nothing);
-        recyclerView = findViewById(R.id.gp_recycler);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        // Check if there are no games, show placeholder text if so
-        showOrHidePlaceholder();
-
-        // Set adapter
-        adapter = new GamePickerAdapter(games);
-        recyclerView.setAdapter(adapter);
     }
 
     private void showOrHidePlaceholder() {

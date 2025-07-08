@@ -4,7 +4,9 @@ import static android.provider.MediaStore.VOLUME_EXTERNAL;
 
 import android.app.Service;
 import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Binder;
@@ -19,7 +21,12 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.MutableLiveData;
 
 import java.io.IOException;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+
+import io.github.cactric.swalsh.games.GameUtils;
 
 /**
  * Service to scan media items
@@ -74,11 +81,51 @@ public class MediaService extends Service {
                 item.id = id;
                 item.uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
                 item.display_name = cursor.getString(displayNameColumn);
+                // Parse the display name into the string that'll be shown in the UI
+                item.display_text = parsePictureName(item.display_name);
                 pictureItems.add(item);
                 gameIdsFromPictures.add(item.display_name.substring(17, 49));
             }
         }
         return pictureItems;
+    }
+
+    /**
+     * Format the filename of a picture into the text that'll be shown in the UI.
+     * Calls the games database, so it shouldn't be called on the UI thread
+     * @param disName The filename of the picture
+     * @return The formatted string, suitable for showing in the UI
+     */
+    private String parsePictureName(String disName) {
+        // Use the display name to get the game ID and try to look it up to get the game's name
+        String gameId = disName.substring(17,49);
+        GameUtils gameUtils = new GameUtils(this);
+        String gameName = gameUtils.lookupGameName(gameId);
+
+        // Try to parse the display name and use that as a date
+        String dateStr = null;
+        // Format: year, month, day, hour, minute, second, 00 - game id(?).jpg
+        Calendar.Builder calBuilder = new Calendar.Builder();
+        try {
+            calBuilder.set(Calendar.YEAR, Integer.parseInt(disName.substring(0, 4)));
+            calBuilder.set(Calendar.MONTH, Integer.parseInt(disName.substring(4, 6)) - 1);
+            calBuilder.set(Calendar.DAY_OF_MONTH, Integer.parseInt(disName.substring(6, 8)));
+            calBuilder.set(Calendar.HOUR_OF_DAY, Integer.parseInt(disName.substring(8, 10)));
+            calBuilder.set(Calendar.MINUTE, Integer.parseInt(disName.substring(10, 12)));
+            calBuilder.set(Calendar.SECOND, Integer.parseInt(disName.substring(12, 14)));
+
+            Date d = new Date();
+            d.setTime(calBuilder.build().getTimeInMillis());
+            DateFormat df = DateFormat.getDateTimeInstance();
+            dateStr = df.format(d);
+        } catch (NumberFormatException | IndexOutOfBoundsException e) {
+            Log.e("SwAlSh", "Failed to parse " + disName, e);
+        }
+
+        if (dateStr == null)
+            dateStr = disName;
+
+        return getString(R.string.picture_text_format, gameName, dateStr);
     }
 
     private ArrayList<VideoItem> getVideos(@Nullable String gameId, String mediaSortOrder, boolean mediaSortDescending) {
@@ -124,6 +171,7 @@ public class MediaService extends Service {
                 item.uri = ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id);
                 item.display_name = cursor.getString(displayNameColumn);
                 item.duration_in_milliseconds = cursor.getInt(durationColumn);
+                item.display_text = parseVideoName(item.display_name, item.duration_in_milliseconds);
                 try {
                     item.thumbnail = getContentResolver().loadThumbnail(item.uri, Size.parseSize("1280x720"), null);
                 } catch (IOException e) {
@@ -135,6 +183,45 @@ public class MediaService extends Service {
             }
         }
         return videoItems;
+    }
+
+    /**
+     * Format the filename of a video into the text that'll be shown in the UI.
+     * Calls the games database, so it shouldn't be called on the UI thread
+     * @param disName Filename of the video to parse
+     * @param duration Duration in milliseconds
+     * @return A string suitable for showing in the UI
+     */
+    private String parseVideoName(String disName, long duration) {
+        // Use the display name to get the game ID and then try to look it up to get the game's name
+        String gameId = disName.substring(17,49);
+        GameUtils gameUtils = new GameUtils(this);
+        String gameName = gameUtils.lookupGameName(gameId);
+
+        // Try to parse the display name and use that as a date
+        String dateStr = null;
+        // Format: year, month, day, hour, minute, second, 00 - game id(?).jpg
+        Calendar.Builder calBuilder = new Calendar.Builder();
+        try {
+            calBuilder.set(Calendar.YEAR, Integer.parseInt(disName.substring(0, 4)));
+            calBuilder.set(Calendar.MONTH, Integer.parseInt(disName.substring(4, 6)) - 1);
+            calBuilder.set(Calendar.DAY_OF_MONTH, Integer.parseInt(disName.substring(6, 8)));
+            calBuilder.set(Calendar.HOUR_OF_DAY, Integer.parseInt(disName.substring(8, 10)));
+            calBuilder.set(Calendar.MINUTE, Integer.parseInt(disName.substring(10, 12)));
+            calBuilder.set(Calendar.SECOND, Integer.parseInt(disName.substring(12, 14)));
+
+            Date d = new Date();
+            d.setTime(calBuilder.build().getTimeInMillis());
+            DateFormat df = DateFormat.getDateTimeInstance();
+            dateStr = df.format(d);
+        } catch (NumberFormatException e) {
+            Log.e("SwAlSh", "Failed to parse " + disName, e);
+        }
+
+        if (dateStr == null)
+            dateStr = disName;
+
+        return getString(R.string.video_text_format, duration / 1000.0, gameName, dateStr);
     }
 
 
