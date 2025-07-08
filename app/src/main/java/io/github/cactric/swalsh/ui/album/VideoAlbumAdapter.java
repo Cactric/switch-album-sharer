@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -30,6 +31,7 @@ import io.github.cactric.swalsh.VideoItem;
 public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.ViewHolder> {
     private final ArrayList<VideoItem> media;
     private final MediaService.MediaBinder binder;
+    private final LifecycleOwner owner;
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private final ImageView videoThumbnail;
         private final TextView lengthText;
@@ -61,9 +63,10 @@ public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.Vi
     }
 
     // Takes an array of file paths to the pictures that should be displayed
-    public VideoAlbumAdapter(ArrayList<VideoItem> media, MediaService.MediaBinder binder) {
+    public VideoAlbumAdapter(ArrayList<VideoItem> media, MediaService.MediaBinder binder, LifecycleOwner owner) {
         this.media = media;
         this.binder = binder;
+        this.owner = owner;
     }
 
     // Create new views
@@ -81,7 +84,7 @@ public class VideoAlbumAdapter extends RecyclerView.Adapter<VideoAlbumAdapter.Vi
         VideoItem item = media.get(position);
         // Update views
         holder.getVideoThumbnail().setImageBitmap(item.thumbnail);
-        holder.getLengthText().setText(item.display_text);
+        item.display_text.observe(owner, text -> holder.getLengthText().setText(text));
 
         holder.getVideoThumbnail().setOnClickListener(v -> {
             // When tapped, open the video in whatever app

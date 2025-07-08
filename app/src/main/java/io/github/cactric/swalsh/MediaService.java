@@ -18,6 +18,8 @@ import android.util.Size;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.LifecycleService;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import java.io.IOException;
@@ -26,12 +28,13 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import io.github.cactric.swalsh.games.GameDatabase;
 import io.github.cactric.swalsh.games.GameUtils;
 
 /**
  * Service to scan media items
  */
-public class MediaService extends Service {
+public class MediaService extends LifecycleService {
     private final MediaBinder binder = new MediaBinder();
     private final MutableLiveData<Integer> numOfPictures = new MutableLiveData<>();
     private final MutableLiveData<Integer> numOfVideos = new MutableLiveData<>();
@@ -96,11 +99,12 @@ public class MediaService extends Service {
      * @param disName The filename of the picture
      * @return The formatted string, suitable for showing in the UI
      */
-    private String parsePictureName(String disName) {
+    private LiveData<String> parsePictureName(String disName) {
         // Use the display name to get the game ID and try to look it up to get the game's name
         String gameId = disName.substring(17,49);
-        GameUtils gameUtils = new GameUtils(this);
-        String gameName = gameUtils.lookupGameName(gameId);
+        GameDatabase db = GameDatabase.getDatabase(this);
+        LiveData<String> gameName = db.gameDao().getGameNameLD(gameId);
+        String placeholder = getString(R.string.unknown_game_name_format, gameId.substring(0, 6));
 
         // Try to parse the display name and use that as a date
         String dateStr = null;
@@ -125,7 +129,14 @@ public class MediaService extends Service {
         if (dateStr == null)
             dateStr = disName;
 
-        return getString(R.string.picture_text_format, gameName, dateStr);
+        MutableLiveData<String> ret = new MutableLiveData<>();
+        final String finalDateStr = dateStr;
+        getMainExecutor().execute(() -> gameName.observe(
+                this,
+                s -> ret.postValue(getString(R.string.picture_text_format,
+                        s == null ? placeholder : s,
+                        finalDateStr))));
+        return ret;
     }
 
     private ArrayList<VideoItem> getVideos(@Nullable String gameId, String mediaSortOrder, boolean mediaSortDescending) {
@@ -192,11 +203,12 @@ public class MediaService extends Service {
      * @param duration Duration in milliseconds
      * @return A string suitable for showing in the UI
      */
-    private String parseVideoName(String disName, long duration) {
+    private LiveData<String> parseVideoName(String disName, long duration) {
         // Use the display name to get the game ID and then try to look it up to get the game's name
         String gameId = disName.substring(17,49);
-        GameUtils gameUtils = new GameUtils(this);
-        String gameName = gameUtils.lookupGameName(gameId);
+        GameDatabase db = GameDatabase.getDatabase(this);
+        LiveData<String> gameName = db.gameDao().getGameNameLD(gameId);
+        String placeholder = getString(R.string.unknown_game_name_format, gameId.substring(0, 6));
 
         // Try to parse the display name and use that as a date
         String dateStr = null;
@@ -221,12 +233,22 @@ public class MediaService extends Service {
         if (dateStr == null)
             dateStr = disName;
 
-        return getString(R.string.video_text_format, duration / 1000.0, gameName, dateStr);
+        MutableLiveData<String> ret = new MutableLiveData<>();
+        final String finalDateStr = dateStr;
+        getMainExecutor().execute(() -> gameName.observe(
+                this,
+                s -> ret.postValue(
+                        getString(R.string.video_text_format,
+                                duration / 1000.0,
+                                s == null ? placeholder : s,
+                                finalDateStr))));
+        return ret;
     }
 
 
     @Override
-    public IBinder onBind(Intent intent) {
+    public IBinder onBind(@NonNull Intent intent) {
+        super.onBind(intent);
         return binder;
     }
 

@@ -158,7 +158,7 @@ public class PictureFragment extends Fragment {
         if (binder != null) {
             binder.scanPictures(gameId, mediaSortOrder, mediaSortDescending, items -> {
                 requireActivity().runOnUiThread(() -> {
-                    adapter = new PictureAlbumAdapter(items, binder);
+                    adapter = new PictureAlbumAdapter(items, binder, this);
                     recyclerView.setAdapter(adapter);
                 });
             });

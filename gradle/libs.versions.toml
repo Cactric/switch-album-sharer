@@ -8,6 +8,7 @@ preferenceKtx = "1.2.1"
 zxing = "3.5.3"
 cameraX = "1.4.2"
 room = "2.7.2"
+lifecycleService = "2.9.1"
 
 [libraries]
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
@@ -25,6 +26,7 @@ camera-camera2 = { group = "androidx.camera", name = "camera-camera2", version.r
 
 room-runtime = {group = "androidx.room", name = "room-runtime", version.ref = "room"}
 room-annotations = {group = "androidx.room", name="room-compiler", version.ref = "room"}
+lifecycle-service = { group = "androidx.lifecycle", name = "lifecycle-service", version.ref = "lifecycleService" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

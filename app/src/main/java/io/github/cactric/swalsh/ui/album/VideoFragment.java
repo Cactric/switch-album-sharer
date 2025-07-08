@@ -29,7 +29,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import io.github.cactric.swalsh.MediaService;
 import io.github.cactric.swalsh.R;
-import io.github.cactric.swalsh.VideoItem;
 
 public class VideoFragment extends Fragment {
     private String mediaSortOrder = MediaStore.Video.Media.DATE_ADDED;
@@ -158,7 +157,7 @@ public class VideoFragment extends Fragment {
         if (binder != null) {
             binder.scanVideos(gameId, mediaSortOrder, mediaSortDescending, items -> {
                 requireActivity().runOnUiThread(() -> {
-                    adapter = new VideoAlbumAdapter(items, binder);
+                    adapter = new VideoAlbumAdapter(items, binder, this);
                     recyclerView.setAdapter(adapter);
                 });
             });
