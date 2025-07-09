@@ -65,9 +65,8 @@ public class ScanActivity extends AppCompatActivity {
             if (shouldShowRequestPermissionRationale(wantedPerm)) {
                 AlertDialog.Builder permDialogBuilder = new AlertDialog.Builder(this);
                 permDialogBuilder.setMessage(R.string.camera_perm_needed_long)
-                        .setPositiveButton(R.string.permission_dialog_continue, (dialog, which) -> {
-                            requestPermLauncher.launch(wantedPerm);
-                        })
+                        .setPositiveButton(R.string.permission_dialog_continue, (dialog, which) ->
+                                requestPermLauncher.launch(wantedPerm))
                         .setNegativeButton(R.string.manual_entry, (dialog, which) -> {
                             Intent meIntent = new Intent(ScanActivity.this, ManualActivity.class);
                             startActivity(meIntent);

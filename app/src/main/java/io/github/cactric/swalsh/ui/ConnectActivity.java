@@ -48,10 +48,8 @@ This activity takes 2 or 3 extras:
 public class ConnectActivity extends AppCompatActivity {
     private DownloadService.DownloadServiceBinder binder;
     private LiveData<DownloadService.State> state;
-    private LiveData<Integer> errorStringIndex;
     private LiveData<Integer> numDownloaded;
     private LiveData<Integer> numFailed;
-    private LiveData<Float> fileProgress;
     private int errno = 0;
 
     @Override
@@ -156,10 +154,10 @@ public class ConnectActivity extends AppCompatActivity {
             binder = (DownloadService.DownloadServiceBinder) service;
             if (binder != null) {
                 state = binder.getState();
-                errorStringIndex = binder.getErrorStringIndex();
+                LiveData<Integer> errorStringIndex = binder.getErrorStringIndex();
                 numDownloaded = binder.getNumDownloaded();
                 numFailed = binder.getNumFailed();
-                fileProgress = binder.getDownloadProgress();
+                LiveData<Float> fileProgress = binder.getDownloadProgress();
                 LiveData<Long> binderScanTime = binder.getScanTime();
                 Log.d("SwAlSh", "Got binder");
 

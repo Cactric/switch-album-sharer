@@ -98,19 +98,7 @@ public class InfoActivity extends AppCompatActivity {
         }
     }
 
-    private static class Library {
-        String name;
-        Uri website;
-        String license;
-        Uri license_link;
-
-        static final Uri APACHE_2_URI = Uri.parse("http://www.apache.org/licenses/LICENSE-2.0.html");
-
-        public Library(String name, Uri website, String license, Uri license_link) {
-            this.name = name;
-            this.website = website;
-            this.license = license;
-            this.license_link = license_link;
-        }
+    private record Library(String name, Uri website, String license, Uri license_link) {
+            static final Uri APACHE_2_URI = Uri.parse("http://www.apache.org/licenses/LICENSE-2.0.html");
     }
 }

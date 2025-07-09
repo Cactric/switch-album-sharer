@@ -64,7 +64,6 @@
     <string name="sort">Sort</string>
     <string name="sort_ascending_time">Oldest first</string>
     <string name="sort_descending_time">Newest first</string>
-    <string name="by_game">Game</string>
     <string name="by_date_taken">Date captured</string>
     <string name="by_date_added">Date downloaded</string>
     <string name="library_website_button_text">Website</string>

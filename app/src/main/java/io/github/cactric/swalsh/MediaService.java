@@ -2,11 +2,8 @@ package io.github.cactric.swalsh;
 
 import static android.provider.MediaStore.VOLUME_EXTERNAL;
 
-import android.app.Service;
 import android.content.ContentUris;
-import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Binder;
@@ -29,7 +26,6 @@ import java.util.Calendar;
 import java.util.Date;
 
 import io.github.cactric.swalsh.games.GameDatabase;
-import io.github.cactric.swalsh.games.GameUtils;
 
 /**
  * Service to scan media items
@@ -81,7 +77,6 @@ public class MediaService extends LifecycleService {
             while (cursor.moveToNext()) {
                 long id = cursor.getLong(idColumn);
                 PictureItem item = new PictureItem();
-                item.id = id;
                 item.uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
                 item.display_name = cursor.getString(displayNameColumn);
                 // Parse the display name into the string that'll be shown in the UI
@@ -178,7 +173,6 @@ public class MediaService extends LifecycleService {
             while (cursor.moveToNext()) {
                 long id = cursor.getLong(idColumn);
                 VideoItem item = new VideoItem();
-                item.id = id;
                 item.uri = ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id);
                 item.display_name = cursor.getString(displayNameColumn);
                 item.duration_in_milliseconds = cursor.getInt(durationColumn);

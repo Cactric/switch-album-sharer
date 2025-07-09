@@ -86,9 +86,9 @@ public class PictureFragment extends Fragment {
             @Override
             public void onServiceConnected(ComponentName name, IBinder iBinder) {
                 binder = (MediaService.MediaBinder) iBinder;
-                binder.getNumOfPictures().observe(requireActivity(), num -> {
-                    nothingFoundText.setVisibility(num == 0 ? View.VISIBLE : View.GONE);
-                });
+                binder.getNumOfPictures().observe(requireActivity(), num -> 
+                    nothingFoundText.setVisibility(num == 0 ? View.VISIBLE : View.GONE)
+                );
                 retrieveItemsOnSeparateThread();
             }
 
@@ -156,12 +156,12 @@ public class PictureFragment extends Fragment {
 
     private void retrieveItemsOnSeparateThread() {
         if (binder != null) {
-            binder.scanPictures(gameId, mediaSortOrder, mediaSortDescending, items -> {
+            binder.scanPictures(gameId, mediaSortOrder, mediaSortDescending, items ->
                 requireActivity().runOnUiThread(() -> {
                     adapter = new PictureAlbumAdapter(items, binder, this);
                     recyclerView.setAdapter(adapter);
-                });
-            });
+                })
+            );
         } else {
             Log.e("SwAlSh", "Retrieve items called before binder was set");
         }
@@ -209,7 +209,7 @@ public class PictureFragment extends Fragment {
             return;
         }
 
-        binder.scanPictures(gameId, mediaSortOrder, mediaSortDescending, pictureItems -> {
+        binder.scanPictures(gameId, mediaSortOrder, mediaSortDescending, pictureItems ->
             requireActivity().runOnUiThread(() -> {
                 if (pictureItems.isEmpty()) {
                     Toast.makeText(getContext(), "There are no pictures to remove", Toast.LENGTH_SHORT).show();
@@ -235,7 +235,7 @@ public class PictureFragment extends Fragment {
                     requireActivity().runOnUiThread(this::retrieveItemsOnSeparateThread);
                 }).start());
                 adb.show();
-            });
-        });
+            })
+        );
     }
 }

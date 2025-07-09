@@ -85,9 +85,9 @@ public class VideoFragment extends Fragment {
             @Override
             public void onServiceConnected(ComponentName name, IBinder ibinder) {
                 binder = (MediaService.MediaBinder) ibinder;
-                binder.getNumOfVideos().observe(requireActivity(), num -> {
-                    nothingFoundText.setVisibility(num == 0 ? View.VISIBLE : View.GONE);
-                });
+                binder.getNumOfVideos().observe(requireActivity(), num ->
+                    nothingFoundText.setVisibility(num == 0 ? View.VISIBLE : View.GONE)
+                );
                 retrieveItemsOnSeparateThread();
             }
 
@@ -155,12 +155,12 @@ public class VideoFragment extends Fragment {
 
     private void retrieveItemsOnSeparateThread() {
         if (binder != null) {
-            binder.scanVideos(gameId, mediaSortOrder, mediaSortDescending, items -> {
+            binder.scanVideos(gameId, mediaSortOrder, mediaSortDescending, items ->
                 requireActivity().runOnUiThread(() -> {
                     adapter = new VideoAlbumAdapter(items, binder, this);
                     recyclerView.setAdapter(adapter);
-                });
-            });
+                })
+            );
         }
     }
 
@@ -206,7 +206,7 @@ public class VideoFragment extends Fragment {
             return;
         }
 
-        binder.scanVideos(gameId, mediaSortOrder, mediaSortDescending, videoItems -> {
+        binder.scanVideos(gameId, mediaSortOrder, mediaSortDescending, videoItems ->
             requireActivity().runOnUiThread(() -> {
                 if (videoItems.isEmpty()) {
                     Toast.makeText(getContext(), getString(R.string.error_deleting_items), Toast.LENGTH_SHORT).show();
@@ -231,7 +231,7 @@ public class VideoFragment extends Fragment {
                     requireActivity().runOnUiThread(this::retrieveItemsOnSeparateThread);
                 }).start());
                 adb.show();
-            });
-        });
+            })
+        );
     }
 }
