@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.ScaleGestureDetector;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
@@ -158,6 +159,7 @@ public class ScanActivity extends AppCompatActivity {
                         imageAnalysis);
             } catch (ExecutionException | InterruptedException e) {
                 Log.e("SwAlSh", "Binding failed", e);
+                Toast.makeText(this, "Unable to open camera", Toast.LENGTH_SHORT).show();
             }
         }, getMainExecutor());
     }
