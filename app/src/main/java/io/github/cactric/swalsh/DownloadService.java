@@ -19,7 +19,6 @@ import android.provider.MediaStore;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.IntentCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -81,7 +80,11 @@ public class DownloadService extends Service {
             scanTime.setValue(scanTimeFromIntent);
         }
 
-        IntentCompat.getParcelableExtra(intent, "EXTRA_NETWORK_SPECIFIER", WifiNetworkSpecifier.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            netSpec = intent.getParcelableExtra("EXTRA_NETWORK_SPECIFIER", WifiNetworkSpecifier.class);
+        } else {
+            netSpec = intent.getParcelableExtra("EXTRA_NETWORK_SPECIFIER");
+        }
         state.setValue(State.CONNECTING);
         errorStringIndex.setValue(0);
         numDownloaded.setValue(0);
@@ -228,7 +231,10 @@ public class DownloadService extends Service {
                                     }
 
                                     contentDetails.clear();
-                                    contentDetails.put(MediaStore.Images.Media.IS_PENDING, 0); // IS_PENDING is the same for both videos and images
+                                    if (fileType.equals("photo"))
+                                        contentDetails.put(MediaStore.Images.Media.IS_PENDING, 0);
+                                    else
+                                        contentDetails.put(MediaStore.Video.Media.IS_PENDING, 0);
                                     resolver.update(contentUri, contentDetails, null, null);
                                     savedContentUris.add(contentUri);
                                     if (numDownloaded.getValue() != null) {
