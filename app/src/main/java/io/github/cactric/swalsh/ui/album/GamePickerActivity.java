@@ -34,11 +34,12 @@ import java.util.Objects;
 
 import io.github.cactric.swalsh.games.Game;
 import io.github.cactric.swalsh.games.GameDatabase;
+import io.github.cactric.swalsh.games.GameItem;
 import io.github.cactric.swalsh.games.GameUtils;
 import io.github.cactric.swalsh.R;
 
 public class GamePickerActivity extends AppCompatActivity {
-    private final ArrayList<Game> games = new ArrayList<>();
+    private final ArrayList<GameItem> gameItems = new ArrayList<>();
     GamePickerAdapter adapter;
     TextView nothingFoundText;
     RecyclerView recyclerView;
@@ -64,7 +65,7 @@ public class GamePickerActivity extends AppCompatActivity {
                 // Check if there are no games, show placeholder text if so
                 showOrHidePlaceholder();
                 // Set adapter
-                adapter = new GamePickerAdapter(games);
+                adapter = new GamePickerAdapter(gameItems, getResources());
                 recyclerView.setAdapter(adapter);
             });
         }).start();
@@ -86,7 +87,7 @@ public class GamePickerActivity extends AppCompatActivity {
         GameUtils gameUtils = new GameUtils(this);
         if (gameIds != null) {
             for (String id: gameIds) {
-                games.add(gameUtils.lookupGame(id));
+                gameItems.add(gameUtils.lookupGameItem(id));
             }
         } else {
             // Maybe this should look up the list itself but I can't be bothered to duplicate code
@@ -97,13 +98,21 @@ public class GamePickerActivity extends AppCompatActivity {
         // Add games in database
         GameDatabase db = GameDatabase.getDatabase(this);
         for (Game g: db.gameDao().getAll()) {
-            if (!games.contains(g))
-                games.add(g);
+            boolean found = false;
+            for (GameItem item: gameItems) {
+                if (item.game().equals(g)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                gameItems.add(gameUtils.getTotals(g));
+            }
         }
     }
 
     private void showOrHidePlaceholder() {
-        if (games.isEmpty()) {
+        if (gameItems.isEmpty()) {
             nothingFoundText.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);
         } else {
@@ -176,6 +185,7 @@ public class GamePickerActivity extends AppCompatActivity {
         new ActivityResultContracts.OpenDocument(),
         contentUri -> {
             GameDatabase db = GameDatabase.getDatabase(this);
+            GameUtils gameUtils = new GameUtils(this);
             new Thread(() -> {
                 Log.d("SwAlSh", "User picked " + contentUri);
                 if (contentUri == null)
@@ -190,7 +200,7 @@ public class GamePickerActivity extends AppCompatActivity {
                     String[] columns = header.split(",");
 
                     String line;
-                    ArrayList<Game> newGames = new ArrayList<>();
+                    ArrayList<GameItem> newGameItems = new ArrayList<>();
                     while (true) {
                         String gameId = null;
                         String gameName = null;
@@ -223,7 +233,7 @@ public class GamePickerActivity extends AppCompatActivity {
 
                             db.gameDao().addGame(newGame);
                             // Re-search the database so that we have the primary key populated
-                            newGames.add(db.gameDao().findByGameId(newGame.gameId));
+                            newGameItems.add(gameUtils.getTotals(db.gameDao().findByGameId(newGame.gameId)));
                         }
                     }
 
@@ -235,14 +245,14 @@ public class GamePickerActivity extends AppCompatActivity {
                         adb.show();
 
                         // Make the changes appear
-                        int numOfGames = games.size();
-                        for (Game ng: newGames) {
+                        int numOfGames = gameItems.size();
+                        for (GameItem ng: newGameItems) {
                             boolean inserted = false;
                             // Check if the game ID appears in the games array
                             for (int i = 0; i < numOfGames; i++) {
-                                Game og = games.get(i);
-                                if (Objects.equals(ng.gameId, og.gameId)) {
-                                    games.set(i, ng);
+                                GameItem ogi = gameItems.get(i);
+                                if (Objects.equals(ng.game().gameId, ogi.game().gameId)) {
+                                    gameItems.set(i, ng);
                                     adapter.notifyItemChanged(i);
                                     inserted = true;
                                     break;
@@ -251,9 +261,12 @@ public class GamePickerActivity extends AppCompatActivity {
 
                             // If it doesn't, add it to the array
                             if (!inserted) {
-                                games.add(ng);
-                                Log.d("SwAlSh", "Added game " + ng.game_primary_key + "/" + ng.gameId + ": " + ng.gameName);
-                                adapter.notifyItemInserted(games.size());
+                                gameItems.add(ng);
+                                Log.d("SwAlSh", "Added game " +
+                                        ng.game().game_primary_key + "/" +
+                                        ng.game().gameId + ": " +
+                                        ng.game().gameName);
+                                adapter.notifyItemInserted(gameItems.size());
                             }
                         }
                         showOrHidePlaceholder();

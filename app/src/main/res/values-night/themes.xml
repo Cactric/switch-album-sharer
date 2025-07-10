@@ -9,5 +9,12 @@
         <item name="buttonBarButtonStyle">@color/dark_primary</item>
     </style>
 
+    <style name="Base.Theme.SwAlSh.major_text_view" parent="Widget.AppCompat.TextView">
+        <item name="android:textColor">@color/material_dynamic_neutral_variant90</item>
+    </style>
+    <style name="Base.Theme.SwAlSh.minor_text_view" parent="Widget.AppCompat.TextView">
+        <item name="android:textColor">@color/material_dynamic_neutral_variant70</item>
+    </style>
+
     <style name="Theme.SwAlSh" parent="Base.Theme.SwAlSh" />
 </resources>

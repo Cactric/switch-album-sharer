@@ -1,6 +1,12 @@
 package io.github.cactric.swalsh.games;
 
+import static android.provider.MediaStore.VOLUME_EXTERNAL;
+
 import android.content.Context;
+import android.database.Cursor;
+import android.provider.MediaStore;
+
+import androidx.lifecycle.MutableLiveData;
 
 import io.github.cactric.swalsh.R;
 
@@ -31,6 +37,44 @@ public class GameUtils {
             newGame.gameName = ctx.getString(R.string.unknown_game_name_format, gameId.substring(0, 6));
             return newGame;
         }
+    }
+
+    public GameItem getTotals(Game game) {
+        // This method has a lot of duplicated code with MediaService
+        // But doesn't do as much
+        int totalPics = 0;
+        int totalVids = 0;
+
+        final String[] selectionArgs = {""};
+        selectionArgs[0] = "%" + game.gameId + "%";
+
+        try (Cursor c = ctx.getContentResolver().query(
+                MediaStore.Images.Media.getContentUri(VOLUME_EXTERNAL),
+                new String[] {MediaStore.Images.Media._ID},
+                MediaStore.Images.Media.DISPLAY_NAME + " LIKE ?",
+                selectionArgs,
+                null /* unsorted */
+        )) {
+            if (c != null)
+                totalPics = c.getCount();
+        }
+
+        try (Cursor c = ctx.getContentResolver().query(
+                MediaStore.Video.Media.getContentUri(VOLUME_EXTERNAL),
+                new String[] {MediaStore.Video.Media._ID},
+                MediaStore.Video.Media.DISPLAY_NAME + " LIKE ?",
+                selectionArgs,
+                null /* unsorted */
+        )) {
+            if (c != null)
+                totalVids = c.getCount();
+        }
+        return new GameItem(game, totalPics, totalVids);
+    }
+
+    public GameItem lookupGameItem(String gameId) {
+        Game g = lookupGame(gameId);
+        return getTotals(g);
     }
 
     public String lookupGameName(String gameId) {
