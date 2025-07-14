@@ -154,16 +154,16 @@ public class ConnectActivity extends AppCompatActivity {
             binder = (DownloadService.DownloadServiceBinder) service;
             if (binder != null) {
                 state = binder.getState();
-                LiveData<DownloadService.Error> errorStringIndex = binder.getErrorType();
+                LiveData<DownloadService.Error> errorTypeLD = binder.getErrorType();
                 numDownloaded = binder.getNumDownloaded();
                 numFailed = binder.getNumFailed();
                 LiveData<Float> fileProgress = binder.getDownloadProgress();
                 Log.d("SwAlSh", "Got binder");
 
-                errorStringIndex.observe(ConnectActivity.this, newError -> {
+                errorTypeLD.observe(ConnectActivity.this, newError -> {
                     if (newError != null) {
                         errorType = newError;
-                        Log.d("SwAlSh", "Set errno to " + errorType);
+                        Log.d("SwAlSh", "Set error type to " + errorType);
                     }
                 });
 
@@ -186,62 +186,58 @@ public class ConnectActivity extends AppCompatActivity {
                         if (numFailed != null &&
                                 numFailed.getValue() != null &&
                                 numFailed.getValue() > 0) {
-                            // Alert the user that some failed
-                            AlertDialog.Builder builder = new AlertDialog.Builder(ConnectActivity.this);
-                            builder.setMessage(getResources().getQuantityString(
-                                    R.plurals.n_failed_to_download_format,
-                                    numFailed.getValue(), // Used for deciding which plural string to use
-                                    numFailed.getValue() // Used for formatting
-                            ));
-                            builder.setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss());
-                            builder.create().show();
-                        }
-
-                        saveDirText.setVisibility(VISIBLE);
-                        Integer amount = binder.getNumDownloaded().getValue();
-                        if (amount == null)
-                            amount = 1; // Avoid null problems by setting amount explicitly if necessary
-                        if (binder.getFileType().equals("photo")) {
-                            saveDirText.setText(getResources().getQuantityString(R.plurals.pictures_location_format, amount, binder.getPicturesDir()));
-                        } else if (binder.getFileType().equals("movie")) {
-                            saveDirText.setText(getResources().getQuantityString(R.plurals.videos_location_format, amount, binder.getVideosDir()));
-                        }
-
-                        sacButton.setVisibility(VISIBLE);
-                        albumButton.setVisibility(VISIBLE);
-                        shareButton.setVisibility(VISIBLE);
-                        shareButton.setOnClickListener(v -> {
-                            List<Uri> contentUris = binder.getSavedContentUriList();
-                            if (contentUris == null || contentUris.isEmpty()) {
-                                // Share... nothing?
-                                Toast.makeText(ConnectActivity.this, getString(R.string.not_ready_to_share), Toast.LENGTH_SHORT).show();
-                            } else if (contentUris.size() == 1) {
-                                // Share one item
-                                Intent shareIntent = new Intent(Intent.ACTION_SEND);
-                                shareIntent.putExtra(Intent.EXTRA_STREAM, contentUris.get(0));
-                                if (binder.getFileType().equals("photo")) {
-                                    shareIntent.setType("image/jpeg");
-                                } else if (binder.getFileType().equals("movie")) {
-                                    shareIntent.setType("video/mp4");
-                                } else {
-                                    Log.d("SwAlSh", "Unknown file type " + binder.getFileType());
-                                }
-                                startActivity(Intent.createChooser(shareIntent, null));
-                            } else {
-                                // Share multiple things
-                                Intent shareIntent = new Intent(Intent.ACTION_SEND_MULTIPLE);
-                                shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, new ArrayList<>(contentUris));
-                                // Can only currently share multiple pictures, not videos
-                                if (binder.getFileType().equals("photo")) {
-                                    shareIntent.setType("image/jpeg");
-                                } else if (binder.getFileType().equals("movie")) {
-                                    shareIntent.setType("video/mp4");
-                                } else {
-                                    Log.d("SwAlSh", "Unknown file type " + binder.getFileType());
-                                }
-                                startActivity(Intent.createChooser(shareIntent, null));
+                            progressBar.setProgress(1);
+                            progressBar.setMax(1);
+                            sacButton.setVisibility(VISIBLE);
+                            if (numDownloaded != null && numDownloaded.getValue() != null && numDownloaded.getValue() > 1)
+                                albumButton.setVisibility(VISIBLE);
+                        } else {
+                            saveDirText.setVisibility(VISIBLE);
+                            Integer amount = binder.getNumDownloaded().getValue();
+                            if (amount == null)
+                                amount = 1; // Avoid null problems by setting amount explicitly if necessary
+                            if (binder.getFileType().equals("photo")) {
+                                saveDirText.setText(getResources().getQuantityString(R.plurals.pictures_location_format, amount, binder.getPicturesDir()));
+                            } else if (binder.getFileType().equals("movie")) {
+                                saveDirText.setText(getResources().getQuantityString(R.plurals.videos_location_format, amount, binder.getVideosDir()));
                             }
-                        });
+
+                            sacButton.setVisibility(VISIBLE);
+                            albumButton.setVisibility(VISIBLE);
+                            shareButton.setVisibility(VISIBLE);
+                            shareButton.setOnClickListener(v -> {
+                                List<Uri> contentUris = binder.getSavedContentUriList();
+                                if (contentUris == null || contentUris.isEmpty()) {
+                                    // Share... nothing?
+                                    Toast.makeText(ConnectActivity.this, getString(R.string.not_ready_to_share), Toast.LENGTH_SHORT).show();
+                                } else if (contentUris.size() == 1) {
+                                    // Share one item
+                                    Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                                    shareIntent.putExtra(Intent.EXTRA_STREAM, contentUris.get(0));
+                                    if (binder.getFileType().equals("photo")) {
+                                        shareIntent.setType("image/jpeg");
+                                    } else if (binder.getFileType().equals("movie")) {
+                                        shareIntent.setType("video/mp4");
+                                    } else {
+                                        Log.d("SwAlSh", "Unknown file type " + binder.getFileType());
+                                    }
+                                    startActivity(Intent.createChooser(shareIntent, null));
+                                } else {
+                                    // Share multiple things
+                                    Intent shareIntent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+                                    shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, new ArrayList<>(contentUris));
+                                    // Can only currently share multiple pictures, not videos
+                                    if (binder.getFileType().equals("photo")) {
+                                        shareIntent.setType("image/jpeg");
+                                    } else if (binder.getFileType().equals("movie")) {
+                                        shareIntent.setType("video/mp4");
+                                    } else {
+                                        Log.d("SwAlSh", "Unknown file type " + binder.getFileType());
+                                    }
+                                    startActivity(Intent.createChooser(shareIntent, null));
+                                }
+                            });
+                        }
                     }
 
                     if (state.getValue() == DownloadService.State.ERROR) {
@@ -290,7 +286,14 @@ public class ConnectActivity extends AppCompatActivity {
                 case NOT_STARTED, CONNECTING, CONNECTED ->
                         stateText.setText(states[newState.ordinal()]);
                 case DOWNLOADING, DONE -> {
-                    if (binder.getNumToDownload() == 1) {
+                    // Show "Error" if some failed to download
+                    if (numFailed.getValue() != null && numFailed.getValue() > 0) {
+                        String formattedStr = getResources().getQuantityString(R.plurals.n_failed_to_download_format,
+                                binder.getNumToDownload(), // which plural string
+                                numFailed.getValue(), // number shown inside
+                                binder.getNumToDownload());
+                        stateText.setText(formattedStr);
+                    } else if (binder.getNumToDownload() == 1) {
                         // Show percent downloaded if there's only one file
                         float percent = 0.0f;
                         if (binder.getDownloadProgress().getValue() != null) {
@@ -309,7 +312,7 @@ public class ConnectActivity extends AppCompatActivity {
                     }
                 }
                 case ERROR -> {
-                    if (binder.getNumToDownload() > 1) {
+                    if (binder.getNumToDownload() == 1) {
                         stateText.setText(states[newState.ordinal()]);
                     } else {
                         String formattedStr = getString(R.string.connection_state,

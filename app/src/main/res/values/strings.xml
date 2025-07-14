@@ -47,8 +47,8 @@
     </plurals>
     <string name="delete_all_videos">Delete all videos</string>
     <plurals name="n_failed_to_download_format">
-        <item quantity="one">%1$d file failed to download</item>
-        <item quantity="other">%1$d files failed to download</item>
+        <item quantity="one">Error: %1$d/%2$d file failed to download</item>
+        <item quantity="other">Error: %1$d/%2$d files failed to download</item>
     </plurals>
     <string name="info">Info</string>
     <string name="app_logo">App logo</string>

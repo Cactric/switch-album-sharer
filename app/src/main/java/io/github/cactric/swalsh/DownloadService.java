@@ -77,6 +77,7 @@ public class DownloadService extends Service {
             return START_NOT_STICKY;
         } else {
             scanTime = scanTimeFromIntent;
+            Log.d("SwAlSh", "DownloadService: starting");
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
