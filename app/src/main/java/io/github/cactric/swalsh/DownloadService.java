@@ -53,7 +53,7 @@ public class DownloadService extends Service {
     private final MutableLiveData<Integer> errorStringIndex = new MutableLiveData<>(0);
     private int numToDownload = 0;
     private WifiNetworkSpecifier netSpec;
-    private final MutableLiveData<Long> scanTime = new MutableLiveData<>(-1L);
+    private long scanTime = -1L;
 
     private String picturesRelPath;
     private String videosRelPath;
@@ -71,13 +71,13 @@ public class DownloadService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Long scanTimeFromIntent = intent.getLongExtra("EXTRA_SCAN_TIME", -1);
-        if (Objects.equals(scanTimeFromIntent, scanTime.getValue())) {
+        long scanTimeFromIntent = intent.getLongExtra("EXTRA_SCAN_TIME", -1);
+        if (scanTimeFromIntent == scanTime) {
             // If the scan time is the same, assume it's the same scan and the service just got restarted for some reason
             Log.w("SwAlSh", "DownloadService: Same scan time as the last start command (" + scanTimeFromIntent + ") - ignoring");
             return START_NOT_STICKY;
         } else {
-            scanTime.setValue(scanTimeFromIntent);
+            scanTime = scanTimeFromIntent;
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -332,9 +332,6 @@ public class DownloadService extends Service {
         }
         public String getFileType() {
             return fileType;
-        }
-        public LiveData<Long> getScanTime() {
-            return scanTime;
         }
         public String getPicturesDir() {
             return picturesRelPath;

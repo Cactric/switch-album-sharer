@@ -158,7 +158,6 @@ public class ConnectActivity extends AppCompatActivity {
                 numDownloaded = binder.getNumDownloaded();
                 numFailed = binder.getNumFailed();
                 LiveData<Float> fileProgress = binder.getDownloadProgress();
-                LiveData<Long> binderScanTime = binder.getScanTime();
                 Log.d("SwAlSh", "Got binder");
 
                 errorStringIndex.observe(ConnectActivity.this, newError -> {
@@ -282,9 +281,6 @@ public class ConnectActivity extends AppCompatActivity {
                             formatStateText(state.getValue());
                     }
                 });
-
-                binderScanTime.observe(ConnectActivity.this, time -> Log.d("SwAlSh", "Scan time changed to " + time));
-
             }
         }
 
