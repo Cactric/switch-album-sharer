@@ -50,7 +50,7 @@ public class ConnectActivity extends AppCompatActivity {
     private LiveData<DownloadService.State> state;
     private LiveData<Integer> numDownloaded;
     private LiveData<Integer> numFailed;
-    private int errno = 0;
+    private DownloadService.Error errorType = DownloadService.Error.NO_ERROR_YET;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -154,7 +154,7 @@ public class ConnectActivity extends AppCompatActivity {
             binder = (DownloadService.DownloadServiceBinder) service;
             if (binder != null) {
                 state = binder.getState();
-                LiveData<Integer> errorStringIndex = binder.getErrorStringIndex();
+                LiveData<DownloadService.Error> errorStringIndex = binder.getErrorType();
                 numDownloaded = binder.getNumDownloaded();
                 numFailed = binder.getNumFailed();
                 LiveData<Float> fileProgress = binder.getDownloadProgress();
@@ -162,8 +162,8 @@ public class ConnectActivity extends AppCompatActivity {
 
                 errorStringIndex.observe(ConnectActivity.this, newError -> {
                     if (newError != null) {
-                        errno = newError;
-                        Log.d("SwAlSh", "Set errno to " + errno);
+                        errorType = newError;
+                        Log.d("SwAlSh", "Set errno to " + errorType);
                     }
                 });
 
@@ -250,7 +250,7 @@ public class ConnectActivity extends AppCompatActivity {
 
                         String[] errors = getResources().getStringArray(R.array.errors);
                         AlertDialog.Builder builder = new AlertDialog.Builder(ConnectActivity.this);
-                        builder.setMessage(errors[errno]);
+                        builder.setMessage(errors[errorType.ordinal()]);
                         builder.setTitle(R.string.comm_error);
                         builder.setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss());
                         builder.setOnDismissListener(dialog -> {

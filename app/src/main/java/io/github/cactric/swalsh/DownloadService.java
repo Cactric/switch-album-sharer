@@ -36,7 +36,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class DownloadService extends Service {
     private final String PROTOCOL = "http";
@@ -50,7 +49,7 @@ public class DownloadService extends Service {
     private final MutableLiveData<Integer> numFailed = new MutableLiveData<>(0);
     private final MutableLiveData<Float> downloadProgress = new MutableLiveData<>(0.0f);
     // Index of the errors string array of the string that corresponds to the error, when state == ERROR
-    private final MutableLiveData<Integer> errorStringIndex = new MutableLiveData<>(0);
+    private final MutableLiveData<Error> errorType = new MutableLiveData<>(Error.NO_ERROR_YET);
     private int numToDownload = 0;
     private WifiNetworkSpecifier netSpec;
     private long scanTime = -1L;
@@ -86,7 +85,7 @@ public class DownloadService extends Service {
             netSpec = intent.getParcelableExtra("EXTRA_NETWORK_SPECIFIER");
         }
         state.setValue(State.CONNECTING);
-        errorStringIndex.setValue(0);
+        errorType.setValue(Error.NO_ERROR_YET);
         numDownloaded.setValue(0);
         numToDownload = 0;
         downloadProgress.setValue(0.0f);
@@ -144,7 +143,7 @@ public class DownloadService extends Service {
                             }
                         } catch (Exception e) {
                             Log.e("SwAlSh", "Download error", e);
-                            errorStringIndex.postValue(1);
+                            errorType.postValue(Error.ERROR_GETTING_JSON);
                             state.postValue(DownloadService.State.ERROR);
 
                             // Stop duplicate callbacks
@@ -261,7 +260,7 @@ public class DownloadService extends Service {
                             state.postValue(DownloadService.State.DONE);
                         } catch (JSONException e) {
                             Log.e("SwAlSh", "Failed to parse JSON data", e);
-                            errorStringIndex.postValue(2);
+                            errorType.postValue(Error.ERROR_PARSING_JSON);
                             state.postValue(DownloadService.State.ERROR);
                         }
 
@@ -275,7 +274,7 @@ public class DownloadService extends Service {
                     public void onLost(@NonNull Network network) {
                         Log.d("SwAlSh", "Lost network");
                         if (state.getValue() != DownloadService.State.DONE) {
-                            errorStringIndex.postValue(3);
+                            errorType.postValue(Error.NETWORK_DISCONNECTED);
                             state.postValue(DownloadService.State.ERROR);
                         }
                         stopSelf();
@@ -285,18 +284,18 @@ public class DownloadService extends Service {
                     public void onUnavailable() {
                         Log.d("SwAlSh", "Network is unavailable");
                         if (state.getValue() != DownloadService.State.DONE) {
-                            errorStringIndex.postValue(4);
+                            errorType.postValue(Error.NETWORK_NOT_FOUND);
                             state.postValue(DownloadService.State.ERROR);
                         }
                         stopSelf();
                     }
                 });
             } catch (SecurityException e) {
-                errorStringIndex.postValue(5);
+                errorType.postValue(Error.MISSING_PERMISSIONS);
                 state.postValue(DownloadService.State.ERROR);
                 Log.e("SwAlSh", "Missing permissions", e);
             } catch (Exception e) {
-                errorStringIndex.postValue(6);
+                errorType.postValue(Error.UNKNOWN_ERROR);
                 state.postValue(DownloadService.State.ERROR);
                 Log.e("SwAlSh", "Other error", e);
             }
@@ -312,8 +311,8 @@ public class DownloadService extends Service {
         public LiveData<State> getState() {
             return state;
         }
-        public LiveData<Integer> getErrorStringIndex() {
-            return errorStringIndex;
+        public LiveData<Error> getErrorType() {
+            return errorType;
         }
         public LiveData<Integer> getNumDownloaded() {
             return numDownloaded;
@@ -348,5 +347,15 @@ public class DownloadService extends Service {
         DOWNLOADING,
         DONE,
         ERROR
+    }
+
+    public enum Error {
+        NO_ERROR_YET,
+        ERROR_GETTING_JSON,
+        ERROR_PARSING_JSON,
+        NETWORK_DISCONNECTED,
+        NETWORK_NOT_FOUND,
+        MISSING_PERMISSIONS,
+        UNKNOWN_ERROR
     }
 }
