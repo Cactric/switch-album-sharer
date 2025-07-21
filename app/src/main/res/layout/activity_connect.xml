@@ -5,6 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
     tools:context=".ui.ConnectActivity">
 
     <androidx.appcompat.widget.Toolbar
@@ -19,6 +20,7 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:orientation="vertical"
+        android:animateLayoutChanges="true"
         android:gravity="center">
         <TextView
             android:id="@+id/state_text"
