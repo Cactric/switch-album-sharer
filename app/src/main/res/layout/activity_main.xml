@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_linear_layout"
     android:layout_width="match_parent"
@@ -33,13 +34,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            android:text="@string/scan_code" />
+            android:text="@string/scan_code"
+            app:icon="@drawable/ic_scan_qr_code" />
 
         <Button
             android:id="@+id/intro_manual_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
+            app:icon="@drawable/manual_entry"
             android:text="@string/manual_entry" />
 
         <Button
@@ -47,6 +50,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
+            app:icon="@drawable/album"
             android:text="@string/open_album" />
     </LinearLayout>
 </LinearLayout>
