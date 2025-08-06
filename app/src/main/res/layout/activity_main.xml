@@ -29,28 +29,34 @@
             android:gravity="center_horizontal"
             android:text="@string/intro_text" />
 
-        <Button
-            android:id="@+id/intro_scan_button"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            android:text="@string/scan_code"
-            app:icon="@drawable/ic_scan_qr_code" />
+            android:orientation="vertical">
 
-        <Button
-            android:id="@+id/intro_manual_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            app:icon="@drawable/manual_entry"
-            android:text="@string/manual_entry" />
+            <Button
+                android:id="@+id/intro_scan_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:text="@string/scan_code"
+                app:icon="@drawable/ic_scan_qr_code" />
 
-        <Button
-            android:id="@+id/intro_album_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            app:icon="@drawable/album"
-            android:text="@string/open_album" />
+            <Button
+                android:id="@+id/intro_manual_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                app:icon="@drawable/manual_entry"
+                android:text="@string/manual_entry" />
+
+            <Button
+                android:id="@+id/intro_album_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                app:icon="@drawable/album"
+                android:text="@string/open_album" />
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>
