@@ -7,6 +7,12 @@ This app uses the "Send to Smart Device" functionality from the Album - it autom
 
 Libraries used: see [here](libraries.md)
 
+## Screenshots
+[<img src="screenshots/main_activity.png" width="200">](screenshots/main_activity.png)
+[<img src="screenshots/downloading.png" width="200">](screenshots/downloading.png)
+[<img src="screenshots/downloaded.png" width="200">](screenshots/downloaded.png)
+[<img src="screenshots/album.jpg" width="200">](screenshots/album.jpg)
+
 ## Requirements:
 * Android 10 (API level 29) or up
 * Wi-Fi (to connect to the Switch)
