@@ -244,19 +244,10 @@ public class ConnectActivity extends AppCompatActivity {
                         // Stop the progress bar since nothing will happen now
                         progressBar.setIndeterminate(false);
 
-                        String[] errors = getResources().getStringArray(R.array.errors);
-                        AlertDialog.Builder builder = new AlertDialog.Builder(ConnectActivity.this);
-                        builder.setMessage(errors[errorType.ordinal()]);
-                        builder.setTitle(R.string.comm_error);
-                        builder.setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss());
-                        builder.setOnDismissListener(dialog -> {
-                            // Go back to code scanner
-                            finish();
-                        });
                         Intent stopintent = new Intent(ConnectActivity.this, DownloadService.class);
                         stopService(stopintent);
 
-                        builder.create().show();
+                        buildCommErrorDialog(errorType).show();
                     }
                 });
 
@@ -278,6 +269,19 @@ public class ConnectActivity extends AppCompatActivity {
                     }
                 });
             }
+        }
+
+        private AlertDialog buildCommErrorDialog(DownloadService.Error errorType) {
+            String[] errors = getResources().getStringArray(R.array.errors);
+            AlertDialog.Builder builder = new AlertDialog.Builder(ConnectActivity.this);
+            builder.setMessage(errors[errorType.ordinal()]);
+            builder.setTitle(R.string.comm_error);
+            builder.setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss());
+            builder.setOnDismissListener(dialog -> {
+                // Go back to code scanner
+                finish();
+            });
+            return builder.create();
         }
 
         private void formatStateText(DownloadService.State newState) {
