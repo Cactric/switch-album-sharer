@@ -231,10 +231,7 @@ public class DownloadService extends Service {
                                     }
 
                                     contentDetails.clear();
-                                    if (fileType.equals("photo"))
-                                        contentDetails.put(MediaStore.Images.Media.IS_PENDING, 0);
-                                    else
-                                        contentDetails.put(MediaStore.Video.Media.IS_PENDING, 0);
+                                    contentDetails.put(MediaStore.MediaColumns.IS_PENDING, 0);
                                     resolver.update(contentUri, contentDetails, null, null);
                                     savedContentUris.add(contentUri);
                                     if (numDownloaded.getValue() != null) {
