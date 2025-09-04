@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
-import io.github.cactric.swalsh.games.Game;
 import io.github.cactric.swalsh.R;
 import io.github.cactric.swalsh.games.GameDatabase;
 import io.github.cactric.swalsh.games.GameItem;

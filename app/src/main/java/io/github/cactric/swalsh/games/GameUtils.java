@@ -6,8 +6,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.provider.MediaStore;
 
-import androidx.lifecycle.MutableLiveData;
-
 import io.github.cactric.swalsh.R;
 
 /**
