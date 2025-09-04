@@ -1,7 +1,8 @@
 package io.github.cactric.swalsh.ui.album;
 
 import android.os.Bundle;
-import android.os.ParcelFileDescriptor;
+import android.util.JsonReader;
+import android.util.JsonWriter;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -24,10 +25,10 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -130,16 +131,16 @@ public class GamePickerActivity extends AppCompatActivity {
         @Override
         public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
             if (menuItem.getItemId() == R.id.picker_menu_import) {
-                importLauncher.launch(new String[]{"text/*"});
+                importLauncher.launch(new String[]{"application/json"});
             } else if (menuItem.getItemId() == R.id.picker_menu_export) {
-                exportLauncher.launch("SwAlSh Export.csv");
+                exportLauncher.launch("SwAlSh Export.json");
             }
             return false;
         }
     }
 
     private final ActivityResultLauncher<String> exportLauncher = registerForActivityResult(
-        new ActivityResultContracts.CreateDocument("text/csv"),
+        new ActivityResultContracts.CreateDocument("application/json"),
     contentUri -> {
         if (contentUri == null)
             return;
@@ -148,24 +149,22 @@ public class GamePickerActivity extends AppCompatActivity {
         new Thread(() -> {
             try {
                 // Open the file and write the csv header
-                OutputStream os = getContentResolver().openOutputStream(contentUri);
-                if (os == null) {
-                    return;
+                try (OutputStream os = getContentResolver().openOutputStream(contentUri)) {
+                    if (os == null) {
+                        return;
+                    }
+
+                    JsonWriter writer = new JsonWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
+                    writer.beginArray();
+                    for (Game g: db.gameDao().getAll()) {
+                        writer.beginObject();
+                        writer.name("game_id").value(g.gameId);
+                        writer.name("game_name").value(g.gameName);
+                        writer.endObject();
+                    }
+                    writer.endArray();
+                    writer.close();
                 }
-
-                String header = "game_id,game_name\n";
-                os.write(header.getBytes(StandardCharsets.UTF_8));
-
-                // Write the games
-                for (Game g: db.gameDao().getAll()) {
-                    os.write(g.gameId.getBytes(StandardCharsets.UTF_8));
-                    os.write(',');
-                    // Remove commas and new lines in the game name to avoid issues parsing the output
-                    os.write(g.gameName.replace(",", "").replace("\n","").getBytes(StandardCharsets.UTF_8));
-                    os.write('\n');
-                }
-
-                os.close();
             } catch (SecurityException | IOException e) {
                 Log.e("SwAlSh", "Error while exporting", e);
                 Toast.makeText(this, "Error while exporting", Toast.LENGTH_SHORT).show();
@@ -190,33 +189,27 @@ public class GamePickerActivity extends AppCompatActivity {
                 Log.d("SwAlSh", "User picked " + contentUri);
                 if (contentUri == null)
                     return;
+                ArrayList<GameItem> newGameItems = new ArrayList<>();
                 // Read the file
-                try (ParcelFileDescriptor fd = getContentResolver().openFileDescriptor(contentUri, "r");
-                    FileReader fr = new FileReader(Objects.requireNonNull(fd).getFileDescriptor())) {
-                    BufferedReader reader = new BufferedReader(fr);
-
-                    String header = reader.readLine();
-                    // Parse the header
-                    String[] columns = header.split(",");
-
-                    String line;
-                    ArrayList<GameItem> newGameItems = new ArrayList<>();
-                    while (true) {
+                try (InputStreamReader in = new InputStreamReader(getContentResolver().openInputStream(contentUri), StandardCharsets.UTF_8);
+                     JsonReader reader = new JsonReader(in)) {
+                    reader.beginArray();
+                    while (reader.hasNext()) {
                         String gameId = null;
                         String gameName = null;
 
-                        line = reader.readLine();
-                        if (line == null)
-                            break;
-
-                        String[] data = line.split(",");
-                        for (int i = 0; i < data.length; i++) {
-                            if (Objects.equals(columns[i], "game_id")) {
-                                gameId = data[i];
-                            } else if (Objects.equals(columns[i], "game_name")) {
-                                gameName = data[i];
+                        reader.beginObject();
+                        while (reader.hasNext()) {
+                            String name = reader.nextName();
+                            if (name.equals("game_id")) {
+                                gameId = reader.nextString();
+                            } else if (name.equals("game_name")) {
+                                gameName = reader.nextString();
+                            } else {
+                                reader.skipValue();
                             }
                         }
+                        reader.endObject();
 
                         if (gameId != null && gameName != null) {
                             Game newGame = new Game();
@@ -236,44 +229,47 @@ public class GamePickerActivity extends AppCompatActivity {
                             newGameItems.add(gameUtils.getTotals(db.gameDao().findByGameId(newGame.gameId)));
                         }
                     }
+                    reader.endArray();
+                } catch (IllegalStateException | IOException e) {
+                    Log.e("SwAlSh", "Failed to read/parse JSON", e);
+                    runOnUiThread(() -> Toast.makeText(this, R.string.failed_to_import_game_list, Toast.LENGTH_SHORT).show());
+                    return;
+                }
 
-                    // Should be done, tell the user and refresh(?)
-                    runOnUiThread(() -> {
-                        AlertDialog.Builder adb = new AlertDialog.Builder(this);
-                        adb.setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss());
-                        adb.setTitle("Import completed");
-                        adb.show();
+                // Should be done, tell the user and refresh(?)
+                runOnUiThread(() -> {
+                    AlertDialog.Builder adb = new AlertDialog.Builder(this);
+                    adb.setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss());
+                    adb.setTitle("Import completed");
+                    adb.show();
 
-                        // Make the changes appear
-                        int numOfGames = gameItems.size();
-                        for (GameItem ng: newGameItems) {
-                            boolean inserted = false;
-                            // Check if the game ID appears in the games array
-                            for (int i = 0; i < numOfGames; i++) {
-                                GameItem ogi = gameItems.get(i);
-                                if (Objects.equals(ng.game().gameId, ogi.game().gameId)) {
-                                    gameItems.set(i, ng);
-                                    adapter.notifyItemChanged(i);
-                                    inserted = true;
-                                    break;
-                                }
-                            }
-
-                            // If it doesn't, add it to the array
-                            if (!inserted) {
-                                gameItems.add(ng);
-                                Log.d("SwAlSh", "Added game " +
-                                        ng.game().game_primary_key + "/" +
-                                        ng.game().gameId + ": " +
-                                        ng.game().gameName);
-                                adapter.notifyItemInserted(gameItems.size());
+                    // Make the changes appear
+                    int numOfGames = gameItems.size();
+                    for (GameItem ng: newGameItems) {
+                        boolean inserted = false;
+                        // Check if the game ID appears in the games array
+                        for (int i = 0; i < numOfGames; i++) {
+                            GameItem ogi = gameItems.get(i);
+                            if (Objects.equals(ng.game().gameId, ogi.game().gameId)) {
+                                gameItems.set(i, ng);
+                                adapter.notifyItemChanged(i);
+                                inserted = true;
+                                break;
                             }
                         }
-                        showOrHidePlaceholder();
-                    });
-                } catch (NullPointerException | IOException e) {
-                    throw new RuntimeException(e);
-                }
+
+                        // If it doesn't, add it to the array
+                        if (!inserted) {
+                            gameItems.add(ng);
+                            Log.d("SwAlSh", "Added game " +
+                                    ng.game().game_primary_key + "/" +
+                                    ng.game().gameId + ": " +
+                                    ng.game().gameName);
+                            adapter.notifyItemInserted(gameItems.size());
+                        }
+                    }
+                    showOrHidePlaceholder();
+                });
             }).start();
         }
     );
