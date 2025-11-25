@@ -43,7 +43,11 @@ public class WifiUtils {
             }
         }
 
-        return builder.build();
+        try {
+            return builder.build();
+        } catch (IllegalStateException e) {
+            throw new IllegalArgumentException("Couldn't build network specifier", e);
+        }
     }
 
     public static WifiNetworkSpecifier basicNetwork(String ssid, String pass) {
