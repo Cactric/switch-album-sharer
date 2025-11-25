@@ -11,8 +11,8 @@ room = "2.8.4"
 lifecycleService = "2.10.0"
 
 junit = "4.13.2"
-junitVersion = "1.2.1"
-espressoCore = "3.6.1"
+junitVersion = "1.3.0"
+espressoCore = "3.7.0"
 mockito = "5.20.0"
 
 [libraries]
