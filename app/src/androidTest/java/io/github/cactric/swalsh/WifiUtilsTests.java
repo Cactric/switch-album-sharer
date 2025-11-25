@@ -28,12 +28,26 @@ public class WifiUtilsTests {
     public void parseNetwork_failsOnBadInput() {
         String[] badInputs = {
                 "spaghetti",
-                "https://github.com/cactric",
+                "https://github.com/Cactric",
                 "WIFI:S:" // cut off
         };
 
         for (String bad: badInputs) {
             assertThrows(IllegalArgumentException.class, () -> WifiUtils.parseNetwork(bad));
         }
+    }
+
+    // Test basicNetwork returns appropriate output with example inputs
+    @Test
+    public void basicNetwork_works() {
+        String ssid = "switch_6CA04F0100J";
+        String pass = "qvk22ssf";
+        WifiNetworkSpecifier.Builder expected = new WifiNetworkSpecifier.Builder();
+        expected.setSsid(ssid);
+        expected.setWpa2Passphrase(pass);
+        expected.setIsHiddenSsid(false);
+        WifiNetworkSpecifier actualOutput = WifiUtils.basicNetwork(ssid, pass);
+
+        assertEquals(expected.build(), actualOutput);
     }
 }
