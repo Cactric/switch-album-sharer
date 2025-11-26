@@ -58,6 +58,7 @@ dependencies {
 
     implementation(libs.room.runtime)
     implementation(libs.lifecycle.service)
+    implementation(libs.rules)
     annotationProcessor(libs.room.annotations)
 
     testImplementation(libs.junit)
