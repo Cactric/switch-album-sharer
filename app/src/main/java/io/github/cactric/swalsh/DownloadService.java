@@ -167,92 +167,7 @@ public class DownloadService extends Service {
 
                             for (int i = 0; i < fileNames.length(); i++) {
                                 Log.d("SwAlSh", "File name " + i + " = " + fileNames.getString(i));
-                                ContentResolver resolver = getApplicationContext().getContentResolver();
-                                Uri contentUri;
-                                try {
-                                    URL fileURL = new URL(PROTOCOL, HOST, PORT, "img/" + fileNames.getString(i));
-                                    HttpURLConnection fileConnection = (HttpURLConnection) network.openConnection(fileURL);
-                                    long contentLength = fileConnection.getContentLengthLong();
-                                    InputStream in = new BufferedInputStream(fileConnection.getInputStream());
-
-                                    // Try to save the picture
-                                    Uri contentCollection;
-                                    ContentValues contentDetails = new ContentValues();
-                                    if (fileType.equals("photo")) {
-                                        contentCollection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
-
-                                        contentDetails.put(MediaStore.Images.Media.DISPLAY_NAME, fileNames.getString(i));
-                                        contentDetails.put(MediaStore.Images.Media.RELATIVE_PATH, picturesRelPath);
-                                        // Mark it as pending until I write the file out
-                                        contentDetails.put(MediaStore.Images.Media.IS_PENDING, 1);
-                                    } else if (fileType.equals("movie")) {
-                                        contentCollection = MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
-                                        contentDetails.put(MediaStore.Video.Media.DISPLAY_NAME, fileNames.getString(i));
-                                        contentDetails.put(MediaStore.Video.Media.RELATIVE_PATH, videosRelPath);
-                                        contentDetails.put(MediaStore.Video.Media.IS_PENDING, 1);
-                                    } else {
-                                        Log.e("SwAlSh", "Unknown file type '" + fileType + "'");
-                                        continue;
-                                    }
-
-                                    contentUri = resolver.insert(contentCollection, contentDetails);
-                                    if (contentUri == null) {
-                                        Log.e("SwAlSh", "Failed to save picture - contentUri is null");
-                                        continue;
-                                    }
-                                    Log.d("SwAlSh", "Saving to " + contentUri);
-
-                                    try {
-                                        OutputStream os = resolver.openOutputStream(contentUri);
-                                        if (os == null) {
-                                            Log.e("SwAlSh", "Failed to save picture - output stream is null");
-                                            continue;
-                                        }
-                                        boolean done = false;
-                                        long bytesWritten = 0;
-                                        while (!done) {
-                                            byte[] data = new byte[512 * 1024];
-                                            int bytesRead = in.read(data);
-                                            if (bytesRead == -1)
-                                                done = true;
-                                            else {
-                                                os.write(data, 0, bytesRead);
-                                                bytesWritten += bytesRead;
-                                            }
-                                            downloadProgress.postValue(((float) bytesWritten) / ((float) contentLength));
-                                        }
-                                        in.close();
-                                        os.close();
-                                        Log.d("SwAlSh", "Saved " + fileNames.getString(i) + "!");
-                                    } catch (FileNotFoundException e) {
-                                        Log.e("SwAlSh", "Failed to open output file", e);
-                                    } catch (SecurityException e) {
-                                        Log.e("SwAlSh", "Possibly missing permissions or something", e);
-                                    }
-
-                                    contentDetails.clear();
-                                    contentDetails.put(MediaStore.MediaColumns.IS_PENDING, 0);
-                                    resolver.update(contentUri, contentDetails, null, null);
-                                    savedContentUris.add(contentUri);
-                                    if (numDownloaded.getValue() != null) {
-                                        numDownloaded.postValue(numDownloaded.getValue() + 1);
-                                    }
-                                } catch (MalformedURLException e) {
-                                    Log.e("SwAlSh", "Malformed URL, possibly unexpected data and/or an application bug", e);
-                                    if (numFailed.getValue() != null) {
-                                        numFailed.postValue(numFailed.getValue() + 1);
-                                    }
-                                } catch (IOException e) {
-                                    Log.e("SwAlSh", "Download error, file " + i + " failed to download", e);
-                                    if (numFailed.getValue() != null) {
-                                        numFailed.postValue(numFailed.getValue() + 1);
-                                    }
-                                } catch (IllegalArgumentException e) {
-                                    Log.e("SwAlSh", "Download error with file " + i + ": ", e);
-                                    if (numFailed.getValue() != null) {
-                                        numFailed.postValue(numFailed.getValue() + 1);
-                                    }
-                                }
+                                downloadFile(network, fileNames.getString(i));
                             }
 
                             state.postValue(DownloadService.State.DONE);
@@ -296,6 +211,95 @@ public class DownloadService extends Service {
                 errorType.postValue(Error.UNKNOWN_ERROR);
                 state.postValue(DownloadService.State.ERROR);
                 Log.e("SwAlSh", "Other error", e);
+            }
+        }
+    }
+
+    private void downloadFile(Network network, String filename) {
+        ContentResolver resolver = getApplicationContext().getContentResolver();
+        Uri contentUri;
+        try {
+            URL fileURL = new URL(PROTOCOL, HOST, PORT, "img/" + filename);
+            HttpURLConnection fileConnection = (HttpURLConnection) network.openConnection(fileURL);
+            long contentLength = fileConnection.getContentLengthLong();
+            InputStream in = new BufferedInputStream(fileConnection.getInputStream());
+
+            // Try to save the picture
+            Uri contentCollection;
+            ContentValues contentDetails = new ContentValues();
+            if (fileType.equals("photo")) {
+                contentCollection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+
+                contentDetails.put(MediaStore.Images.Media.DISPLAY_NAME, filename);
+                contentDetails.put(MediaStore.Images.Media.RELATIVE_PATH, picturesRelPath);
+                // Mark it as pending until I write the file out
+                contentDetails.put(MediaStore.Images.Media.IS_PENDING, 1);
+            } else if (fileType.equals("movie")) {
+                contentCollection = MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+                contentDetails.put(MediaStore.Video.Media.DISPLAY_NAME, filename);
+                contentDetails.put(MediaStore.Video.Media.RELATIVE_PATH, videosRelPath);
+                contentDetails.put(MediaStore.Video.Media.IS_PENDING, 1);
+            } else {
+                Log.e("SwAlSh", "Unknown file type '" + fileType + "'");
+                return;
+            }
+
+            contentUri = resolver.insert(contentCollection, contentDetails);
+            if (contentUri == null) {
+                Log.e("SwAlSh", "Failed to save picture - contentUri is null");
+                return;
+            }
+            Log.d("SwAlSh", "Saving to " + contentUri);
+
+            try {
+                OutputStream os = resolver.openOutputStream(contentUri);
+                if (os == null) {
+                    Log.e("SwAlSh", "Failed to save picture - output stream is null");
+                    return;
+                }
+                boolean done = false;
+                long bytesWritten = 0;
+                while (!done) {
+                    byte[] data = new byte[512 * 1024];
+                    int bytesRead = in.read(data);
+                    if (bytesRead == -1)
+                        done = true;
+                    else {
+                        os.write(data, 0, bytesRead);
+                        bytesWritten += bytesRead;
+                    }
+                    downloadProgress.postValue(((float) bytesWritten) / ((float) contentLength));
+                }
+                in.close();
+                os.close();
+                Log.d("SwAlSh", "Saved " + filename + "!");
+            } catch (FileNotFoundException e) {
+                Log.e("SwAlSh", "Failed to open output file", e);
+            } catch (SecurityException e) {
+                Log.e("SwAlSh", "Possibly missing permissions or something", e);
+            }
+
+            contentDetails.clear();
+            contentDetails.put(MediaStore.MediaColumns.IS_PENDING, 0);
+            resolver.update(contentUri, contentDetails, null, null);
+            savedContentUris.add(contentUri);
+            if (numDownloaded.getValue() != null) {
+                numDownloaded.postValue(numDownloaded.getValue() + 1);
+            }
+        } catch (MalformedURLException e) {
+            Log.e("SwAlSh", "Malformed URL, possibly unexpected data and/or an application bug", e);
+            if (numFailed.getValue() != null) {
+                numFailed.postValue(numFailed.getValue() + 1);
+            }
+        } catch (IOException e) {
+            Log.e("SwAlSh", "Download error, file " + filename + " failed to download", e);
+            if (numFailed.getValue() != null) {
+                numFailed.postValue(numFailed.getValue() + 1);
+            }
+        } catch (IllegalArgumentException e) {
+            Log.e("SwAlSh", "Download error with file " + filename + ": ", e);
+            if (numFailed.getValue() != null) {
+                numFailed.postValue(numFailed.getValue() + 1);
             }
         }
     }
