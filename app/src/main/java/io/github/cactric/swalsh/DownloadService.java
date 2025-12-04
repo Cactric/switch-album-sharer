@@ -38,9 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DownloadService extends Service {
-    private final String PROTOCOL = "http";
-    private final String HOST = "192.168.0.1";
-    private final int PORT = 80;
+    private URL baseUrl;
 
     private final ArrayList<Uri> savedContentUris = new ArrayList<>();
     private String fileType = null;
@@ -70,6 +68,22 @@ public class DownloadService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        try {
+            baseUrl = new URL("http", "192.168.0.1", 80, "");
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+        // Allow changing the URL used to access the console for testing purposes
+        String urlFromIntent = intent.getStringExtra("EXTRA_ALT_URL");
+        if (urlFromIntent != null) {
+            try {
+                baseUrl = new URL(urlFromIntent);
+            } catch (MalformedURLException e) {
+                Log.e("SwAlSh", "Alternate URL is malformed", e);
+                throw new IllegalArgumentException(e);
+            }
+        }
+
         long scanTimeFromIntent = intent.getLongExtra("EXTRA_SCAN_TIME", -1);
         if (scanTimeFromIntent == scanTime) {
             // If the scan time is the same, assume it's the same scan and the service just got restarted for some reason
@@ -122,8 +136,8 @@ public class DownloadService extends Service {
                         // Download the data.json file
                         String dataJson;
                         try {
-                            URL url = new URL(PROTOCOL, HOST, PORT, "data.json");
-                            HttpURLConnection urlConnection = (HttpURLConnection) network.openConnection(url);
+                            URL dataUrl = new URL(baseUrl, "/data.json");
+                            HttpURLConnection urlConnection = (HttpURLConnection) network.openConnection(dataUrl);
                             try {
                                 InputStream in = new BufferedInputStream(urlConnection.getInputStream());
                                 StringBuilder sb = new StringBuilder();
@@ -170,7 +184,7 @@ public class DownloadService extends Service {
                                 ContentResolver resolver = getApplicationContext().getContentResolver();
                                 Uri contentUri;
                                 try {
-                                    URL fileURL = new URL(PROTOCOL, HOST, PORT, "img/" + fileNames.getString(i));
+                                    URL fileURL = new URL(baseUrl, "/img/" + fileNames.getString(i));
                                     HttpURLConnection fileConnection = (HttpURLConnection) network.openConnection(fileURL);
                                     long contentLength = fileConnection.getContentLengthLong();
                                     InputStream in = new BufferedInputStream(fileConnection.getInputStream());
