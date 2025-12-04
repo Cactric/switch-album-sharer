@@ -37,6 +37,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
 public class DownloadService extends Service {
     private URL baseUrl;
 
@@ -130,6 +134,9 @@ public class DownloadService extends Service {
                 connectivityManager.requestNetwork(request, new ConnectivityManager.NetworkCallback() {
                     @Override
                     public void onAvailable(@NonNull Network network) {
+                        OkHttpClient.Builder client_builder = new OkHttpClient.Builder();
+                        client_builder.setSocketFactory$okhttp(network.getSocketFactory());
+                        OkHttpClient client = client_builder.build();
                         Log.d("SwAlSh", "Connected!");
                         state.postValue(DownloadService.State.CONNECTED);
 
@@ -137,24 +144,11 @@ public class DownloadService extends Service {
                         String dataJson;
                         try {
                             URL dataUrl = new URL(baseUrl, "/data.json");
-                            HttpURLConnection urlConnection = (HttpURLConnection) network.openConnection(dataUrl);
-                            try {
-                                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-                                StringBuilder sb = new StringBuilder();
-
-                                int read;
-                                while (true) {
-                                    read = in.read();
-                                    if (read == -1)
-                                        break;
-                                    sb.appendCodePoint(read);
-                                }
-                                in.close();
-
-                                Log.d("SwAlSh", "data.json is " + sb);
-                                dataJson = sb.toString();
-                            } finally {
-                                urlConnection.disconnect();
+                            Request dataRequest = new Request.Builder()
+                                    .url(dataUrl)
+                                    .build();
+                            try (Response response = client.newCall(dataRequest).execute()) {
+                                dataJson = response.body().string();
                             }
                         } catch (Exception e) {
                             Log.e("SwAlSh", "Download error", e);
@@ -181,7 +175,7 @@ public class DownloadService extends Service {
 
                             for (int i = 0; i < fileNames.length(); i++) {
                                 Log.d("SwAlSh", "File name " + i + " = " + fileNames.getString(i));
-                                downloadFile(network, fileNames.getString(i));
+                                downloadFile(client, fileNames.getString(i));
                             }
 
                             state.postValue(DownloadService.State.DONE);
@@ -229,16 +223,16 @@ public class DownloadService extends Service {
         }
     }
 
-    private void downloadFile(Network network, String filename) {
+    private void downloadFile(OkHttpClient client, String filename) {
         ContentResolver resolver = getApplicationContext().getContentResolver();
         Uri contentUri;
         try {
             URL fileURL = new URL(baseUrl, "/img/" + filename);
-            HttpURLConnection fileConnection = (HttpURLConnection) network.openConnection(fileURL);
-            long contentLength = fileConnection.getContentLengthLong();
-            InputStream in = new BufferedInputStream(fileConnection.getInputStream());
+            Request fileRequest = new Request.Builder()
+                    .url(fileURL)
+                    .build();
 
-            // Try to save the picture
+            // Setup destination uri and content details
             Uri contentCollection;
             ContentValues contentDetails = new ContentValues();
             if (fileType.equals("photo")) {
@@ -265,7 +259,8 @@ public class DownloadService extends Service {
             }
             Log.d("SwAlSh", "Saving to " + contentUri);
 
-            try {
+            try (Response response = client.newCall(fileRequest).execute()) {
+                InputStream in = response.body().byteStream();
                 OutputStream os = resolver.openOutputStream(contentUri);
                 if (os == null) {
                     Log.e("SwAlSh", "Failed to save picture - output stream is null");
@@ -282,7 +277,7 @@ public class DownloadService extends Service {
                         os.write(data, 0, bytesRead);
                         bytesWritten += bytesRead;
                     }
-                    downloadProgress.postValue(((float) bytesWritten) / ((float) contentLength));
+                    downloadProgress.postValue(((float) bytesWritten) / ((float) response.body().contentLength()));
                 }
                 in.close();
                 os.close();

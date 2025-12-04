@@ -42,6 +42,7 @@ room {
 }
 
 dependencies {
+    implementation(libs.okhttp)
 
     implementation(libs.appcompat)
     implementation(libs.material)
