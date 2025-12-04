@@ -74,9 +74,13 @@ public class ConnectActivity extends AppCompatActivity {
     private void connectToConsole() {
         WifiNetworkSpecifier netSpec = null;
         Intent arguments = getIntent();
+        boolean onEmulator = false;
         if (arguments.hasExtra("scanned_data")) {
             try {
                 netSpec = WifiUtils.parseNetwork(Objects.requireNonNull(arguments.getStringExtra("scanned_data")));
+                if (Objects.equals(arguments.getStringExtra("scanned_data"), "WIFI:S:AndroidWifi;H:false")) {
+                    onEmulator = true;
+                }
             } catch (IllegalArgumentException e) {
                 // Not a Wi-Fi QR code
                 Log.e("SwAlSh", "Invalid QR code", e);
@@ -105,6 +109,9 @@ public class ConnectActivity extends AppCompatActivity {
         Intent intent = new Intent(this, DownloadService.class);
         intent.putExtra("EXTRA_NETWORK_SPECIFIER", netSpec);
         intent.putExtra("EXTRA_SCAN_TIME", scanTime);
+        if (onEmulator) {
+            intent.putExtra("EXTRA_ALT_URL", "http://10.0.2.2:8080");
+        }
         startService(intent);
 
         Button sacButton = findViewById(R.id.another_code);
