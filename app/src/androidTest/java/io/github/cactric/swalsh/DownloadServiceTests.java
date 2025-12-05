@@ -10,24 +10,24 @@ import android.net.wifi.WifiNetworkSpecifier;
 import android.os.IBinder;
 
 import androidx.lifecycle.Observer;
-import androidx.test.espresso.action.MotionEvents;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ServiceTestRule;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.Date;
+import java.util.concurrent.CountDownLatch;
 
 public class DownloadServiceTests {
     @Rule
     public final ServiceTestRule serviceRule = new ServiceTestRule();
 
     @Test
-    public void normalDownloadTest() {
+    public void firstAttemptNormalDownloadTest() {
         // TODO: Follow https://developer.android.com/training/testing/other-components/services#java more closely
         Context targetCtx = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        CountDownLatch latch = new CountDownLatch(1);
 
         Intent intent = new Intent(targetCtx, DownloadService.class);
         WifiNetworkSpecifier netSpec = new WifiNetworkSpecifier.Builder()
@@ -47,7 +47,7 @@ public class DownloadServiceTests {
                     assertNotEquals(DownloadService.State.ERROR, state);
 
                     if (state == DownloadService.State.DONE) {
-                        // TODO: Check it wrote the files
+                        latch.countDown();
                     }
                 };
 
@@ -60,5 +60,11 @@ public class DownloadServiceTests {
             }
         }, Context.BIND_AUTO_CREATE);
 
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        // TODO: Check it wrote the files
     }
 }
