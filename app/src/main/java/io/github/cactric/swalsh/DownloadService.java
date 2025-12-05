@@ -26,12 +26,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -175,7 +173,7 @@ public class DownloadService extends Service {
 
                             for (int i = 0; i < fileNames.length(); i++) {
                                 Log.d("SwAlSh", "File name " + i + " = " + fileNames.getString(i));
-                                downloadFile(client, fileNames.getString(i));
+                                downloadMedia(client, fileNames.getString(i));
                             }
 
                             state.postValue(DownloadService.State.DONE);
@@ -223,7 +221,7 @@ public class DownloadService extends Service {
         }
     }
 
-    private void downloadFile(OkHttpClient client, String filename) {
+    private void downloadMedia(OkHttpClient client, String filename) {
         ContentResolver resolver = getApplicationContext().getContentResolver();
         Uri contentUri;
         try {
@@ -234,23 +232,20 @@ public class DownloadService extends Service {
 
             // Setup destination uri and content details
             Uri contentCollection;
-            ContentValues contentDetails = new ContentValues();
             if (fileType.equals("photo")) {
                 contentCollection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
-
-                contentDetails.put(MediaStore.Images.Media.DISPLAY_NAME, filename);
-                contentDetails.put(MediaStore.Images.Media.RELATIVE_PATH, picturesRelPath);
-                // Mark it as pending until I write the file out
-                contentDetails.put(MediaStore.Images.Media.IS_PENDING, 1);
             } else if (fileType.equals("movie")) {
                 contentCollection = MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
-                contentDetails.put(MediaStore.Video.Media.DISPLAY_NAME, filename);
-                contentDetails.put(MediaStore.Video.Media.RELATIVE_PATH, videosRelPath);
-                contentDetails.put(MediaStore.Video.Media.IS_PENDING, 1);
             } else {
                 Log.e("SwAlSh", "Unknown file type '" + fileType + "'");
                 return;
             }
+
+            ContentValues contentDetails = new ContentValues();
+            contentDetails.put(MediaStore.MediaColumns.DISPLAY_NAME, filename);
+            contentDetails.put(MediaStore.MediaColumns.RELATIVE_PATH, picturesRelPath);
+            // Mark it as pending until I write the file out
+            contentDetails.put(MediaStore.MediaColumns.IS_PENDING, 1);
 
             contentUri = resolver.insert(contentCollection, contentDetails);
             if (contentUri == null) {
