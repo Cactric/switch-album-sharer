@@ -24,7 +24,7 @@ public class DownloadServiceTests {
     public final ServiceTestRule serviceRule = new ServiceTestRule();
 
     @Test
-    public void firstAttemptNormalDownloadTest() {
+    public void normalDownloadTest() {
         // TODO: Follow https://developer.android.com/training/testing/other-components/services#java more closely
         Context targetCtx = InstrumentationRegistry.getInstrumentation().getTargetContext();
         CountDownLatch latch = new CountDownLatch(1);
@@ -66,5 +66,7 @@ public class DownloadServiceTests {
             throw new RuntimeException(e);
         }
         // TODO: Check it wrote the files
+        // TODO: Start a mock endpoint
+        // TODO: accept connect to device prompt
     }
 }
