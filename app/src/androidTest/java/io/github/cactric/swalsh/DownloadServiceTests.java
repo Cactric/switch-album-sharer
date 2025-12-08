@@ -6,9 +6,12 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.net.Network;
+import android.net.Uri;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.os.IBinder;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.Observer;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ServiceTestRule;
@@ -16,12 +19,15 @@ import androidx.test.rule.ServiceTestRule;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.io.InputStream;
 import java.util.Date;
 import java.util.concurrent.CountDownLatch;
 
 public class DownloadServiceTests {
     @Rule
     public final ServiceTestRule serviceRule = new ServiceTestRule();
+    // Json string that can be replaced
+    private int jsonIndex;
 
     @Test
     public void normalDownloadTest() {
@@ -68,5 +74,17 @@ public class DownloadServiceTests {
         // TODO: Check it wrote the files
         // TODO: Start a mock endpoint
         // TODO: accept connect to device prompt
+    }
+
+    private class MockDownloadService extends DownloadService {
+        @Override
+        public String getDataJson(@NonNull Network network) {
+            return getResources().getStringArray(io.github.cactric.swalsh.test.R.array.test_json_strings)[DownloadServiceTests.this.jsonIndex];
+        }
+
+        @Override
+        public void writeMediaToUri(InputStream in, Uri contentUri, long length) {
+            // TODO
+        }
     }
 }

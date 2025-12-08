@@ -283,7 +283,7 @@ public class DownloadService extends Service {
      * @return The JSON data from the console, as a string
      * @throws IOException If the connection fails, etc.
      */
-    private String getDataJson(Network network) throws IOException {
+    public String getDataJson(@NonNull Network network) throws IOException {
         URL dataUrl = new URL(baseUrl, "/data.json");
         HttpURLConnection urlConnection = (HttpURLConnection) network.openConnection(dataUrl);
         String jsonToReturn;
@@ -315,7 +315,7 @@ public class DownloadService extends Service {
      * @param contentLength Length of the file, used for progress reporting
      * @throws IOException If opening the output uri or writing to it fails
      */
-    private void writeMediaToUri(InputStream in, Uri contentUri, long contentLength) throws IOException {
+    public void writeMediaToUri(InputStream in, Uri contentUri, long contentLength) throws IOException {
         OutputStream os = getContentResolver().openOutputStream(contentUri);
         if (os == null) {
             Log.e("SwAlSh", "Failed to save picture - output stream is null");
