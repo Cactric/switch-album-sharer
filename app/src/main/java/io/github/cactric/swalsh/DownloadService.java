@@ -27,7 +27,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -198,31 +197,14 @@ public class DownloadService extends Service {
                                     Log.d("SwAlSh", "Saving to " + contentUri);
 
                                     try {
-                                        OutputStream os = resolver.openOutputStream(contentUri);
-                                        if (os == null) {
-                                            Log.e("SwAlSh", "Failed to save picture - output stream is null");
-                                            continue;
-                                        }
-                                        boolean done = false;
-                                        long bytesWritten = 0;
-                                        while (!done) {
-                                            byte[] data = new byte[512 * 1024];
-                                            int bytesRead = in.read(data);
-                                            if (bytesRead == -1)
-                                                done = true;
-                                            else {
-                                                os.write(data, 0, bytesRead);
-                                                bytesWritten += bytesRead;
-                                            }
-                                            downloadProgress.postValue(((float) bytesWritten) / ((float) contentLength));
-                                        }
-                                        in.close();
-                                        os.close();
-                                        Log.d("SwAlSh", "Saved " + fileNames.getString(i) + "!");
-                                    } catch (FileNotFoundException e) {
-                                        Log.e("SwAlSh", "Failed to open output file", e);
+                                        writeMediaToUri(in, contentUri, contentLength);
+                                        Log.d("SwAlSh", "Saved " + contentUri + "!");
                                     } catch (SecurityException e) {
                                         Log.e("SwAlSh", "Possibly missing permissions or something", e);
+                                        continue;
+                                    } catch (IOException e) {
+                                        Log.e("SwAlSh", "Failed to save media file", e);
+                                        continue;
                                     }
 
                                     contentDetails.clear();
@@ -324,6 +306,36 @@ public class DownloadService extends Service {
             urlConnection.disconnect();
         }
         return jsonToReturn;
+    }
+
+    /**
+     * Saves the media from the InputStream to the content URI
+     * @param in InputStream of the source
+     * @param contentUri Uri to write the media to
+     * @param contentLength Length of the file, used for progress reporting
+     * @throws IOException If opening the output uri or writing to it fails
+     */
+    private void writeMediaToUri(InputStream in, Uri contentUri, long contentLength) throws IOException {
+        OutputStream os = getContentResolver().openOutputStream(contentUri);
+        if (os == null) {
+            Log.e("SwAlSh", "Failed to save picture - output stream is null");
+            throw new IOException("Couldn't open output stream for " + contentUri);
+        }
+        boolean done = false;
+        long bytesWritten = 0;
+        while (!done) {
+            byte[] data = new byte[512 * 1024];
+            int bytesRead = in.read(data);
+            if (bytesRead == -1)
+                done = true;
+            else {
+                os.write(data, 0, bytesRead);
+                bytesWritten += bytesRead;
+            }
+            downloadProgress.postValue(((float) bytesWritten) / ((float) contentLength));
+        }
+        in.close();
+        os.close();
     }
 
     @Override
