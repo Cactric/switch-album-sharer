@@ -136,26 +136,7 @@ public class DownloadService extends Service {
                         // Download the data.json file
                         String dataJson;
                         try {
-                            URL dataUrl = new URL(baseUrl, "/data.json");
-                            HttpURLConnection urlConnection = (HttpURLConnection) network.openConnection(dataUrl);
-                            try {
-                                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-                                StringBuilder sb = new StringBuilder();
-
-                                int read;
-                                while (true) {
-                                    read = in.read();
-                                    if (read == -1)
-                                        break;
-                                    sb.appendCodePoint(read);
-                                }
-                                in.close();
-
-                                Log.d("SwAlSh", "data.json is " + sb);
-                                dataJson = sb.toString();
-                            } finally {
-                                urlConnection.disconnect();
-                            }
+                            dataJson = getDataJson(network);
                         } catch (Exception e) {
                             Log.e("SwAlSh", "Download error", e);
                             errorType.postValue(Error.ERROR_GETTING_JSON);
@@ -312,6 +293,37 @@ public class DownloadService extends Service {
                 Log.e("SwAlSh", "Other error", e);
             }
         }
+    }
+
+    /**
+     * Download the `data.json` file from the console
+     * @param network Network that is connected to the console
+     * @return The JSON data from the console, as a string
+     * @throws IOException If the connection fails, etc.
+     */
+    private String getDataJson(Network network) throws IOException {
+        URL dataUrl = new URL(baseUrl, "/data.json");
+        HttpURLConnection urlConnection = (HttpURLConnection) network.openConnection(dataUrl);
+        String jsonToReturn;
+        try {
+            InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+            StringBuilder sb = new StringBuilder();
+
+            int read;
+            while (true) {
+                read = in.read();
+                if (read == -1)
+                    break;
+                sb.appendCodePoint(read);
+            }
+            in.close();
+
+            Log.d("SwAlSh", "data.json is " + sb);
+            jsonToReturn = sb.toString();
+        } finally {
+            urlConnection.disconnect();
+        }
+        return jsonToReturn;
     }
 
     @Override
