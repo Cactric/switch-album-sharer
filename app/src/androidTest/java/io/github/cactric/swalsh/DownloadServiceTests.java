@@ -85,7 +85,6 @@ public class DownloadServiceTests {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        // TODO: Check it wrote the files
         // TODO: accept connect to device prompt
     }
 }
