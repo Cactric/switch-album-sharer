@@ -63,6 +63,10 @@
             android:name=".DownloadService"
             android:enabled="true"
             android:exported="false" />
+        <service
+            android:name=".MockDownloadService"
+            android:enabled="true"
+            android:exported="false"/>
 
         <activity
             android:name=".ui.MainActivity"

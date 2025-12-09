@@ -1,6 +1,7 @@
 package io.github.cactric.swalsh;
 
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -10,6 +11,7 @@ import android.net.Network;
 import android.net.Uri;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.os.IBinder;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.Observer;
@@ -19,7 +21,9 @@ import androidx.test.rule.ServiceTestRule;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Date;
 import java.util.concurrent.CountDownLatch;
 
@@ -31,18 +35,25 @@ public class DownloadServiceTests {
 
     @Test
     public void normalDownloadTest() {
-        // TODO: Follow https://developer.android.com/training/testing/other-components/services#java more closely
         Context targetCtx = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context testCtx = InstrumentationRegistry.getInstrumentation().getContext();
         CountDownLatch latch = new CountDownLatch(1);
 
-        Intent intent = new Intent(targetCtx, DownloadService.class);
+        Intent intent = new Intent(targetCtx, MockDownloadService.class);
         WifiNetworkSpecifier netSpec = new WifiNetworkSpecifier.Builder()
                 .setSsid("AndroidWifi")
                 .build();
         intent.putExtra("EXTRA_NETWORK_SPECIFIER", netSpec);
         intent.putExtra("EXTRA_SCAN_TIME", new Date().getTime());
+        intent.putExtra("EXTRA_MOCK_JSON", testCtx.getResources().getStringArray(
+                io.github.cactric.swalsh.test.R.array.test_json_strings)[0]
+        );
         intent.putExtra("EXTRA_ALT_URL", "http://10.0.2.2:8080/");
-        targetCtx.startService(intent);
+
+        ComponentName service = targetCtx.startService(intent);
+        Log.d("SwAlSh_Tests", "startService returned " + service);
+        // Make sure startService succeeded
+        assertNotNull(service);
 
         targetCtx.bindService(intent, new ServiceConnection() {
             @Override
@@ -50,6 +61,9 @@ public class DownloadServiceTests {
                 DownloadService.DownloadServiceBinder binder = (DownloadService.DownloadServiceBinder) iBinder;
 
                 Observer<DownloadService.State> testObserver = state -> {
+                    if (state == DownloadService.State.ERROR) {
+                        Log.e("SwAlSh_Tests", "Error state: reason is " + binder.getErrorType().getValue());
+                    }
                     assertNotEquals(DownloadService.State.ERROR, state);
 
                     if (state == DownloadService.State.DONE) {
@@ -74,17 +88,5 @@ public class DownloadServiceTests {
         // TODO: Check it wrote the files
         // TODO: Start a mock endpoint
         // TODO: accept connect to device prompt
-    }
-
-    private class MockDownloadService extends DownloadService {
-        @Override
-        public String getDataJson(@NonNull Network network) {
-            return getResources().getStringArray(io.github.cactric.swalsh.test.R.array.test_json_strings)[DownloadServiceTests.this.jsonIndex];
-        }
-
-        @Override
-        public void writeMediaToUri(InputStream in, Uri contentUri, long length) {
-            // TODO
-        }
     }
 }
