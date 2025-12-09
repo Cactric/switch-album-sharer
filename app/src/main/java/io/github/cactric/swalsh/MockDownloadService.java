@@ -31,8 +31,6 @@ public class MockDownloadService extends DownloadService {
 
     @Override
     protected void downloadMedia(@NonNull Network network, @NonNull URL sourceURL, @NonNull Uri destinationUri) throws IOException {
-        Log.d("SwAlSh_Tests", "Network is " + network + ", sourceURL is " + sourceURL + ", destinationUri is " + destinationUri);
-
         if (sourceURL.getPath().endsWith(".jpg")) {
             assert destinationUri.toString().contains("images/media");
         } else if (sourceURL.getPath().endsWith(".mp4")) {

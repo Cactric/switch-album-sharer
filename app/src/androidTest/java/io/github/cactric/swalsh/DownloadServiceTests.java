@@ -4,6 +4,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -18,25 +19,54 @@ import androidx.lifecycle.Observer;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ServiceTestRule;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.CountDownLatch;
 
 public class DownloadServiceTests {
     @Rule
     public final ServiceTestRule serviceRule = new ServiceTestRule();
-    // Json string that can be replaced
-    private int jsonIndex;
+    private final ArrayList<Uri> savedUris = new ArrayList<>();
+    private Context targetCtx;
+    private Context testCtx;
 
-    @Test
-    public void normalDownloadTest() {
-        Context targetCtx = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        Context testCtx = InstrumentationRegistry.getInstrumentation().getContext();
+    @Before
+    public void setup() {
+        targetCtx = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        testCtx = InstrumentationRegistry.getInstrumentation().getContext();
+    }
+
+    @Test(timeout = 20000)
+    public void singlePictureDownloadTest() {
+        normalDownloadTestCore(0);
+    }
+
+    @Test(timeout = 20000)
+    public void multiPictureDownloadTest() {
+        normalDownloadTestCore(1);
+    }
+
+    @Test(timeout = 20000)
+    public void singleVideoDownloadTest() {
+        normalDownloadTestCore(2);
+    }
+
+    @Test(timeout = 20000)
+    public void multiVideoDownloadTest() {
+        normalDownloadTestCore(3);
+    }
+
+    public void normalDownloadTestCore(int jsonIndex) {
         CountDownLatch latch = new CountDownLatch(1);
 
         Intent intent = new Intent(targetCtx, MockDownloadService.class);
@@ -46,7 +76,7 @@ public class DownloadServiceTests {
         intent.putExtra("EXTRA_NETWORK_SPECIFIER", netSpec);
         intent.putExtra("EXTRA_SCAN_TIME", new Date().getTime());
         intent.putExtra("EXTRA_MOCK_JSON", testCtx.getResources().getStringArray(
-                io.github.cactric.swalsh.test.R.array.test_json_strings)[0]
+                io.github.cactric.swalsh.test.R.array.test_json_strings)[jsonIndex]
         );
         intent.putExtra("EXTRA_ALT_URL", "http://10.0.2.2:8080/");
 
@@ -67,6 +97,8 @@ public class DownloadServiceTests {
                     assertNotEquals(DownloadService.State.ERROR, state);
 
                     if (state == DownloadService.State.DONE) {
+                        savedUris.addAll(binder.getSavedContentUriList());
+                        targetCtx.stopService(intent);
                         latch.countDown();
                     }
                 };
@@ -85,6 +117,20 @@ public class DownloadServiceTests {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+
         // TODO: accept connect to device prompt
+    }
+
+    @After
+    public void cleanupDownloadedFiles() {
+        ContentResolver cr = targetCtx.getContentResolver();
+        for (Uri uri: savedUris) {
+            Log.d("SwAlSh_Tests", "Will cleanup Uri: " + uri);
+            try {
+                cr.delete(uri, null, null);
+            } catch (Exception e) {
+                Log.e("SwAlSh_Tests", "Failed to delete " + uri + ", but not considering it a failed test", e);
+            }
+        }
     }
 }
