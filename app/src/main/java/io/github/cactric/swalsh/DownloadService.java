@@ -165,9 +165,6 @@ public class DownloadService extends Service {
                                 Uri contentUri;
                                 try {
                                     URL fileURL = new URL(baseUrl, "/img/" + fileNames.getString(i));
-                                    HttpURLConnection fileConnection = (HttpURLConnection) network.openConnection(fileURL);
-                                    long contentLength = fileConnection.getContentLengthLong();
-                                    InputStream in = new BufferedInputStream(fileConnection.getInputStream());
 
                                     // Try to save the picture
                                     Uri contentCollection;
@@ -197,14 +194,16 @@ public class DownloadService extends Service {
                                     Log.d("SwAlSh", "Saving to " + contentUri);
 
                                     try {
-                                        writeMediaToUri(in, contentUri, contentLength);
+                                        downloadMedia(network, fileURL, contentUri);
                                         Log.d("SwAlSh", "Saved " + contentUri + "!");
                                     } catch (SecurityException e) {
                                         Log.e("SwAlSh", "Possibly missing permissions or something", e);
                                         continue;
                                     } catch (IOException e) {
-                                        Log.e("SwAlSh", "Failed to save media file", e);
-                                        continue;
+                                        Log.e("SwAlSh", "Download error, file " + i + " failed to download", e);
+                                        if (numFailed.getValue() != null) {
+                                            numFailed.postValue(numFailed.getValue() + 1);
+                                        }
                                     }
 
                                     contentDetails.clear();
@@ -216,11 +215,6 @@ public class DownloadService extends Service {
                                     }
                                 } catch (MalformedURLException e) {
                                     Log.e("SwAlSh", "Malformed URL, possibly unexpected data and/or an application bug", e);
-                                    if (numFailed.getValue() != null) {
-                                        numFailed.postValue(numFailed.getValue() + 1);
-                                    }
-                                } catch (IOException e) {
-                                    Log.e("SwAlSh", "Download error, file " + i + " failed to download", e);
                                     if (numFailed.getValue() != null) {
                                         numFailed.postValue(numFailed.getValue() + 1);
                                     }
@@ -283,7 +277,7 @@ public class DownloadService extends Service {
      * @return The JSON data from the console, as a string
      * @throws IOException If the connection fails, etc.
      */
-    public String getDataJson(@NonNull Network network) throws IOException {
+    protected String getDataJson(@NonNull Network network) throws IOException {
         URL dataUrl = new URL(baseUrl, "/data.json");
         HttpURLConnection urlConnection = (HttpURLConnection) network.openConnection(dataUrl);
         String jsonToReturn;
@@ -310,16 +304,20 @@ public class DownloadService extends Service {
 
     /**
      * Saves the media from the InputStream to the content URI
-     * @param in InputStream of the source
-     * @param contentUri Uri to write the media to
-     * @param contentLength Length of the file, used for progress reporting
+     * @param network The network connected to the console
+     * @param sourceURL The URL of the media file to download
+     * @param destinationUri Content Uri to write the media to
      * @throws IOException If opening the output uri or writing to it fails
      */
-    public void writeMediaToUri(InputStream in, Uri contentUri, long contentLength) throws IOException {
-        OutputStream os = getContentResolver().openOutputStream(contentUri);
+    protected void downloadMedia(@NonNull Network network, @NonNull URL sourceURL, @NonNull Uri destinationUri) throws IOException {
+        HttpURLConnection fileConnection = (HttpURLConnection) network.openConnection(sourceURL);
+        long contentLength = fileConnection.getContentLengthLong();
+        InputStream in = new BufferedInputStream(fileConnection.getInputStream());
+
+        OutputStream os = getContentResolver().openOutputStream(destinationUri);
         if (os == null) {
             Log.e("SwAlSh", "Failed to save picture - output stream is null");
-            throw new IOException("Couldn't open output stream for " + contentUri);
+            throw new IOException("Couldn't open output stream for " + destinationUri);
         }
         boolean done = false;
         long bytesWritten = 0;
