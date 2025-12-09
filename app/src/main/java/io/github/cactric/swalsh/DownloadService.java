@@ -195,7 +195,7 @@ public class DownloadService extends Service {
 
                                     try {
                                         downloadMedia(network, fileURL, contentUri);
-                                        Log.d("SwAlSh", "Saved " + contentUri + "!");
+                                        Log.d("SwAlSh", "Saved " + fileURL + "!");
                                     } catch (SecurityException e) {
                                         Log.e("SwAlSh", "Possibly missing permissions or something", e);
                                         continue;
@@ -294,7 +294,7 @@ public class DownloadService extends Service {
             }
             in.close();
 
-            Log.d("SwAlSh", "data.json is " + sb);
+            //Log.d("SwAlSh", "data.json is " + sb);
             jsonToReturn = sb.toString();
         } finally {
             urlConnection.disconnect();
