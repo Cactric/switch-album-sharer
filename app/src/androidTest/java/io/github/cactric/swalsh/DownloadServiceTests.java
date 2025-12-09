@@ -86,7 +86,6 @@ public class DownloadServiceTests {
             throw new RuntimeException(e);
         }
         // TODO: Check it wrote the files
-        // TODO: Start a mock endpoint
         // TODO: accept connect to device prompt
     }
 }
