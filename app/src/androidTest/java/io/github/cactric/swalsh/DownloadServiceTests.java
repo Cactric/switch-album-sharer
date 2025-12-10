@@ -9,27 +9,20 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.net.Network;
 import android.net.Uri;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.os.IBinder;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
 import androidx.lifecycle.Observer;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ServiceTestRule;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runners.MethodSorters;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.CountDownLatch;
