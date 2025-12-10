@@ -40,10 +40,9 @@ public class ManualActivity extends AppCompatActivity {
         EditText passEditText = findViewById(R.id.manual_wifi_password);
 
         findViewById(R.id.manual_submit).setOnClickListener(view -> {
-            if (!ssidEditText.getText().toString().startsWith("switch_")) {
-                showInvalidDialog(R.string.bad_prefix);
-            } else if (passEditText.getText().length() != 8) {
-                showInvalidDialog(R.string.bad_password);
+            int validOrMsg = strictValidate(ssidEditText.getText().toString(), passEditText.getText().toString());
+            if (validOrMsg != 0) {
+                showInvalidDialog(validOrMsg);
             } else {
                 setSavedSsid(ssidEditText.getText().toString());
                 Intent intent = new Intent(this, ConnectActivity.class);
@@ -55,10 +54,9 @@ public class ManualActivity extends AppCompatActivity {
         });
         findViewById(R.id.manual_submit).setOnLongClickListener(view -> {
             // Long press for less validation
-            if (ssidEditText.length() < 1) {
-                showInvalidDialog(R.string.ssid_required);
-            } else if (passEditText.length() < 1) {
-                showInvalidDialog(R.string.password_required);
+            int validOrMsg = looseValidate(ssidEditText.getText().toString(), passEditText.getText().toString());
+            if (validOrMsg != 0) {
+                showInvalidDialog(validOrMsg);
             } else {
                 setSavedSsid(ssidEditText.getText().toString());
                 Intent intent = new Intent(this, ConnectActivity.class);
@@ -93,5 +91,38 @@ public class ManualActivity extends AppCompatActivity {
         builder.setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss());
         builder.setOnDismissListener(dialog -> {});
         builder.create().show();
+    }
+
+    /**
+     * Validates the SSID and password provided strictly
+     * i.e. the SSID starts with switch_ and the password is 8 characters long
+     * @param ssid The SSID to check
+     * @param pass The password to check
+     * @return The resource ID of the error message to display to the user, or 0 if it passes
+     */
+    private int strictValidate(String ssid, String pass) {
+        if (!ssid.startsWith("switch_")) {
+            return R.string.bad_prefix;
+        }
+        if (pass.length() != 8) {
+            return R.string.bad_password;
+        }
+        return 0;
+    }
+
+    /**
+     * Same as strictValidate but only checks the SSID and password are not empty
+     * @param ssid The SSID to check
+     * @param pass The password to check
+     * @return The resource ID of the error message to display to the user, or 0 if it passes
+     */
+    private int looseValidate(String ssid, String pass) {
+        if (ssid.isEmpty()) {
+            return R.string.ssid_required;
+        }
+        if (pass.isEmpty()) {
+            return R.string.password_required;
+        }
+        return 0;
     }
 }
