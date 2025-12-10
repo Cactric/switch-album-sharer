@@ -1,5 +1,6 @@
 package io.github.cactric.swalsh;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -48,25 +49,25 @@ public class DownloadServiceTests {
 
     @Test(timeout = 20000)
     public void singlePictureDownloadTest() {
-        normalDownloadTestCore(0);
+        normalDownloadTestCore(0, 1);
     }
 
     @Test(timeout = 20000)
     public void multiPictureDownloadTest() {
-        normalDownloadTestCore(1);
+        normalDownloadTestCore(1, 10);
     }
 
     @Test(timeout = 20000)
     public void singleVideoDownloadTest() {
-        normalDownloadTestCore(2);
+        normalDownloadTestCore(2, 1);
     }
 
     @Test(timeout = 20000)
     public void multiVideoDownloadTest() {
-        normalDownloadTestCore(3);
+        normalDownloadTestCore(3, 10);
     }
 
-    public void normalDownloadTestCore(int jsonIndex) {
+    public void normalDownloadTestCore(int jsonIndex, int expectedNumOfFiles) {
         CountDownLatch latch = new CountDownLatch(1);
 
         Intent intent = new Intent(targetCtx, MockDownloadService.class);
@@ -97,6 +98,7 @@ public class DownloadServiceTests {
                     assertNotEquals(DownloadService.State.ERROR, state);
 
                     if (state == DownloadService.State.DONE) {
+                        assertEquals(expectedNumOfFiles, binder.getSavedContentUriList().size());
                         savedUris.addAll(binder.getSavedContentUriList());
                         targetCtx.stopService(intent);
                         latch.countDown();
