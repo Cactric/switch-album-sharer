@@ -21,6 +21,7 @@ import java.util.concurrent.CountDownLatch;
 
 import io.github.cactric.swalsh.games.Game;
 import io.github.cactric.swalsh.games.GameDatabase;
+import io.github.cactric.swalsh.games.GameUtils;
 
 public class GameDatabaseTests {
     Context targetCtx;
@@ -79,5 +80,35 @@ public class GameDatabaseTests {
         // Try to find it again - should fail
         Game found = db.gameDao().findByGameId(gameId);
         assertNull(found);
+    }
+
+    @Test
+    public void lookupGameTest1() {
+        // Lookup a game that's already in the DB
+
+        // First, put a game in the DB
+        String gameId = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFCAFE";
+        Game testGame = new Game();
+        testGame.game_primary_key = 1;
+        testGame.gameId = gameId;
+        testGame.gameName = "Test game (cafe)";
+        db.gameDao().addGame(testGame);
+
+        GameUtils utils = new GameUtils(targetCtx);
+        Game foundGame = utils.lookupGame(gameId);
+        assertEquals(testGame, foundGame);
+    }
+
+    @Test
+    public void lookupGameTest2() {
+        // Lookup a game that isn't in the DB
+        String gameId = "99BEE50000000000000000000011BEE5";
+        String gameGenericName = "Unknown [ID: 99BEE5…]"; // may need to update this if the string changes
+
+        GameUtils utils = new GameUtils(targetCtx);
+        Game foundGame = utils.lookupGame(gameId);
+        assertEquals(0, foundGame.game_primary_key);
+        assertEquals(gameId, foundGame.gameId);
+        assertEquals(gameGenericName, foundGame.gameName);
     }
 }
