@@ -19,6 +19,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LifecycleService;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -36,7 +37,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DownloadService extends Service {
+public class DownloadService extends LifecycleService {
     private URL baseUrl;
 
     private final ArrayList<Uri> savedContentUris = new ArrayList<>();
@@ -67,6 +68,7 @@ public class DownloadService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        super.onStartCommand(intent, flags, startId);
         try {
             baseUrl = new URL("http", "192.168.0.1", 80, "");
         } catch (MalformedURLException e) {
@@ -189,6 +191,9 @@ public class DownloadService extends Service {
                                     contentUri = resolver.insert(contentCollection, contentDetails);
                                     if (contentUri == null) {
                                         Log.e("SwAlSh", "Failed to save picture - contentUri is null");
+                                        if (numFailed.getValue() != null) {
+                                            numFailed.postValue(numFailed.getValue() + 1);
+                                        }
                                         continue;
                                     }
                                     Log.d("SwAlSh", "Saving to " + contentUri);
@@ -337,7 +342,8 @@ public class DownloadService extends Service {
     }
 
     @Override
-    public IBinder onBind(Intent intent) {
+    public IBinder onBind(@NonNull Intent intent) {
+        super.onBind(intent);
         return new DownloadServiceBinder();
     }
 
@@ -371,6 +377,9 @@ public class DownloadService extends Service {
         }
         public String getVideosDir() {
             return videosRelPath;
+        }
+        protected DownloadService getService() {
+            return DownloadService.this;
         }
     }
 

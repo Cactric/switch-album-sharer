@@ -105,7 +105,7 @@ public class DownloadServiceTests {
                     }
                 };
 
-                binder.getState().observeForever(testObserver);
+                binder.getState().observe(binder.getService(), testObserver);
             }
 
             @Override
