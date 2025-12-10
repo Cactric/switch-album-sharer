@@ -14,6 +14,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import androidx.lifecycle.Observer;
+import androidx.test.filters.LargeTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ServiceTestRule;
 
@@ -27,6 +28,7 @@ import java.util.Date;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeoutException;
 
+@LargeTest
 public class DownloadServiceTests {
     @Rule
     public final ServiceTestRule serviceRule = new ServiceTestRule();
