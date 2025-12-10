@@ -2,7 +2,6 @@ package io.github.cactric.swalsh;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
 
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -26,6 +25,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeoutException;
 
 public class DownloadServiceTests {
     @Rule
@@ -41,26 +41,26 @@ public class DownloadServiceTests {
     }
 
     @Test(timeout = 20000)
-    public void singlePictureDownloadTest() {
+    public void singlePictureDownloadTest() throws TimeoutException {
         normalDownloadTestCore(0, 1);
     }
 
     @Test(timeout = 20000)
-    public void multiPictureDownloadTest() {
+    public void multiPictureDownloadTest() throws TimeoutException {
         normalDownloadTestCore(1, 10);
     }
 
     @Test(timeout = 20000)
-    public void singleVideoDownloadTest() {
+    public void singleVideoDownloadTest() throws TimeoutException {
         normalDownloadTestCore(2, 1);
     }
 
     @Test(timeout = 20000)
-    public void multiVideoDownloadTest() {
+    public void multiVideoDownloadTest() throws TimeoutException {
         normalDownloadTestCore(3, 10);
     }
 
-    public void normalDownloadTestCore(int jsonIndex, int expectedNumOfFiles) {
+    public void normalDownloadTestCore(int jsonIndex, int expectedNumOfFiles) throws TimeoutException {
         CountDownLatch latch = new CountDownLatch(1);
 
         Intent intent = new Intent(targetCtx, MockDownloadService.class);
@@ -74,17 +74,19 @@ public class DownloadServiceTests {
         );
         intent.putExtra("EXTRA_ALT_URL", "http://10.0.2.2:8080/");
 
-        ComponentName service = targetCtx.startService(intent);
-        Log.d("SwAlSh_Tests", "startService returned " + service);
-        // Make sure startService succeeded
-        assertNotNull(service);
+        serviceRule.startService(intent);
 
         targetCtx.bindService(intent, new ServiceConnection() {
+            boolean done = false;
             @Override
             public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
                 DownloadService.DownloadServiceBinder binder = (DownloadService.DownloadServiceBinder) iBinder;
 
                 Observer<DownloadService.State> testObserver = state -> {
+                    if (done) {
+                        Log.d("SwAlSh_Tests", "Duplicate state observer callback!");
+                        return;
+                    }
                     if (state == DownloadService.State.ERROR) {
                         Log.e("SwAlSh_Tests", "Error state: reason is " + binder.getErrorType().getValue());
                     }
@@ -93,7 +95,7 @@ public class DownloadServiceTests {
                     if (state == DownloadService.State.DONE) {
                         assertEquals(expectedNumOfFiles, binder.getSavedContentUriList().size());
                         savedUris.addAll(binder.getSavedContentUriList());
-                        targetCtx.stopService(intent);
+                        done = true;
                         latch.countDown();
                     }
                 };
@@ -124,8 +126,9 @@ public class DownloadServiceTests {
             try {
                 cr.delete(uri, null, null);
             } catch (Exception e) {
-                Log.e("SwAlSh_Tests", "Failed to delete " + uri + ", but not considering it a failed test", e);
+                Log.e("SwAlSh_Tests", "Failed to delete " + uri + ", but not considering it a failed test");
             }
         }
+        savedUris.clear();
     }
 }
