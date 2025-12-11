@@ -8,6 +8,7 @@ import android.provider.MediaStore;
 import android.net.Uri;
 import android.util.JsonReader;
 import android.util.JsonWriter;
+import android.util.MalformedJsonException;
 
 import androidx.annotation.NonNull;
 
@@ -107,7 +108,7 @@ public class GameUtils {
         writer.close();
     }
 
-    public static List<Game> importGames(InputStreamReader in) throws IllegalStateException, IOException {
+    public static List<Game> importGames(@NonNull InputStreamReader in) throws IOException {
         JsonReader reader = new JsonReader(in);
         ArrayList<Game> foundGames = new ArrayList<>();
 
