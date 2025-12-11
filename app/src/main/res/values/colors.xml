@@ -6,4 +6,10 @@
     <color name="dark_colour_on_primary">#000000</color>
     <color name="light_bg_colour">#D0F9FF</color>
     <color name="dark_bg_colour">#121418</color>
+
+    <color name="major_text_colour_light">#000000</color> <!-- based on material_dynamic_neutral_variant0 -->
+    <color name="minor_text_colour_light">#2F3036</color> <!-- based on material_dynamic_neutral20 -->
+    <color name="major_text_colour_dark">#E1E2EC</color> <!-- based on material_dynamic_neutral_variant90 -->
+    <color name="minor_text_colour_dark">#A9ABB4</color> <!-- based on material_dynamic_neutral70 -->
+
 </resources>
