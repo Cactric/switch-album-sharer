@@ -31,6 +31,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import io.github.cactric.swalsh.games.Game;
@@ -147,24 +148,11 @@ public class GamePickerActivity extends AppCompatActivity {
         // Get the database object and the games in it
         GameDatabase db = GameDatabase.getDatabase(this);
         new Thread(() -> {
-            try {
-                // Open the file and write the csv header
-                try (OutputStream os = getContentResolver().openOutputStream(contentUri)) {
-                    if (os == null) {
-                        return;
-                    }
-
-                    JsonWriter writer = new JsonWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
-                    writer.beginArray();
-                    for (Game g: db.gameDao().getAll()) {
-                        writer.beginObject();
-                        writer.name("game_id").value(g.gameId);
-                        writer.name("game_name").value(g.gameName);
-                        writer.endObject();
-                    }
-                    writer.endArray();
-                    writer.close();
+            try (OutputStream os = getContentResolver().openOutputStream(contentUri)) {
+                if (os == null) {
+                    return;
                 }
+                GameUtils.exportGames(db.gameDao().getAll(), os);
             } catch (SecurityException | IOException e) {
                 Log.e("SwAlSh", "Error while exporting", e);
                 Toast.makeText(this, "Error while exporting", Toast.LENGTH_SHORT).show();
@@ -191,45 +179,20 @@ public class GamePickerActivity extends AppCompatActivity {
                     return;
                 ArrayList<GameItem> newGameItems = new ArrayList<>();
                 // Read the file
-                try (InputStreamReader in = new InputStreamReader(getContentResolver().openInputStream(contentUri), StandardCharsets.UTF_8);
-                     JsonReader reader = new JsonReader(in)) {
-                    reader.beginArray();
-                    while (reader.hasNext()) {
-                        String gameId = null;
-                        String gameName = null;
-
-                        reader.beginObject();
-                        while (reader.hasNext()) {
-                            String name = reader.nextName();
-                            if (name.equals("game_id")) {
-                                gameId = reader.nextString();
-                            } else if (name.equals("game_name")) {
-                                gameName = reader.nextString();
-                            } else {
-                                reader.skipValue();
-                            }
+                try (InputStreamReader in = new InputStreamReader(getContentResolver().openInputStream(contentUri), StandardCharsets.UTF_8)) {
+                    List<Game> importedGames = GameUtils.importGames(in);
+                    for (Game newGame: importedGames) {
+                        Game oldGame = db.gameDao().findByGameId(newGame.gameId);
+                        if (oldGame != null) {
+                            // if the gameId already exists in the database, copy the primary key
+                            // so that it gets replaced
+                            newGame.game_primary_key = oldGame.game_primary_key;
                         }
-                        reader.endObject();
 
-                        if (gameId != null && gameName != null) {
-                            Game newGame = new Game();
-                            newGame.game_primary_key = 0; // auto-generate when inserted
-                            newGame.gameId = gameId;
-                            newGame.gameName = gameName;
-
-                            Game oldGame = db.gameDao().findByGameId(gameId);
-                            if (oldGame != null) {
-                                // if the gameId already exists in the database, copy the primary key
-                                // so that it gets replaced
-                                newGame.game_primary_key = oldGame.game_primary_key;
-                            }
-
-                            db.gameDao().addGame(newGame);
-                            // Re-search the database so that we have the primary key populated
-                            newGameItems.add(gameUtils.getTotals(db.gameDao().findByGameId(newGame.gameId)));
-                        }
+                        db.gameDao().addGame(newGame);
+                        // Re-search the database so that we have the primary key populated
+                        newGameItems.add(gameUtils.getTotals(db.gameDao().findByGameId(newGame.gameId)));
                     }
-                    reader.endArray();
                 } catch (IllegalStateException | IOException e) {
                     Log.e("SwAlSh", "Failed to read/parse JSON", e);
                     runOnUiThread(() -> Toast.makeText(this, R.string.failed_to_import_game_list, Toast.LENGTH_SHORT).show());
