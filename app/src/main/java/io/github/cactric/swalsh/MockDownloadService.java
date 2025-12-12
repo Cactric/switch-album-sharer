@@ -17,7 +17,7 @@ public class MockDownloadService extends DownloadService {
     private String mockJson;
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
+    public int onStartCommand(@NonNull Intent intent, int flags, int startId) {
         Log.d("SwAlSh_Tests", "MockDownloadService starting");
         mockJson = intent.getStringExtra("EXTRA_MOCK_JSON");
 
