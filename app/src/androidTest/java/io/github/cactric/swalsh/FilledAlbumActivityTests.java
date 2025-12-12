@@ -35,15 +35,16 @@ import io.github.cactric.swalsh.ui.album.AlbumActivity;
 @LargeTest
 public class FilledAlbumActivityTests {
     @Rule
-    public ActivityScenarioRule<AlbumActivity> activityRule;
+    public ActivityScenarioRule<AlbumActivity> activityRule = new ActivityScenarioRule<>(AlbumActivity.class);
 
     private final Context targetCtx = InstrumentationRegistry.getInstrumentation().getTargetContext();
     private final Context testCtx = InstrumentationRegistry.getInstrumentation().getContext();
 
-    public FilledAlbumActivityTests() throws IOException {
-        // Write out the picture before the activity gets started
+    @Before
+    public void setupPictures() throws IOException {
+        // Write out the picture and restart the activity
         writePicture("2025121212105900-FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.jpg");
-        activityRule = new ActivityScenarioRule<>(AlbumActivity.class);
+        activityRule.getScenario().recreate();
     }
 
     @After
