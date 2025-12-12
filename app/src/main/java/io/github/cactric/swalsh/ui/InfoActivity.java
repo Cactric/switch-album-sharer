@@ -26,8 +26,7 @@ public class InfoActivity extends AppCompatActivity {
     private final Library[] libraries = {
             new Library("Material Icons", Uri.parse("https://fonts.google.com/icons"), "Apache 2.0", Library.APACHE_2_URI),
             new Library("ZXing", Uri.parse("https://github.com/zxing/zxing"), "Apache 2.0", Library.APACHE_2_URI),
-            new Library("Android Jetpack (AndroidX)", Uri.parse("https://developer.android.com/jetpack"), "Apache 2.0", Library.APACHE_2_URI),
-            new Library("OkHttp", Uri.parse("https://square.github.io/okhttp"), "Apache 2.0", Library.APACHE_2_URI),
+            new Library("Android Jetpack (AndroidX)", Uri.parse("https://developer.android.com/jetpack"), "Apache 2.0", Library.APACHE_2_URI)
     };
 
     @Override
