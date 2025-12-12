@@ -83,10 +83,14 @@ public class AlbumActivity extends AppCompatActivity {
         pager.setAdapter(adapter);
 
         new TabLayoutMediator(tabLayout, pager, (tab, pos) -> {
-            if (pos == 0)
+            if (pos == 0) {
                 tab.setText(R.string.pictures);
-            if (pos == 1)
+                tab.setTag("picture_tab");
+            }
+            if (pos == 1) {
                 tab.setText(R.string.videos);
+                tab.setTag("video_tab");
+            }
         }).attach();
 
         tabLayout.selectTab(tabLayout.getTabAt(startingTab));

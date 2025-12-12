@@ -43,7 +43,11 @@ public class WifiUtils {
             }
         }
 
-        return builder.build();
+        try {
+            return builder.build();
+        } catch (IllegalStateException e) {
+            throw new IllegalArgumentException("Couldn't build network specifier", e);
+        }
     }
 
     public static WifiNetworkSpecifier basicNetwork(String ssid, String pass) {
@@ -52,5 +56,38 @@ public class WifiUtils {
                 .setWpa2Passphrase(pass)
                 .setIsHiddenSsid(false)
                 .build();
+    }
+
+    /**
+     * Validates the SSID and password provided strictly
+     * i.e. the SSID starts with switch_ and the password is 8 characters long
+     * @param ssid The SSID to check
+     * @param pass The password to check
+     * @return The resource ID of the error message to display to the user, or 0 if it passes
+     */
+    public static int strictValidate(String ssid, String pass) {
+        if (!ssid.startsWith("switch_")) {
+            return R.string.bad_prefix;
+        }
+        if (pass.length() != 8) {
+            return R.string.bad_password;
+        }
+        return 0;
+    }
+
+    /**
+     * Same as strictValidate but only checks the SSID and password are not empty
+     * @param ssid The SSID to check
+     * @param pass The password to check
+     * @return The resource ID of the error message to display to the user, or 0 if it passes
+     */
+    public static int looseValidate(String ssid, String pass) {
+        if (ssid.isEmpty()) {
+            return R.string.ssid_required;
+        }
+        if (pass.isEmpty()) {
+            return R.string.password_required;
+        }
+        return 0;
     }
 }

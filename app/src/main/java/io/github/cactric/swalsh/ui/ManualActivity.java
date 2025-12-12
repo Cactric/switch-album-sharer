@@ -1,5 +1,8 @@
 package io.github.cactric.swalsh.ui;
 
+import static io.github.cactric.swalsh.WifiUtils.looseValidate;
+import static io.github.cactric.swalsh.WifiUtils.strictValidate;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -40,10 +43,9 @@ public class ManualActivity extends AppCompatActivity {
         EditText passEditText = findViewById(R.id.manual_wifi_password);
 
         findViewById(R.id.manual_submit).setOnClickListener(view -> {
-            if (!ssidEditText.getText().toString().startsWith("switch_")) {
-                showInvalidDialog(R.string.bad_prefix);
-            } else if (passEditText.getText().length() != 8) {
-                showInvalidDialog(R.string.bad_password);
+            int validOrMsg = strictValidate(ssidEditText.getText().toString(), passEditText.getText().toString());
+            if (validOrMsg != 0) {
+                showInvalidDialog(validOrMsg);
             } else {
                 setSavedSsid(ssidEditText.getText().toString());
                 Intent intent = new Intent(this, ConnectActivity.class);
@@ -55,10 +57,9 @@ public class ManualActivity extends AppCompatActivity {
         });
         findViewById(R.id.manual_submit).setOnLongClickListener(view -> {
             // Long press for less validation
-            if (ssidEditText.length() < 1) {
-                showInvalidDialog(R.string.ssid_required);
-            } else if (passEditText.length() < 1) {
-                showInvalidDialog(R.string.password_required);
+            int validOrMsg = looseValidate(ssidEditText.getText().toString(), passEditText.getText().toString());
+            if (validOrMsg != 0) {
+                showInvalidDialog(validOrMsg);
             } else {
                 setSavedSsid(ssidEditText.getText().toString());
                 Intent intent = new Intent(this, ConnectActivity.class);

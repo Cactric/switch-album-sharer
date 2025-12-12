@@ -20,7 +20,6 @@ public abstract class GameDatabase extends RoomDatabase {
                                 GameDatabase.class,
                                 "game_database")
                         .fallbackToDestructiveMigration(true)
-                        //.allowMainThreadQueries() // TODO: rewrite to remove this. Although the DB shouldn't get THAT big...
                         .build();
             }
         }

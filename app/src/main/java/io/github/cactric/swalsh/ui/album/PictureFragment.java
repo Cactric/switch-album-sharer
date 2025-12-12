@@ -202,7 +202,6 @@ public class PictureFragment extends Fragment {
         }
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     private void showDeletePicturesPopup() {
         if (binder == null) {
             Toast.makeText(getContext(), getString(R.string.error_deleting_items), Toast.LENGTH_SHORT).show();

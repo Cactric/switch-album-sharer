@@ -1,6 +1,5 @@
 package io.github.cactric.swalsh;
 
-import android.app.Service;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -19,6 +18,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LifecycleService;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -27,7 +27,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -37,7 +36,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DownloadService extends Service {
+public class DownloadService extends LifecycleService {
     private URL baseUrl;
 
     private final ArrayList<Uri> savedContentUris = new ArrayList<>();
@@ -68,6 +67,7 @@ public class DownloadService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        super.onStartCommand(intent, flags, startId);
         try {
             baseUrl = new URL("http", "192.168.0.1", 80, "");
         } catch (MalformedURLException e) {
@@ -136,26 +136,7 @@ public class DownloadService extends Service {
                         // Download the data.json file
                         String dataJson;
                         try {
-                            URL dataUrl = new URL(baseUrl, "/data.json");
-                            HttpURLConnection urlConnection = (HttpURLConnection) network.openConnection(dataUrl);
-                            try {
-                                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-                                StringBuilder sb = new StringBuilder();
-
-                                int read;
-                                while (true) {
-                                    read = in.read();
-                                    if (read == -1)
-                                        break;
-                                    sb.appendCodePoint(read);
-                                }
-                                in.close();
-
-                                Log.d("SwAlSh", "data.json is " + sb);
-                                dataJson = sb.toString();
-                            } finally {
-                                urlConnection.disconnect();
-                            }
+                            dataJson = getDataJson(network);
                         } catch (Exception e) {
                             Log.e("SwAlSh", "Download error", e);
                             errorType.postValue(Error.ERROR_GETTING_JSON);
@@ -181,7 +162,71 @@ public class DownloadService extends Service {
 
                             for (int i = 0; i < fileNames.length(); i++) {
                                 Log.d("SwAlSh", "File name " + i + " = " + fileNames.getString(i));
-                                downloadFile(network, fileNames.getString(i));
+                                ContentResolver resolver = getApplicationContext().getContentResolver();
+                                Uri contentUri;
+                                try {
+                                    URL fileURL = new URL(baseUrl, "/img/" + fileNames.getString(i));
+
+                                    // Setup destination Uri and content details
+                                    Uri contentCollection;
+
+                                    ContentValues contentDetails = new ContentValues();
+                                    contentDetails.put(MediaStore.MediaColumns.DISPLAY_NAME, fileNames.getString(i));
+                                    // Mark it as pending until I write the file out
+                                    contentDetails.put(MediaStore.MediaColumns.IS_PENDING, 1);
+
+                                    if (fileType.equals("photo")) {
+                                        contentCollection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+                                        contentDetails.put(MediaStore.MediaColumns.RELATIVE_PATH, picturesRelPath);
+                                    } else if (fileType.equals("movie")) {
+                                        contentCollection = MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+                                        contentDetails.put(MediaStore.MediaColumns.RELATIVE_PATH, videosRelPath);
+                                    } else {
+                                        Log.e("SwAlSh", "Unknown file type '" + fileType + "'");
+                                        return;
+                                    }
+
+                                    contentUri = resolver.insert(contentCollection, contentDetails);
+                                    if (contentUri == null) {
+                                        Log.e("SwAlSh", "Failed to save picture - contentUri is null");
+                                        if (numFailed.getValue() != null) {
+                                            numFailed.postValue(numFailed.getValue() + 1);
+                                        }
+                                        continue;
+                                    }
+                                    Log.d("SwAlSh", "Saving to " + contentUri);
+
+                                    try {
+                                        downloadMedia(network, fileURL, contentUri);
+                                        Log.d("SwAlSh", "Saved " + fileURL + "!");
+                                    } catch (SecurityException e) {
+                                        Log.e("SwAlSh", "Possibly missing permissions or something", e);
+                                        continue;
+                                    } catch (IOException e) {
+                                        Log.e("SwAlSh", "Download error, file " + i + " failed to download", e);
+                                        if (numFailed.getValue() != null) {
+                                            numFailed.postValue(numFailed.getValue() + 1);
+                                        }
+                                    }
+
+                                    contentDetails.clear();
+                                    contentDetails.put(MediaStore.MediaColumns.IS_PENDING, 0);
+                                    resolver.update(contentUri, contentDetails, null, null);
+                                    savedContentUris.add(contentUri);
+                                    if (numDownloaded.getValue() != null) {
+                                        numDownloaded.postValue(numDownloaded.getValue() + 1);
+                                    }
+                                } catch (MalformedURLException e) {
+                                    Log.e("SwAlSh", "Malformed URL, possibly unexpected data and/or an application bug", e);
+                                    if (numFailed.getValue() != null) {
+                                        numFailed.postValue(numFailed.getValue() + 1);
+                                    }
+                                } catch (IllegalArgumentException e) {
+                                    Log.e("SwAlSh", "Download error with file " + i + ": ", e);
+                                    if (numFailed.getValue() != null) {
+                                        numFailed.postValue(numFailed.getValue() + 1);
+                                    }
+                                }
                             }
 
                             state.postValue(DownloadService.State.DONE);
@@ -229,94 +274,74 @@ public class DownloadService extends Service {
         }
     }
 
-    private void downloadFile(Network network, String filename) {
-        ContentResolver resolver = getApplicationContext().getContentResolver();
-        Uri contentUri;
+    /**
+     * Download the `data.json` file from the console
+     * @param network Network that is connected to the console
+     * @return The JSON data from the console, as a string
+     * @throws IOException If the connection fails, etc.
+     */
+    protected String getDataJson(@NonNull Network network) throws IOException {
+        URL dataUrl = new URL(baseUrl, "/data.json");
+        HttpURLConnection urlConnection = (HttpURLConnection) network.openConnection(dataUrl);
+        String jsonToReturn;
         try {
-            URL fileURL = new URL(baseUrl, "/img/" + filename);
-            HttpURLConnection fileConnection = (HttpURLConnection) network.openConnection(fileURL);
-            long contentLength = fileConnection.getContentLengthLong();
-            InputStream in = new BufferedInputStream(fileConnection.getInputStream());
+            InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+            StringBuilder sb = new StringBuilder();
 
-            // Setup destination Uri and content details
-            Uri contentCollection;
-            if (fileType.equals("photo")) {
-                contentCollection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
-            } else if (fileType.equals("movie")) {
-                contentCollection = MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
-            } else {
-                Log.e("SwAlSh", "Unknown file type '" + fileType + "'");
-                return;
+            int read;
+            while (true) {
+                read = in.read();
+                if (read == -1)
+                    break;
+                sb.appendCodePoint(read);
             }
+            in.close();
 
-            ContentValues contentDetails = new ContentValues();
-            contentDetails.put(MediaStore.MediaColumns.DISPLAY_NAME, filename);
-            contentDetails.put(MediaStore.MediaColumns.RELATIVE_PATH, picturesRelPath);
-            // Mark it as pending until I write the file out
-            contentDetails.put(MediaStore.MediaColumns.IS_PENDING, 1);
-
-            contentUri = resolver.insert(contentCollection, contentDetails);
-            if (contentUri == null) {
-                Log.e("SwAlSh", "Failed to save picture - contentUri is null");
-                return;
-            }
-            Log.d("SwAlSh", "Saving to " + contentUri);
-
-            try {
-                OutputStream os = resolver.openOutputStream(contentUri);
-                if (os == null) {
-                    Log.e("SwAlSh", "Failed to save picture - output stream is null");
-                    return;
-                }
-                boolean done = false;
-                long bytesWritten = 0;
-                while (!done) {
-                    byte[] data = new byte[512 * 1024];
-                    int bytesRead = in.read(data);
-                    if (bytesRead == -1)
-                        done = true;
-                    else {
-                        os.write(data, 0, bytesRead);
-                        bytesWritten += bytesRead;
-                    }
-                    downloadProgress.postValue(((float) bytesWritten) / ((float) contentLength));
-                }
-                in.close();
-                os.close();
-                Log.d("SwAlSh", "Saved " + filename + "!");
-            } catch (FileNotFoundException e) {
-                Log.e("SwAlSh", "Failed to open output file", e);
-            } catch (SecurityException e) {
-                Log.e("SwAlSh", "Possibly missing permissions or something", e);
-            }
-
-            contentDetails.clear();
-            contentDetails.put(MediaStore.MediaColumns.IS_PENDING, 0);
-            resolver.update(contentUri, contentDetails, null, null);
-            savedContentUris.add(contentUri);
-            if (numDownloaded.getValue() != null) {
-                numDownloaded.postValue(numDownloaded.getValue() + 1);
-            }
-        } catch (MalformedURLException e) {
-            Log.e("SwAlSh", "Malformed URL, possibly unexpected data and/or an application bug", e);
-            if (numFailed.getValue() != null) {
-                numFailed.postValue(numFailed.getValue() + 1);
-            }
-        } catch (IOException e) {
-            Log.e("SwAlSh", "Download error, file " + filename + " failed to download", e);
-            if (numFailed.getValue() != null) {
-                numFailed.postValue(numFailed.getValue() + 1);
-            }
-        } catch (IllegalArgumentException e) {
-            Log.e("SwAlSh", "Download error with file " + filename + ": ", e);
-            if (numFailed.getValue() != null) {
-                numFailed.postValue(numFailed.getValue() + 1);
-            }
+            //Log.d("SwAlSh", "data.json is " + sb);
+            jsonToReturn = sb.toString();
+        } finally {
+            urlConnection.disconnect();
         }
+        return jsonToReturn;
+    }
+
+    /**
+     * Saves the media from the InputStream to the content URI
+     * @param network The network connected to the console
+     * @param sourceURL The URL of the media file to download
+     * @param destinationUri Content Uri to write the media to
+     * @throws IOException If opening the output uri or writing to it fails
+     */
+    protected void downloadMedia(@NonNull Network network, @NonNull URL sourceURL, @NonNull Uri destinationUri) throws IOException {
+        HttpURLConnection fileConnection = (HttpURLConnection) network.openConnection(sourceURL);
+        long contentLength = fileConnection.getContentLengthLong();
+        InputStream in = new BufferedInputStream(fileConnection.getInputStream());
+
+        OutputStream os = getContentResolver().openOutputStream(destinationUri);
+        if (os == null) {
+            Log.e("SwAlSh", "Failed to save picture - output stream is null");
+            throw new IOException("Couldn't open output stream for " + destinationUri);
+        }
+        boolean done = false;
+        long bytesWritten = 0;
+        while (!done) {
+            byte[] data = new byte[512 * 1024];
+            int bytesRead = in.read(data);
+            if (bytesRead == -1)
+                done = true;
+            else {
+                os.write(data, 0, bytesRead);
+                bytesWritten += bytesRead;
+            }
+            downloadProgress.postValue(((float) bytesWritten) / ((float) contentLength));
+        }
+        in.close();
+        os.close();
     }
 
     @Override
-    public IBinder onBind(Intent intent) {
+    public IBinder onBind(@NonNull Intent intent) {
+        super.onBind(intent);
         return new DownloadServiceBinder();
     }
 
@@ -350,6 +375,9 @@ public class DownloadService extends Service {
         }
         public String getVideosDir() {
             return videosRelPath;
+        }
+        protected DownloadService getService() {
+            return DownloadService.this;
         }
     }
 
