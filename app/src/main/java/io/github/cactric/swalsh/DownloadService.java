@@ -183,7 +183,7 @@ public class DownloadService extends LifecycleService {
                                         contentDetails.put(MediaStore.MediaColumns.RELATIVE_PATH, videosRelPath);
                                     } else {
                                         Log.e("SwAlSh", "Unknown file type '" + fileType + "'");
-                                        return;
+                                        throw new JSONException("Unknown file type " + fileType);
                                     }
 
                                     contentUri = resolver.insert(contentCollection, contentDetails);
@@ -235,9 +235,6 @@ public class DownloadService extends LifecycleService {
                             errorType.postValue(Error.ERROR_PARSING_JSON);
                             state.postValue(DownloadService.State.ERROR);
                         }
-
-                        // Stop duplicate callbacks
-                        connectivityManager.unregisterNetworkCallback(this);
 
                         stopSelf();
                     }

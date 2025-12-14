@@ -117,7 +117,7 @@ public class DownloadServiceTests {
             throw new RuntimeException(e);
         }
 
-        // TODO: accept connect to device prompt
+        // TODO: accept connect to device prompt automatically, if possible
     }
 
     @After
