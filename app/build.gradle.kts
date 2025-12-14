@@ -66,5 +66,4 @@ dependencies {
     androidTestImplementation(libs.espresso.contrib)
     androidTestImplementation(libs.test.runner)
     androidTestImplementation(libs.test.rules)
-    testImplementation(libs.mockito)
 }
