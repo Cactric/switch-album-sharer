@@ -11,7 +11,6 @@ import android.net.NetworkRequest;
 import android.net.Uri;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.os.Binder;
-import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
 import android.provider.MediaStore;
@@ -51,6 +50,7 @@ public class DownloadService extends LifecycleService {
     private int numToDownload = 0;
     private WifiNetworkSpecifier netSpec;
     private long scanTime = -1L;
+    private boolean stayConnected = false;
 
     private String picturesRelPath;
     private String videosRelPath;
@@ -84,6 +84,8 @@ public class DownloadService extends LifecycleService {
                 throw new IllegalArgumentException(e);
             }
         }
+        // The STAY_CONNECTED flag is used in DownloadServiceTests to make them less flaky on API 29
+        stayConnected = intent.getBooleanExtra("EXTRA_STAY_CONNECTED", false);
 
         long scanTimeFromIntent = intent.getLongExtra("EXTRA_SCAN_TIME", -1);
         if (scanTimeFromIntent == scanTime) {
@@ -233,8 +235,10 @@ public class DownloadService extends LifecycleService {
                             state.postValue(DownloadService.State.ERROR);
                         }
 
-                        // Stop duplicate callbacks
-                        connectivityManager.unregisterNetworkCallback(this);
+                        if (!stayConnected) {
+                            // Stop duplicate callbacks
+                            connectivityManager.unregisterNetworkCallback(this);
+                        }
 
                         stopSelf();
                     }

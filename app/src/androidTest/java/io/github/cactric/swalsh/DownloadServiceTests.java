@@ -75,6 +75,7 @@ public class DownloadServiceTests {
                 io.github.cactric.swalsh.test.R.array.test_json_strings)[jsonIndex]
         );
         intent.putExtra("EXTRA_ALT_URL", "http://10.0.2.2:8080/");
+        intent.putExtra("EXTRA_STAY_CONNECTED", true);
 
         serviceRule.startService(intent);
 
