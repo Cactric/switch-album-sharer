@@ -18,6 +18,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.IntentCompat;
 import androidx.lifecycle.LifecycleService;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -93,12 +94,8 @@ public class DownloadService extends LifecycleService {
             scanTime = scanTimeFromIntent;
             Log.d("SwAlSh", "DownloadService: starting");
         }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            netSpec = intent.getParcelableExtra("EXTRA_NETWORK_SPECIFIER", WifiNetworkSpecifier.class);
-        } else {
-            netSpec = intent.getParcelableExtra("EXTRA_NETWORK_SPECIFIER");
-        }
+        
+        netSpec = IntentCompat.getParcelableExtra(intent, "EXTRA_NETWORK_SPECIFIER", WifiNetworkSpecifier.class);
         state.setValue(State.CONNECTING);
         errorType.setValue(Error.NO_ERROR_YET);
         numDownloaded.setValue(0);
