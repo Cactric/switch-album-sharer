@@ -233,6 +233,9 @@ public class DownloadService extends LifecycleService {
                             state.postValue(DownloadService.State.ERROR);
                         }
 
+                        // Stop duplicate callbacks
+                        connectivityManager.unregisterNetworkCallback(this);
+
                         stopSelf();
                     }
 
