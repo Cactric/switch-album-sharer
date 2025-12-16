@@ -1,5 +1,6 @@
 package io.github.cactric.swalsh;
 
+import static android.provider.MediaStore.VOLUME_EXTERNAL;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
@@ -28,6 +29,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.android.material.textview.MaterialTextView;
 
 import org.hamcrest.core.StringStartsWith;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,6 +46,25 @@ public class EmptyAlbumActivityTests {
     @Rule
     public ActivityScenarioRule<AlbumActivity> activityRule =
             new ActivityScenarioRule<>(AlbumActivity.class);
+
+    @Before
+    public void clearAlbum() {
+        // Warning: Destructive!
+        ContentResolver resolver = InstrumentationRegistry.getInstrumentation().getTargetContext().getContentResolver();
+        String targetPackage = InstrumentationRegistry.getInstrumentation().getTargetContext().getPackageName();
+        int deleted = 0;
+
+        Uri pic_uri = MediaStore.Images.Media.getContentUri(VOLUME_EXTERNAL);
+        // Delete all pictures in one go
+        deleted += resolver.delete(pic_uri, MediaStore.Images.Media.OWNER_PACKAGE_NAME + " == ?", new String[]{targetPackage});
+        Uri vid_uri = MediaStore.Video.Media.getContentUri(VOLUME_EXTERNAL);
+        deleted += resolver.delete(vid_uri, MediaStore.Video.Media.OWNER_PACKAGE_NAME + " == ?", new String[]{targetPackage});
+
+        if (deleted > 0) {
+            // Restart the activity if media was deleted
+            activityRule.getScenario().recreate();
+        }
+    }
 
     @Test
     public void tabChangeTest() {
