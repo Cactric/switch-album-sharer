@@ -65,7 +65,7 @@
             android:exported="false" />
         <service
             android:name=".MockDownloadService"
-            android:enabled="true"
+            android:enabled="${debugServices}"
             android:exported="false"/>
 
         <activity

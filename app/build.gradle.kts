@@ -8,6 +8,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
+        manifestPlaceholders += mapOf("debugServices" to true)
         applicationId = "io.github.cactric.swalsh"
         // Increased to 29 for WifiNetworkSpecifier
         minSdk = 29
@@ -21,6 +22,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = true
+            manifestPlaceholders += mapOf("debugServices" to false)
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
