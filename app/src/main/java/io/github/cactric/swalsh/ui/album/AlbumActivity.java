@@ -6,8 +6,10 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.FullyDrawnReporter;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -24,10 +26,12 @@ import com.google.android.material.tabs.TabLayoutMediator;
 import io.github.cactric.swalsh.MediaService;
 import io.github.cactric.swalsh.games.GameUtils;
 import io.github.cactric.swalsh.R;
+import kotlin.Unit;
 
 public class AlbumActivity extends AppCompatActivity {
     private TabLayout tabLayout;
     private MediaService.MediaBinder binder;
+    private FullyDrawnReporter reporter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +44,8 @@ public class AlbumActivity extends AppCompatActivity {
             return insets;
         });
 
+        reporter = getFullyDrawnReporter();
+
         GameUtils gameUtils = new GameUtils(this);
         String gameId = getIntent().getStringExtra("EXTRA_GAME_ID");
         int startingTab = getIntent().getIntExtra("EXTRA_STARTING_TAB", 0);
@@ -49,10 +55,14 @@ public class AlbumActivity extends AppCompatActivity {
         if (gameId == null)
             toolbar.setTitle(R.string.title_activity_album);
         else {
+            reporter.addReporter();
             // Do the DB lookup in a separate thread
             new Thread(() -> {
                 String gameName = gameUtils.lookupGameName(gameId);
-                runOnUiThread(() -> toolbar.setTitle(gameName));
+                runOnUiThread(() -> {
+                    toolbar.setTitle(gameName);
+                    reporter.removeReporter();
+                });
             }).start();
         }
         setSupportActionBar(toolbar);
@@ -97,6 +107,8 @@ public class AlbumActivity extends AppCompatActivity {
 
         // Setup connection to MediaScanService
         // (in this activity, it just updates the numbers in the tab labels)
+        reporter.addReporter();
+        reporter.addReporter();
         ServiceConnection connection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder iBinder) {
@@ -106,12 +118,14 @@ public class AlbumActivity extends AppCompatActivity {
                     if (num != null & tab != null) {
                         tab.setText(getString(R.string.pictures_format_str, num));
                     }
+                    reporter.removeReporter();
                 });
                 binder.getNumOfVideos().observe(AlbumActivity.this, num -> {
                     TabLayout.Tab tab = tabLayout.getTabAt(1);
                     if (num != null & tab != null) {
                         tab.setText(getString(R.string.videos_format_str, num));
                     }
+                    reporter.removeReporter();
                 });
 
                 // Be cheeky and fetch the data for the other tab so that the number in the tab is populated

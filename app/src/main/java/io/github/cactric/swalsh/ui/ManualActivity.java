@@ -71,6 +71,7 @@ public class ManualActivity extends AppCompatActivity {
             return true;
         });
 
+        reportFullyDrawn();
     }
 
     private void getSavedSsid(EditText ssidTextbox) {

@@ -69,6 +69,7 @@ public class GamePickerActivity extends AppCompatActivity {
                 // Set adapter
                 adapter = new GamePickerAdapter(gameItems, getResources());
                 recyclerView.setAdapter(adapter);
+                reportFullyDrawn();
             });
         }).start();
 

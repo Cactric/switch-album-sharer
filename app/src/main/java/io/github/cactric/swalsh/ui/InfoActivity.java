@@ -96,6 +96,8 @@ public class InfoActivity extends AppCompatActivity {
             });
             libList.addView(v);
         }
+
+        reportFullyDrawn();
     }
 
     private record Library(String name, Uri website, String license, Uri license_link) {

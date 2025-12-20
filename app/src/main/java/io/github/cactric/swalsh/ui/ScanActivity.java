@@ -162,6 +162,7 @@ public class ScanActivity extends AppCompatActivity {
                 Toast.makeText(this, "Unable to open camera", Toast.LENGTH_SHORT).show();
             }
         }, getMainExecutor());
+        reportFullyDrawn();
     }
 
     /**
