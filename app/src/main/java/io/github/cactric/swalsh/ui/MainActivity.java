@@ -16,24 +16,26 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import io.github.cactric.swalsh.R;
+import io.github.cactric.swalsh.databinding.ActivityMainBinding;
 import io.github.cactric.swalsh.ui.album.AlbumActivity;
 
 public class MainActivity extends AppCompatActivity {
+    private ActivityMainBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
         EdgeToEdge.enable(this);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_linear_layout), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle(R.string.app_name_long);
-        setSupportActionBar(toolbar);
+        binding.toolbar.setTitle(R.string.app_name_long);
+        setSupportActionBar(binding.toolbar);
 
         addMenuProvider(new MenuProvider() {
             @Override
@@ -53,17 +55,17 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Setup button functionality
-        findViewById(R.id.intro_scan_button).setOnClickListener(v -> {
+        binding.introScanButton.setOnClickListener(v -> {
             Intent intent = new Intent(this, ScanActivity.class);
             startActivity(intent);
         });
 
-        findViewById(R.id.intro_manual_button).setOnClickListener(v -> {
+        binding.introManualButton.setOnClickListener(v -> {
             Intent intent = new Intent(this, ManualActivity.class);
             startActivity(intent);
         });
 
-        findViewById(R.id.intro_album_button).setOnClickListener(v -> {
+        binding.introAlbumButton.setOnClickListener(v -> {
             Intent intent = new Intent(this, AlbumActivity.class);
             startActivity(intent);
         });

@@ -1,14 +1,11 @@
 package io.github.cactric.swalsh.ui.album;
 
 import android.os.Bundle;
-import android.util.JsonReader;
-import android.util.JsonWriter;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -23,17 +20,16 @@ import androidx.core.view.MenuProvider;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import io.github.cactric.swalsh.databinding.ActivityGamePickerBinding;
 import io.github.cactric.swalsh.games.Game;
 import io.github.cactric.swalsh.games.GameDatabase;
 import io.github.cactric.swalsh.games.GameItem;
@@ -42,17 +38,17 @@ import io.github.cactric.swalsh.R;
 
 public class GamePickerActivity extends AppCompatActivity {
     private final ArrayList<GameItem> gameItems = new ArrayList<>();
-    GamePickerAdapter adapter;
-    TextView nothingFoundText;
-    RecyclerView recyclerView;
+    private ActivityGamePickerBinding binding;
+    private GamePickerAdapter adapter;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_game_picker);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.gp_root_layout), (v, insets) -> {
+        binding = ActivityGamePickerBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
@@ -68,21 +64,18 @@ public class GamePickerActivity extends AppCompatActivity {
                 showOrHidePlaceholder();
                 // Set adapter
                 adapter = new GamePickerAdapter(gameItems, getResources());
-                recyclerView.setAdapter(adapter);
+                binding.gpRecycler.setAdapter(adapter);
                 reportFullyDrawn();
             });
         }).start();
 
         // Set up toolbar
-        Toolbar toolbar = findViewById(R.id.gp_toolbar);
-        toolbar.setTitle(R.string.title_activity_game_picker);
+        binding.gpToolbar.setTitle(R.string.title_activity_game_picker);
         addMenuProvider(new PickerMenuProvider(), this);
-        setSupportActionBar(toolbar);
+        setSupportActionBar(binding.gpToolbar);
 
         // Set up recycler view
-        nothingFoundText = findViewById(R.id.gp_nothing);
-        recyclerView = findViewById(R.id.gp_recycler);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        binding.gpRecycler.setLayoutManager(new LinearLayoutManager(this));
     }
 
     // Loads the game list from the database, should be run on a separate thread than the UI thread
@@ -116,11 +109,11 @@ public class GamePickerActivity extends AppCompatActivity {
 
     private void showOrHidePlaceholder() {
         if (gameItems.isEmpty()) {
-            nothingFoundText.setVisibility(View.VISIBLE);
-            recyclerView.setVisibility(View.GONE);
+            binding.gpNothing.setVisibility(View.VISIBLE);
+            binding.gpRecycler.setVisibility(View.GONE);
         } else {
-            nothingFoundText.setVisibility(View.GONE);
-            recyclerView.setVisibility(View.VISIBLE);
+            binding.gpNothing.setVisibility(View.GONE);
+            binding.gpRecycler.setVisibility(View.VISIBLE);
         }
     }
 

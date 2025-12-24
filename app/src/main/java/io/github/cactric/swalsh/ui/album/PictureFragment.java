@@ -1,6 +1,5 @@
 package io.github.cactric.swalsh.ui.album;
 
-import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -14,7 +13,6 @@ import androidx.appcompat.widget.PopupMenu;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.IBinder;
 import android.provider.MediaStore;
@@ -25,16 +23,15 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import io.github.cactric.swalsh.MediaService;
 import io.github.cactric.swalsh.R;
+import io.github.cactric.swalsh.databinding.FragmentPictureBinding;
 
 public class PictureFragment extends Fragment {
+    private FragmentPictureBinding binding;
     private PictureAlbumAdapter adapter;
-    private RecyclerView recyclerView;
-    private TextView nothingFoundText;
     private String mediaSortOrder = MediaStore.Images.Media.DATE_ADDED;
     private boolean mediaSortDescending = true;
     private final PictureMenuProvider pictureMenuProvider = new PictureMenuProvider();
@@ -72,13 +69,12 @@ public class PictureFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             ViewGroup container,
                              Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_picture, container, false);
+        binding = FragmentPictureBinding.inflate(inflater, container, false);
 
-        nothingFoundText = v.findViewById(R.id.album_nothing_found);
-        recyclerView = v.findViewById(R.id.album_recycler);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        binding.albumRecycler.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         // Bind to the media scan service
         Intent mssIntent = new Intent(requireContext(), MediaService.class);
@@ -87,7 +83,7 @@ public class PictureFragment extends Fragment {
             public void onServiceConnected(ComponentName name, IBinder iBinder) {
                 binder = (MediaService.MediaBinder) iBinder;
                 binder.getNumOfPictures().observe(requireActivity(), num -> 
-                    nothingFoundText.setVisibility(num == 0 ? View.VISIBLE : View.GONE)
+                    binding.albumNothingFound.setVisibility(num == 0 ? View.VISIBLE : View.GONE)
                 );
                 retrieveItemsOnSeparateThread();
             }
@@ -99,7 +95,7 @@ public class PictureFragment extends Fragment {
         };
         requireContext().bindService(mssIntent, connection, Context.BIND_AUTO_CREATE);
 
-        return v;
+        return binding.getRoot();
     }
 
     @Override
@@ -159,7 +155,7 @@ public class PictureFragment extends Fragment {
             binder.scanPictures(gameId, mediaSortOrder, mediaSortDescending, items ->
                 requireActivity().runOnUiThread(() -> {
                     adapter = new PictureAlbumAdapter(items, binder, this);
-                    recyclerView.setAdapter(adapter);
+                    binding.albumRecycler.setAdapter(adapter);
                 })
             );
         } else {

@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -22,38 +21,33 @@ import java.util.ArrayList;
 import io.github.cactric.swalsh.MediaService;
 import io.github.cactric.swalsh.PictureItem;
 import io.github.cactric.swalsh.R;
+import io.github.cactric.swalsh.databinding.RecyclerPicsBinding;
 
 public class PictureAlbumAdapter extends RecyclerView.Adapter<PictureAlbumAdapter.ViewHolder> {
     private final ArrayList<PictureItem> media;
     private final MediaService.MediaBinder binder;
     private final LifecycleOwner owner;
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        private final ImageView imageView;
-        private final TextView lengthText;
-        private final ImageButton shareButton;
-        private final ImageButton deleteButton;
-        public ViewHolder(View view) {
-            super(view);
-            imageView = view.findViewById(R.id.album_picture);
-            lengthText = view.findViewById(R.id.album_length_text);
-            shareButton = view.findViewById(R.id.album_share_button);
-            deleteButton = view.findViewById(R.id.album_delete_button);
+        private final RecyclerPicsBinding binding;
+        public ViewHolder(RecyclerPicsBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
         }
 
         public ImageView getImageView() {
-            return imageView;
+            return binding.albumPicture;
         }
 
         public TextView getLengthText() {
-            return lengthText;
+            return binding.albumLengthText;
         }
 
         public ImageButton getShareButton() {
-            return shareButton;
+            return binding.albumShareButton;
         }
 
         public ImageButton getDeleteButton() {
-            return deleteButton;
+            return binding.albumDeleteButton;
         }
     }
 
@@ -68,8 +62,12 @@ public class PictureAlbumAdapter extends RecyclerView.Adapter<PictureAlbumAdapte
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.recycler_pics, parent, false);
-        return new ViewHolder(v);
+        RecyclerPicsBinding binding = RecyclerPicsBinding.inflate(
+                LayoutInflater.from(parent.getContext()),
+                parent,
+                false
+        );
+        return new ViewHolder(binding);
     }
 
     // Replace the contents of views

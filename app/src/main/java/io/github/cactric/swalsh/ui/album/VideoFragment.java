@@ -15,7 +15,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -25,17 +24,16 @@ import androidx.appcompat.widget.PopupMenu;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import io.github.cactric.swalsh.MediaService;
 import io.github.cactric.swalsh.R;
+import io.github.cactric.swalsh.databinding.FragmentVideoBinding;
 
 public class VideoFragment extends Fragment {
+    private FragmentVideoBinding binding;
     private String mediaSortOrder = MediaStore.Video.Media.DATE_ADDED;
     private boolean mediaSortDescending = true;
-    private TextView nothingFoundText;
     private VideoAlbumAdapter adapter;
-    private RecyclerView recyclerView;
     private final VideoMenuProvider videoMenuProvider = new VideoMenuProvider();
 
     private final static String PARAM_GAME_ID = "param_game_id";
@@ -72,12 +70,12 @@ public class VideoFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_video, container, false);
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        binding = FragmentVideoBinding.inflate(inflater, container, false);
 
-        nothingFoundText = v.findViewById(R.id.album_nothing_found);
-        recyclerView = v.findViewById(R.id.album_recycler);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        binding.albumRecycler.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         // Bind to the media service
         Intent msIntent = new Intent(requireContext(), MediaService.class);
@@ -86,7 +84,7 @@ public class VideoFragment extends Fragment {
             public void onServiceConnected(ComponentName name, IBinder ibinder) {
                 binder = (MediaService.MediaBinder) ibinder;
                 binder.getNumOfVideos().observe(requireActivity(), num ->
-                    nothingFoundText.setVisibility(num == 0 ? View.VISIBLE : View.GONE)
+                    binding.albumNothingFound.setVisibility(num == 0 ? View.VISIBLE : View.GONE)
                 );
                 retrieveItemsOnSeparateThread();
             }
@@ -98,7 +96,7 @@ public class VideoFragment extends Fragment {
         };
         requireContext().bindService(msIntent, connection, Context.BIND_AUTO_CREATE);
 
-        return v;
+        return binding.getRoot();
     }
 
     @Override
@@ -158,7 +156,7 @@ public class VideoFragment extends Fragment {
             binder.scanVideos(gameId, mediaSortOrder, mediaSortDescending, items ->
                 requireActivity().runOnUiThread(() -> {
                     adapter = new VideoAlbumAdapter(items, binder, this);
-                    recyclerView.setAdapter(adapter);
+                    binding.albumRecycler.setAdapter(adapter);
                 })
             );
         }

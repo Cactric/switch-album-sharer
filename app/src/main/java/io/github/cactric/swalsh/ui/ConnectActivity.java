@@ -35,6 +35,7 @@ import java.util.Objects;
 import io.github.cactric.swalsh.DownloadService;
 import io.github.cactric.swalsh.R;
 import io.github.cactric.swalsh.WifiUtils;
+import io.github.cactric.swalsh.databinding.ActivityConnectBinding;
 import io.github.cactric.swalsh.ui.album.AlbumActivity;
 
 /*
@@ -51,20 +52,21 @@ public class ConnectActivity extends AppCompatActivity {
     private LiveData<Integer> numDownloaded;
     private LiveData<Integer> numFailed;
     private DownloadService.Error errorType = DownloadService.Error.NO_ERROR_YET;
+    private ActivityConnectBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_connect);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        binding = ActivityConnectBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        Toolbar toolbar = findViewById(R.id.connect_toolbar);
-        toolbar.setTitle(R.string.connect_to_console);
+        binding.connectToolbar.setTitle(R.string.connect_to_console);
 
         if (checkWifiIsEnabled()) {
             connectToConsole();
@@ -114,48 +116,21 @@ public class ConnectActivity extends AppCompatActivity {
         }
         startService(intent);
 
-        Button sacButton = findViewById(R.id.another_code);
-        Button albumButton = findViewById(R.id.open_album);
+        binding.anotherCodeButton.setOnClickListener(v -> finish()); // Go back when "Scan another" is pressed.
 
-        sacButton.setOnClickListener(v -> finish()); // Go back when "Scan another" is pressed.
-
-        albumButton.setOnClickListener(v -> {
+        binding.albumButton.setOnClickListener(v -> {
             Intent albumIntent = new Intent(ConnectActivity.this, AlbumActivity.class);
             if (binder.getFileType().equals("movie"))
                 albumIntent.putExtra("EXTRA_STARTING_TAB", 1);
             startActivity(albumIntent);
         });
 
-        ServiceConnection connection = new ConnectServiceConnection(
-                findViewById(R.id.state_text),
-                findViewById(R.id.save_location_text),
-                findViewById(R.id.progressBar),
-                sacButton,
-                albumButton,
-                findViewById(R.id.share)
-        );
+        ServiceConnection connection = new ConnectServiceConnection();
 
         bindService(intent, connection, BIND_AUTO_CREATE);
-
     }
 
     private class ConnectServiceConnection implements ServiceConnection {
-        private final TextView stateText;
-        private final TextView saveDirText;
-        private final ProgressBar progressBar;
-        private final Button sacButton;
-        private final Button albumButton;
-        private final Button shareButton;
-
-        public ConnectServiceConnection(TextView stateText, TextView saveDirText, ProgressBar progressBar, Button sacButton, Button albumButton, Button shareButton) {
-            this.stateText = stateText;
-            this.saveDirText = saveDirText;
-            this.progressBar = progressBar;
-            this.sacButton = sacButton;
-            this.albumButton = albumButton;
-            this.shareButton = shareButton;
-        }
-
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             binder = (DownloadService.DownloadServiceBinder) service;
@@ -179,40 +154,40 @@ public class ConnectActivity extends AppCompatActivity {
                     if (state.getValue() != null)
                         formatStateText(state.getValue());
                     else
-                        stateText.setText(R.string.error);
+                        binding.stateText.setText(R.string.error);
 
                     if (state.getValue() == DownloadService.State.DOWNLOADING) {
                         // Display total number of items and use it for the progress bar
                         if (binder.getNumToDownload() > 1)
-                            progressBar.setMax(binder.getNumToDownload());
+                            binding.progressBar.setMax(binder.getNumToDownload());
                         else
-                            progressBar.setMax(100);
+                            binding.progressBar.setMax(100);
                     }
 
                     if (state.getValue() == DownloadService.State.DONE) {
                         if (numFailed != null &&
                                 numFailed.getValue() != null &&
                                 numFailed.getValue() > 0) {
-                            progressBar.setProgress(1);
-                            progressBar.setMax(1);
-                            sacButton.setVisibility(VISIBLE);
+                            binding.progressBar.setProgress(1);
+                            binding.progressBar.setMax(1);
+                            binding.anotherCodeButton.setVisibility(VISIBLE);
                             if (numDownloaded != null && numDownloaded.getValue() != null && numDownloaded.getValue() > 1)
-                                albumButton.setVisibility(VISIBLE);
+                                binding.albumButton.setVisibility(VISIBLE);
                         } else {
-                            saveDirText.setVisibility(VISIBLE);
+                            binding.saveLocationText.setVisibility(VISIBLE);
                             Integer amount = binder.getNumDownloaded().getValue();
                             if (amount == null)
                                 amount = 1; // Avoid null problems by setting amount explicitly if necessary
                             if (binder.getFileType().equals("photo")) {
-                                saveDirText.setText(getResources().getQuantityString(R.plurals.pictures_location_format, amount, binder.getPicturesDir()));
+                                binding.saveLocationText.setText(getResources().getQuantityString(R.plurals.pictures_location_format, amount, binder.getPicturesDir()));
                             } else if (binder.getFileType().equals("movie")) {
-                                saveDirText.setText(getResources().getQuantityString(R.plurals.videos_location_format, amount, binder.getVideosDir()));
+                                binding.saveLocationText.setText(getResources().getQuantityString(R.plurals.videos_location_format, amount, binder.getVideosDir()));
                             }
 
-                            sacButton.setVisibility(VISIBLE);
-                            albumButton.setVisibility(VISIBLE);
-                            shareButton.setVisibility(VISIBLE);
-                            shareButton.setOnClickListener(v -> {
+                            binding.anotherCodeButton.setVisibility(VISIBLE);
+                            binding.albumButton.setVisibility(VISIBLE);
+                            binding.shareButton.setVisibility(VISIBLE);
+                            binding.shareButton.setOnClickListener(v -> {
                                 List<Uri> contentUris = binder.getSavedContentUriList();
                                 if (contentUris == null || contentUris.isEmpty()) {
                                     // Share... nothing?
@@ -249,7 +224,7 @@ public class ConnectActivity extends AppCompatActivity {
 
                     if (state.getValue() == DownloadService.State.ERROR) {
                         // Stop the progress bar since nothing will happen now
-                        progressBar.setIndeterminate(false);
+                        binding.progressBar.setIndeterminate(false);
 
                         Intent stopintent = new Intent(ConnectActivity.this, DownloadService.class);
                         stopService(stopintent);
@@ -260,8 +235,8 @@ public class ConnectActivity extends AppCompatActivity {
 
                 numDownloaded.observe(ConnectActivity.this, num -> {
                     if (binder.getNumToDownload() > 1) {
-                        progressBar.setIndeterminate(num <= 0);
-                        progressBar.setProgress(num, true);
+                        binding.progressBar.setIndeterminate(num <= 0);
+                        binding.progressBar.setProgress(num, true);
                     }
                     if (state.getValue() != null)
                         formatStateText(state.getValue());
@@ -269,8 +244,8 @@ public class ConnectActivity extends AppCompatActivity {
 
                 fileProgress.observe(ConnectActivity.this, num -> {
                     if (binder.getNumToDownload() <= 1) {
-                        progressBar.setIndeterminate(num <= 0.0f);
-                        progressBar.setProgress((int) (num * 100), true);
+                        binding.progressBar.setIndeterminate(num <= 0.0f);
+                        binding.progressBar.setProgress((int) (num * 100), true);
                         if (state.getValue() != null)
                             formatStateText(state.getValue());
                     }
@@ -295,7 +270,7 @@ public class ConnectActivity extends AppCompatActivity {
             String[] states = getResources().getStringArray(R.array.connection_states);
             switch (newState) {
                 case NOT_STARTED, CONNECTING, CONNECTED ->
-                        stateText.setText(states[newState.ordinal()]);
+                        binding.stateText.setText(states[newState.ordinal()]);
                 case DOWNLOADING, DONE -> {
                     // Show "Error" if some failed to download
                     if (numFailed.getValue() != null && numFailed.getValue() > 0) {
@@ -303,7 +278,7 @@ public class ConnectActivity extends AppCompatActivity {
                                 binder.getNumToDownload(), // which plural string
                                 numFailed.getValue(), // number shown inside
                                 binder.getNumToDownload());
-                        stateText.setText(formattedStr);
+                        binding.stateText.setText(formattedStr);
                     } else if (binder.getNumToDownload() == 1) {
                         // Show percent downloaded if there's only one file
                         float percent = 0.0f;
@@ -313,24 +288,24 @@ public class ConnectActivity extends AppCompatActivity {
                         String formattedStr = getString(R.string.connection_state_single,
                                 states[newState.ordinal()],
                                 percent);
-                        stateText.setText(formattedStr);
+                        binding.stateText.setText(formattedStr);
                     } else {
                         String formattedStr = getString(R.string.connection_state,
                                 states[newState.ordinal()],
                                 numDownloaded.getValue(),
                                 binder.getNumToDownload());
-                        stateText.setText(formattedStr);
+                        binding.stateText.setText(formattedStr);
                     }
                 }
                 case ERROR -> {
                     if (binder.getNumToDownload() == 1) {
-                        stateText.setText(states[newState.ordinal()]);
+                        binding.stateText.setText(states[newState.ordinal()]);
                     } else {
                         String formattedStr = getString(R.string.connection_state,
                                 states[newState.ordinal()],
                                 numDownloaded.getValue(),
                                 binder.getNumToDownload());
-                        stateText.setText(formattedStr);
+                        binding.stateText.setText(formattedStr);
                     }
                 }
             }

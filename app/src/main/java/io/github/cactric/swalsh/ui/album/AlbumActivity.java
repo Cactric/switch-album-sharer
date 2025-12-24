@@ -6,39 +6,37 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.MediaStore;
-import android.util.Log;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.FullyDrawnReporter;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
-import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import io.github.cactric.swalsh.MediaService;
+import io.github.cactric.swalsh.databinding.ActivityAlbumBinding;
 import io.github.cactric.swalsh.games.GameUtils;
 import io.github.cactric.swalsh.R;
-import kotlin.Unit;
 
 public class AlbumActivity extends AppCompatActivity {
-    private TabLayout tabLayout;
     private MediaService.MediaBinder binder;
     private FullyDrawnReporter reporter;
+    private ActivityAlbumBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_album);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.album_root_layout), (v, insets) -> {
+        binding = ActivityAlbumBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
@@ -51,24 +49,20 @@ public class AlbumActivity extends AppCompatActivity {
         int startingTab = getIntent().getIntExtra("EXTRA_STARTING_TAB", 0);
 
         // Set up toolbar
-        Toolbar toolbar = findViewById(R.id.album_toolbar);
         if (gameId == null)
-            toolbar.setTitle(R.string.title_activity_album);
+            binding.albumToolbar.setTitle(R.string.title_activity_album);
         else {
             reporter.addReporter();
             // Do the DB lookup in a separate thread
             new Thread(() -> {
                 String gameName = gameUtils.lookupGameName(gameId);
                 runOnUiThread(() -> {
-                    toolbar.setTitle(gameName);
+                    binding.albumToolbar.setTitle(gameName);
                     reporter.removeReporter();
                 });
             }).start();
         }
-        setSupportActionBar(toolbar);
-
-        // Set up tabs
-        tabLayout = findViewById(R.id.album_tabs);
+        setSupportActionBar(binding.albumToolbar);
 
         // Set up View Pager
         FragmentStateAdapter adapter = new FragmentStateAdapter(this) {
@@ -89,10 +83,9 @@ public class AlbumActivity extends AppCompatActivity {
             }
         };
 
-        ViewPager2 pager = findViewById(R.id.album_pager);
-        pager.setAdapter(adapter);
+        binding.albumPager.setAdapter(adapter);
 
-        new TabLayoutMediator(tabLayout, pager, (tab, pos) -> {
+        new TabLayoutMediator(binding.albumTabs, binding.albumPager, (tab, pos) -> {
             if (pos == 0) {
                 tab.setText(R.string.pictures);
                 tab.setTag("picture_tab");
@@ -103,7 +96,7 @@ public class AlbumActivity extends AppCompatActivity {
             }
         }).attach();
 
-        tabLayout.selectTab(tabLayout.getTabAt(startingTab));
+        binding.albumTabs.selectTab(binding.albumTabs.getTabAt(startingTab));
 
         // Setup connection to MediaScanService
         // (in this activity, it just updates the numbers in the tab labels)
@@ -114,14 +107,14 @@ public class AlbumActivity extends AppCompatActivity {
             public void onServiceConnected(ComponentName name, IBinder iBinder) {
                 binder = (MediaService.MediaBinder) iBinder;
                 binder.getNumOfPictures().observe(AlbumActivity.this, num -> {
-                    TabLayout.Tab tab = tabLayout.getTabAt(0);
+                    TabLayout.Tab tab = binding.albumTabs.getTabAt(0);
                     if (num != null & tab != null) {
                         tab.setText(getString(R.string.pictures_format_str, num));
                     }
                     reporter.removeReporter();
                 });
                 binder.getNumOfVideos().observe(AlbumActivity.this, num -> {
-                    TabLayout.Tab tab = tabLayout.getTabAt(1);
+                    TabLayout.Tab tab = binding.albumTabs.getTabAt(1);
                     if (num != null & tab != null) {
                         tab.setText(getString(R.string.videos_format_str, num));
                     }

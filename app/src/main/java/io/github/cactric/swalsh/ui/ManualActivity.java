@@ -20,51 +20,53 @@ import androidx.preference.PreferenceManager;
 import java.util.Date;
 
 import io.github.cactric.swalsh.R;
+import io.github.cactric.swalsh.databinding.ActivityManualBinding;
 
 public class ManualActivity extends AppCompatActivity {
+    private ActivityManualBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_manual);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        binding = ActivityManualBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
             Insets freeInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.ime());
             v.setPadding(freeInsets.left, freeInsets.top, freeInsets.right, freeInsets.bottom);
             return insets;
         });
 
-        Toolbar toolbar = findViewById(R.id.manual_toolbar);
-        toolbar.setTitle(R.string.manual_entry);
+        binding.manualToolbar.setTitle(R.string.manual_entry);
+        getSavedSsid(binding.manualWifiName);
 
-        EditText ssidEditText = findViewById(R.id.manual_wifi_name);
-        getSavedSsid(ssidEditText);
-
-        EditText passEditText = findViewById(R.id.manual_wifi_password);
-
-        findViewById(R.id.manual_submit).setOnClickListener(view -> {
-            int validOrMsg = strictValidate(ssidEditText.getText().toString(), passEditText.getText().toString());
+        binding.manualSubmit.setOnClickListener(view -> {
+            String ssid = binding.manualWifiName.getText().toString();
+            String pass = binding.manualWifiPassword.getText().toString();
+            int validOrMsg = strictValidate(ssid, pass);
             if (validOrMsg != 0) {
                 showInvalidDialog(validOrMsg);
             } else {
-                setSavedSsid(ssidEditText.getText().toString());
+                setSavedSsid(ssid);
                 Intent intent = new Intent(this, ConnectActivity.class);
-                intent.putExtra("ssid", ssidEditText.getText().toString());
-                intent.putExtra("pass", passEditText.getText().toString());
+                intent.putExtra("ssid", ssid);
+                intent.putExtra("pass", pass);
                 intent.putExtra("scan_time", new Date().getTime());
                 startActivity(intent);
             }
         });
-        findViewById(R.id.manual_submit).setOnLongClickListener(view -> {
+        binding.manualSubmit.setOnLongClickListener(view -> {
             // Long press for less validation
-            int validOrMsg = looseValidate(ssidEditText.getText().toString(), passEditText.getText().toString());
+            String ssid = binding.manualWifiName.getText().toString();
+            String pass = binding.manualWifiPassword.getText().toString();
+            int validOrMsg = looseValidate(ssid, pass);
             if (validOrMsg != 0) {
                 showInvalidDialog(validOrMsg);
             } else {
-                setSavedSsid(ssidEditText.getText().toString());
+                setSavedSsid(ssid);
                 Intent intent = new Intent(this, ConnectActivity.class);
-                intent.putExtra("ssid", ssidEditText.getText().toString());
-                intent.putExtra("pass", passEditText.getText().toString());
+                intent.putExtra("ssid", ssid);
+                intent.putExtra("pass", pass);
                 intent.putExtra("scan_time", new Date().getTime());
                 startActivity(intent);
             }

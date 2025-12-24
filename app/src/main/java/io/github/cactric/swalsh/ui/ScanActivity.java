@@ -20,14 +20,12 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.Preview;
 import androidx.camera.core.ZoomState;
 import androidx.camera.lifecycle.ProcessCameraProvider;
-import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.MenuProvider;
@@ -41,20 +39,23 @@ import java.util.concurrent.ExecutionException;
 
 import io.github.cactric.swalsh.CodeScanner;
 import io.github.cactric.swalsh.R;
+import io.github.cactric.swalsh.databinding.ActivityScanBinding;
 
 public class ScanActivity extends AppCompatActivity {
     private CodeScanner scanner;
     private ScaleGestureDetector pinchDetector;
     private Camera cam;
     private ProcessCameraProvider camProvider;
+    private ActivityScanBinding binding;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_scan);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        binding = ActivityScanBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
@@ -87,9 +88,8 @@ public class ScanActivity extends AppCompatActivity {
                 camProvider.unbindAll();
         }));
 
-        Toolbar toolbar = findViewById(R.id.scan_toolbar);
-        toolbar.setTitle(R.string.scan_code);
-        toolbar.addMenuProvider(new MenuProvider() {
+        binding.scanToolbar.setTitle(R.string.scan_code);
+        binding.scanToolbar.addMenuProvider(new MenuProvider() {
             @Override
             public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
                 menuInflater.inflate(R.menu.zoom_menu, menu);
@@ -126,8 +126,7 @@ public class ScanActivity extends AppCompatActivity {
         // Add the scale gesture detector to the scanner view
         // Supposed to do performClick too for accessibility
         // Zoom buttons will be the accessible alternative to pinch-to-zoom though
-        PreviewView previewView = findViewById(R.id.camera_preview);
-        previewView.setOnTouchListener((v, event) -> {
+        binding.cameraPreview.setOnTouchListener((v, event) -> {
             pinchDetector.onTouchEvent(event);
             return true;
         });
@@ -136,7 +135,6 @@ public class ScanActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        PreviewView previewView = findViewById(R.id.camera_preview);
         ListenableFuture<ProcessCameraProvider> camProviderFuture = ProcessCameraProvider.getInstance(this);
         camProviderFuture.addListener(() -> {
             try {
@@ -152,7 +150,7 @@ public class ScanActivity extends AppCompatActivity {
                         .build();
                 imageAnalysis.setAnalyzer(getMainExecutor(), scanner);
 
-                preview.setSurfaceProvider(previewView.getSurfaceProvider());
+                preview.setSurfaceProvider(binding.cameraPreview.getSurfaceProvider());
                 cam = camProvider.bindToLifecycle(this,
                         camSelector,
                         preview,

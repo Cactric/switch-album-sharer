@@ -21,8 +21,10 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import io.github.cactric.swalsh.R;
+import io.github.cactric.swalsh.databinding.ActivityInfoBinding;
 
 public class InfoActivity extends AppCompatActivity {
+    private ActivityInfoBinding binding;
     private final Library[] libraries = {
             new Library("Material Icons", Uri.parse("https://fonts.google.com/icons"), "Apache 2.0", Library.APACHE_2_URI),
             new Library("ZXing", Uri.parse("https://github.com/zxing/zxing"), "Apache 2.0", Library.APACHE_2_URI),
@@ -33,15 +35,17 @@ public class InfoActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_info);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.info_root_linearlayout), (v, insets) -> {
+
+        binding = ActivityInfoBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        Button source_button = findViewById(R.id.info_goto_source_button);
-        source_button.setOnClickListener(v -> {
+
+        binding.infoGotoSourceButton.setOnClickListener(v -> {
             // Go to repo page
             Uri repoUri = Uri.parse("https://github.com/Cactric/switch-album-sharer");
             Intent intent = new Intent(Intent.ACTION_VIEW, repoUri);
