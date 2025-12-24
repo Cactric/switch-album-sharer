@@ -52,6 +52,10 @@ public class GamePickerAdapter extends RecyclerView.Adapter<GamePickerAdapter.Vi
         holder.getGameRoot().setOnClickListener(v -> {
             Intent intent = new Intent(v.getContext(), AlbumActivity.class);
             intent.putExtra("EXTRA_GAME_ID", gameItem.game().gameId);
+            // Go to the videos tab if appropriate
+            if (gameItem.totalPics() == 0 && gameItem.totalVids() > 0) {
+                intent.putExtra("EXTRA_STARTING_TAB", 1);
+            }
             v.getContext().startActivity(intent);
         });
 
